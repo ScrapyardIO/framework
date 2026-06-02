@@ -1,0 +1,39 @@
+{
+    "name": "scrapyard-io/nuts-and-bolts",
+    "description": "The ScrapyardIO Support package",
+    "license": "MIT",
+    "homepage": "https://scrapyard-io.projectsaturnstudios.com",
+    "version": "0.4.0",
+    "support": {
+        "issues": "https://github.com/scrapyard-io/framework/issues",
+        "source": "https://github.com/scrapyard-io/framework"
+    },
+    "authors": [
+        {
+            "name": "Angel Gonzalez",
+            "email": "angel@projectsaturnstudios.com"
+        }
+    ],
+    "require": {
+        "php": "^8.3"
+
+    },
+    "autoload": {
+        "psr-4": {
+            "ScrapyardIO\\NutsAndBolts\\": ""
+        },
+        "files": [
+            "Helpers/support.php",
+            "Helpers/bytes.php"
+        ]
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "0.4.x-dev"
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "dev"
+}

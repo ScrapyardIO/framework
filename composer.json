@@ -1,0 +1,66 @@
+{
+    "name": "scrapyard-io/framework",
+    "description": "The ScrapyardIO Framework.",
+    "keywords": ["framework", "scrapyard-io"],
+    "license": "MIT",
+    "version": "0.4.0",
+    "homepage": "https://scrapyard-io.projectsaturnstudios.com",
+    "support": {
+        "issues": "https://github.com/scrapyard-io/framework/issues",
+        "source": "https://github.com/scrapyard-io/framework"
+    },
+    "authors": [
+        {
+            "name": "Angel Gonzalez",
+            "email": "angel@projectsaturnstudios.com"
+        }
+    ],
+    "require": {
+        "php": "^8.3",
+        "ext-posi": "^0.4.0",
+        "ext-ftdi": "^0.4.0",
+        "microscrap/posix": "^0.4.0",
+        "microscrap/ftdi": "^0.4.0",
+        "microscrap/mpsse": "^0.4.0"
+    },
+    "replace": {
+        "scrapyard-io/waveforms": "self.version",
+        "scrapyard-io/bare-metal": "self.version",
+        "scrapyard-io/reality-interface": "self.version",
+        "scrapyard-io/nuts-and-bolts": "self.version"
+    },
+    "require-dev": {
+        "pestphp/pest": "^4"
+    },
+    "autoload": {
+        "files": [
+            "src/Waveforms/Helpers/bytes.php",
+            "src/NutsAndBolts/Helpers/support.php"
+        ],
+        "psr-4": {
+            "BareMetal\\": "src/BareMetal/",
+            "Waveforms\\": "src/Waveforms/",
+            "RealityInterface\\": "src/RealityInterface/",
+            "ScrapyardIO\\NutsAndBolts\\": "src/NutsAndBolts/"
+
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "DeptOfScrapyardRobotics\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "0.4.x-dev"
+        }
+    },
+    "suggest": {
+
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
