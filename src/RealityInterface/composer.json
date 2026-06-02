@@ -16,6 +16,7 @@
     ],
     "require": {
         "php": "^8.3",
+        "scrapyard-io/bare-metal": "^0.4.0",
         "scrapyard-io/nuts-and-bolts": "^0.4.0"
     },
     "autoload": {

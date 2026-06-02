@@ -16,7 +16,9 @@
         }
     ],
     "require": {
-        "php": "^8.3",
+        "php": "^8.3"
+    },
+    "suggest": {
         "ext-posi": "^0.4.0",
         "ext-ftdi": "^0.4.0",
         "microscrap/posix": "^0.4.0",
@@ -54,9 +56,6 @@
         "branch-alias": {
             "dev-master": "0.4.x-dev"
         }
-    },
-    "suggest": {
-
     },
     "config": {
         "sort-packages": true

@@ -16,12 +16,14 @@
     ],
     "require": {
         "php": "^8.3",
+        "scrapyard-io/nuts-and-bolts": "^0.4.0"
+    },
+    "suggest": {
         "ext-posi": "^0.4.0",
         "ext-ftdi": "^0.4.0",
         "microscrap/posix": "^0.4.0",
         "microscrap/ftdi": "^0.4.0",
-        "microscrap/mpsse": "^0.4.0",
-        "scrapyard-io/nuts-and-bolts": "^0.4.0"
+        "microscrap/mpsse": "^0.4.0"
     },
     "autoload": {
         "psr-4": {
