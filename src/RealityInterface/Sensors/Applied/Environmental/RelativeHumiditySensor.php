@@ -13,7 +13,7 @@ class RelativeHumiditySensor extends EnvironmentalSensor
     {
         /** @var RHSensor $circuit */
         $circuit = &$this->circuit;
-        $humidity = $circuit->humidity();
+        $humidity = $circuit->getHumidity();
 
         if (is_null($humidity)) {
             throw new SensorException('Relative humidity reading is unavailable.');

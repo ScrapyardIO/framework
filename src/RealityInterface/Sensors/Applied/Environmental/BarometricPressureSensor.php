@@ -14,7 +14,7 @@ class BarometricPressureSensor extends EnvironmentalSensor
     {
         /** @var PressureSensor $circuit */
         $circuit = &$this->circuit;
-        $pressure_pa = $circuit->pressure();
+        $pressure_pa = $circuit->getPressure();
 
         if (is_null($pressure_pa)) {
             throw new SensorException('Barometric pressure reading is unavailable.');
