@@ -2,19 +2,19 @@
 
 namespace RealityInterface\Sensors\Applied\Environmental;
 
-use BareMetal\IntegratedCircuit;
 use RealityInterface\Sensors\Attributes\MeasuresBarometricPressure;
 use RealityInterface\Sensors\Contracts\Applied\Environmental\PressureSensor;
 use RealityInterface\Sensors\Enums\PressureUnit;
 use RealityInterface\Sensors\Exceptions\SensorException;
+use RealityInterface\Sensors\SensorChip;
 
 class BarometricPressureSensor extends EnvironmentalSensor
 {
     public function pressure(PressureUnit $unit = PressureUnit::PA): float
     {
-        /** @var PressureSensor $circuit */
-        $circuit = &$this->circuit;
-        $pressure_pa = $circuit->getPressure();
+        /** @var PressureSensor $sensor */
+        $sensor = &$this->sensor;
+        $pressure_pa = $sensor->getPressure();
 
         if (is_null($pressure_pa)) {
             throw new SensorException('Barometric pressure reading is unavailable.');
@@ -36,7 +36,7 @@ class BarometricPressureSensor extends EnvironmentalSensor
         return new BarometricPressureReading($pressure, $unit, strtotime('now'));
     }
 
-    public static function as(IntegratedCircuit $circuit): static
+    public static function as(SensorChip $circuit): static
     {
         $attr = reflect_class($circuit, MeasuresBarometricPressure::class);
         if ($attr->getName() == MeasuresBarometricPressure::class) {

@@ -17,6 +17,19 @@ abstract class GPIOConnectionBuilder extends CarrierFactory
 
     abstract public function boot(): GPIOBus;
 
+    /**
+     * Co-reside this GPIO bus on the connection a data carrier already opened.
+     *
+     * Native carriers expose GPIO through independent kernel device nodes
+     * (/dev/gpiochipN vs /dev/spidevX.Y), so there is nothing to share and the
+     * default is a no-op. USB carriers override this to reuse the carrier's
+     * single MPSSE engine instead of claiming the FTDI device a second time.
+     */
+    public function shareConnectionWith(object $carrier): static
+    {
+        return $this;
+    }
+
     abstract public function addInput(GPIOInput $input): static;
 
     abstract public function addOutput(GPIOOutput $output): static;

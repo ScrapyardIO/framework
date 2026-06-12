@@ -2,34 +2,28 @@
 
 namespace RealityInterface\Sensors\Applied\Distance;
 
-use BareMetal\IntegratedCircuit;
 use RealityInterface\Sensors\Attributes\MeasuresDistance;
 use RealityInterface\Sensors\Contracts\Applied\Distance\PulseDerivedDistanceSensor;
 use RealityInterface\Sensors\Enums\LengthUnit;
 use RealityInterface\Sensors\Enums\SensorType;
 use RealityInterface\Sensors\Exceptions\SensorException;
+use RealityInterface\Sensors\SensorChip;
 
 class UltrasonicDistanceSensor extends DistanceSensor
 {
     public function getDistance(): int|float
     {
-        $this->pulse();
+        /** @var PulseDerivedDistanceSensor $sensor */
+        $sensor = &$this->sensor;
 
-        return $this->readDistance();
-    }
-
-    public function pulse(): void
-    {
-        /** @var PulseDerivedDistanceSensor $circuit */
-        $circuit = &$this->circuit;
-        $circuit->firePulse();
+        return $sensor->getDistance($this->units);
     }
 
     public function readDistance(): int|float
     {
-        /** @var PulseDerivedDistanceSensor $circuit */
-        $circuit = &$this->circuit;
-        $mm = $circuit->readDistance();
+        /** @var PulseDerivedDistanceSensor $sensor */
+        $sensor = &$this->sensor;
+        $mm = $sensor->getDistance(LengthUnit::CM);
 
         return match ($this->units) {
             LengthUnit::CM => $mm / 10.0,
@@ -54,7 +48,7 @@ class UltrasonicDistanceSensor extends DistanceSensor
         );
     }
 
-    public static function as(IntegratedCircuit $circuit): static
+    public static function as(SensorChip $circuit): static
     {
         $attr = reflect_class($circuit, MeasuresDistance::class);
         if ($attr->getName() == MeasuresDistance::class) {

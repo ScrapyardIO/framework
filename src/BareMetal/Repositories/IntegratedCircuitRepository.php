@@ -6,18 +6,13 @@ use BareMetal\Exceptions\CircuitRepoException;
 use BareMetal\IntegratedCircuit;
 use Exception;
 
-class IntegratedCircuitRepository
+abstract class IntegratedCircuitRepository
 {
-    private array $config = [];
+    protected array $config = [];
 
     private static ?IntegratedCircuitRepository $instance = null;
 
-    private function __construct()
-    {
-        $this->config = $this->loadConfig();
-    }
-
-    private function loadConfig(): array
+    protected function loadConfig(): array
     {
         $base_path = getenv('SCRAPYARD_CONFIG_PATH');
 

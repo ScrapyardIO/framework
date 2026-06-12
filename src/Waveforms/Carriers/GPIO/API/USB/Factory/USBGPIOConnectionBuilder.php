@@ -9,18 +9,27 @@ use Microscrap\Bindings\MPSSE\Enums\MPSSEClockRate;
 use Microscrap\Bindings\MPSSE\Enums\MPSSEEndianness;
 use Microscrap\Bindings\MPSSE\Enums\MPSSEInterface;
 use Microscrap\Bindings\MPSSE\Enums\MPSSEMode;
+use Microscrap\Bindings\MPSSE\MPSSEContext;
 use Waveforms\Carriers\GPIO\API\USB\Exceptions\UsbGPIOException;
 use Waveforms\Carriers\GPIO\API\USB\UsbGPIOBus;
 use Waveforms\Carriers\GPIO\API\USB\UsbGPIOInput;
 use Waveforms\Carriers\GPIO\API\USB\UsbGPIOOutput;
 use Waveforms\Carriers\GPIO\Contracts\GPIOInput;
 use Waveforms\Carriers\GPIO\Contracts\GPIOOutput;
+use Waveforms\Carriers\GPIO\Contracts\SharesMpsseContext;
 use Waveforms\Carriers\GPIO\Exceptions\GPIOException;
 use Waveforms\Carriers\GPIO\Factory\GPIOConnectionBuilder;
 
 class USBGPIOConnectionBuilder extends GPIOConnectionBuilder
 {
     private ?FtdiProductId $device = null;
+
+    /**
+     * A carrier-owned MPSSE engine to drive GPIO through, when present. Set via
+     * {@see self::shareConnectionWith()}; when populated, {@see self::boot()}
+     * reuses it instead of opening a second context on the FTDI device.
+     */
+    private ?MPSSEContext $shared_context = null;
 
     public MPSSEClockRate $clock_rate = MPSSEClockRate::ONE_MHZ;
 
@@ -104,7 +113,33 @@ class USBGPIOConnectionBuilder extends GPIOConnectionBuilder
         return 'usb';
     }
 
+    /**
+     * Reuse the MPSSE engine the data carrier already opened so the FT232H is
+     * never claimed twice. A single engine clocks SPI/I2C and drives its spare
+     * GPIO pins simultaneously, so the GPIO bus must ride along rather than open
+     * its own context.
+     */
+    public function shareConnectionWith(object $carrier): static
+    {
+        if ($carrier instanceof SharesMpsseContext) {
+            $this->shared_context = $carrier->mpsseContext();
+        }
+
+        return $this;
+    }
+
     public function boot(): UsbGPIOBus
+    {
+        $usb_context = $this->shared_context ?? $this->openOwnContext();
+
+        foreach ($this->desired_gpio as $line) {
+            mpsse_configure_pin_direction($usb_context, $line->pin, $line instanceof UsbGPIOOutput);
+        }
+
+        return new UsbGPIOBus($usb_context, $this->desired_gpio);
+    }
+
+    private function openOwnContext(): MPSSEContext
     {
         $error = '';
         $usb_context = mpsse_open(
@@ -117,14 +152,10 @@ class USBGPIOConnectionBuilder extends GPIOConnectionBuilder
             error: $error,
         );
 
-        if (! is_null($usb_context)) {
-            foreach ($this->desired_gpio as $line) {
-                mpsse_configure_pin_direction($usb_context, $line->pin, $line instanceof UsbGPIOOutput);
-            }
-
-            return new UsbGPIOBus($usb_context, $this->desired_gpio);
+        if (is_null($usb_context)) {
+            throw UsbGPIOException::couldNotOpenDeviceContext($this->device->name, $error);
         }
 
-        throw UsbGPIOException::couldNotOpenDeviceContext($this->device->name, $error);
+        return $usb_context;
     }
 }

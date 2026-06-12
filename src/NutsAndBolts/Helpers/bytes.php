@@ -33,7 +33,7 @@ if (! function_exists('byte2bits')) {
     function byte2bits(int $byte): array
     {
         $results = [];
-        if ($byte < 255) {
+        if ($byte <= 255) {
             for ($i = 7; $i >= 0; $i--) {
                 $results[$i] = ($byte >> $i) & 1;
             }

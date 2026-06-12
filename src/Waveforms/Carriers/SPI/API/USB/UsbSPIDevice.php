@@ -4,13 +4,19 @@ namespace Waveforms\Carriers\SPI\API\USB;
 
 use Microscrap\Bindings\MPSSE\MPSSE;
 use Microscrap\Bindings\MPSSE\MPSSEContext;
+use Waveforms\Carriers\GPIO\Contracts\SharesMpsseContext;
 use Waveforms\Carriers\SPI\SPIDevice;
 
-class UsbSPIDevice extends SPIDevice
+class UsbSPIDevice extends SPIDevice implements SharesMpsseContext
 {
     public function __construct(
         protected MPSSEContext $context
     ) {}
+
+    public function mpsseContext(): MPSSEContext
+    {
+        return $this->context;
+    }
 
     public function transfer(string|array $data): array|false
     {

@@ -2,26 +2,25 @@
 
 namespace RealityInterface\Sensors;
 
-use BareMetal\IntegratedCircuit;
-use BareMetal\Repositories\IntegratedCircuitRepository;
+use RealityInterface\Sensors\Repositories\SensorChipRepository;
 
 abstract class Sensor
 {
     public function __construct(
-        protected IntegratedCircuit $circuit,
+        protected SensorChip $sensor,
     ) {}
 
     public static function using(string $circuit_name): static
     {
-        $circuit = IntegratedCircuitRepository::circuit($circuit_name);
+        $circuit = SensorChipRepository::sensor($circuit_name);
 
         return static::as($circuit);
     }
 
-    abstract public static function as(IntegratedCircuit $circuit): static;
+    abstract public static function as(SensorChip $circuit): static;
 
-    public function integratedCircuit(): IntegratedCircuit
+    public function sensorChip(): SensorChip
     {
-        return $this->circuit;
+        return $this->sensor;
     }
 }

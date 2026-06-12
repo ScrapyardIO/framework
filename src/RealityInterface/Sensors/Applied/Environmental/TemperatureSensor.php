@@ -2,19 +2,19 @@
 
 namespace RealityInterface\Sensors\Applied\Environmental;
 
-use BareMetal\IntegratedCircuit;
 use RealityInterface\Sensors\Attributes\MeasuresTemperature;
 use RealityInterface\Sensors\Contracts\Applied\Environmental\TemperatureSensor as TemperatureSensorInterface;
 use RealityInterface\Sensors\Enums\TemperatureUnit;
 use RealityInterface\Sensors\Exceptions\SensorException;
+use RealityInterface\Sensors\SensorChip;
 
 class TemperatureSensor extends EnvironmentalSensor
 {
     public function temperature(TemperatureUnit $unit = TemperatureUnit::CELSIUS): float
     {
-        /** @var TemperatureSensorInterface $circuit */
-        $circuit = &$this->circuit;
-        $temp_c = $circuit->temperature();
+        /** @var TemperatureSensorInterface $sensor */
+        $sensor = &$this->sensor;
+        $temp_c = $sensor->temperature();
 
         if (is_null($temp_c)) {
             throw new SensorException('Temperature reading is unavailable.');
@@ -34,7 +34,7 @@ class TemperatureSensor extends EnvironmentalSensor
         return new TemperatureSensorReading($temp, $unit, strtotime('now'));
     }
 
-    public static function as(IntegratedCircuit $circuit): static
+    public static function as(SensorChip $circuit): static
     {
         $attr = reflect_class($circuit, MeasuresTemperature::class);
         if ($attr->getName() == MeasuresTemperature::class) {

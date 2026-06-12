@@ -1,5 +1,13 @@
+# The ScrapyardIO Framework
 
-## Installation
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/scrapyard-io/framework.svg)](https://packagist.org/packages/scrapyard-io/framework)
+[![Total Downloads](https://img.shields.io/packagist/dt/scrapyard-io/framework.svg)](https://packagist.org/packages/scrapyard-io/framework)
+[![License](https://img.shields.io/packagist/l/scrapyard-io/framework.svg)](LICENSE)
+
+## About ScrapyardIO
+
+> **Note:** This repository contains the core code of the ScrapardIO framework. 
+
 
 ### Autoloading Integrated Circuit configs
 

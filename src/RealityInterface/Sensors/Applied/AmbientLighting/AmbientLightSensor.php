@@ -2,12 +2,12 @@
 
 namespace RealityInterface\Sensors\Applied\AmbientLighting;
 
-use BareMetal\IntegratedCircuit;
 use RealityInterface\Sensors\Attributes\MeasuresLuminance;
 use RealityInterface\Sensors\Contracts\Applied\AmbientLighting\GenericLuxSensor;
 use RealityInterface\Sensors\Enums\LuminanceUnit;
 use RealityInterface\Sensors\Exceptions\SensorException;
 use RealityInterface\Sensors\Sensor;
+use RealityInterface\Sensors\SensorChip;
 
 class AmbientLightSensor extends Sensor
 {
@@ -36,9 +36,9 @@ class AmbientLightSensor extends Sensor
 
     public function getLuminance(): int|float
     {
-        /** @var GenericLuxSensor $circuit */
-        $circuit = &$this->circuit;
-        $measurement = $circuit->getLuminance();
+        /** @var GenericLuxSensor $sensor */
+        $sensor = &$this->sensor;
+        $measurement = $sensor->getLuminance();
 
         return match ($this->units) {
             LuminanceUnit::LUX => $measurement * $this->lux_compensation_factor,
@@ -46,7 +46,7 @@ class AmbientLightSensor extends Sensor
         };
     }
 
-    public static function as(IntegratedCircuit $circuit): static
+    public static function as(SensorChip $circuit): static
     {
         $attr = reflect_class($circuit, MeasuresLuminance::class);
         if ($attr->getName() == MeasuresLuminance::class) {

@@ -7,7 +7,7 @@ use RuntimeException;
 
 class SensorException extends RuntimeException
 {
-    public static function missingRequiredAbility(int $class, string $circuit_class, string $attr): static
+    public static function missingRequiredAbility(string $class, string $circuit_class, string $attr): static
     {
         return new static("{$class} requires {$circuit_class} to have the {$attr} attribute.");
     }

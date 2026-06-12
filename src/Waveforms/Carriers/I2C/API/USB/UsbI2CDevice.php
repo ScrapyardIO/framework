@@ -4,14 +4,20 @@ namespace Waveforms\Carriers\I2C\API\USB;
 
 use Microscrap\Bindings\MPSSE\MPSSE;
 use Microscrap\Bindings\MPSSE\MPSSEContext;
+use Waveforms\Carriers\GPIO\Contracts\SharesMpsseContext;
 use Waveforms\Carriers\I2C\I2CDevice;
 
-class UsbI2CDevice extends I2CDevice
+class UsbI2CDevice extends I2CDevice implements SharesMpsseContext
 {
     public function __construct(
         protected MPSSEContext $context,
         protected int $address,
     ) {}
+
+    public function mpsseContext(): MPSSEContext
+    {
+        return $this->context;
+    }
 
     public function read(int $len): array|false
     {

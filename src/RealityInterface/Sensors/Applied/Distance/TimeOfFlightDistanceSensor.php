@@ -2,12 +2,12 @@
 
 namespace RealityInterface\Sensors\Applied\Distance;
 
-use BareMetal\IntegratedCircuit;
 use RealityInterface\Sensors\Attributes\MeasuresDistance;
 use RealityInterface\Sensors\Contracts\Applied\Distance\LaserGuidedDistanceSensor;
 use RealityInterface\Sensors\Enums\LengthUnit;
 use RealityInterface\Sensors\Enums\SensorType;
 use RealityInterface\Sensors\Exceptions\SensorException;
+use RealityInterface\Sensors\SensorChip;
 
 class TimeOfFlightDistanceSensor extends DistanceSensor
 {
@@ -44,7 +44,7 @@ class TimeOfFlightDistanceSensor extends DistanceSensor
         );
     }
 
-    public static function as(IntegratedCircuit $circuit): static
+    public static function as(SensorChip $circuit): static
     {
         $attr = reflect_class($circuit, MeasuresDistance::class);
         if ($attr->getName() == MeasuresDistance::class) {

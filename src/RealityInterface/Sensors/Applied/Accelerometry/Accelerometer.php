@@ -2,23 +2,23 @@
 
 namespace RealityInterface\Sensors\Applied\Accelerometry;
 
-use BareMetal\IntegratedCircuit;
 use RealityInterface\Sensors\Attributes\MeasuresAcceleration;
 use RealityInterface\Sensors\Contracts\Applied\Accelerometry\GenericAccelerometer;
 use RealityInterface\Sensors\Exceptions\SensorException;
 use RealityInterface\Sensors\Sensor;
+use RealityInterface\Sensors\SensorChip;
 
 class Accelerometer extends Sensor
 {
     public function getAcceleration(): array
     {
-        /** @var GenericAccelerometer $circuit */
-        $circuit = &$this->circuit;
+        /** @var GenericAccelerometer $sensor */
+        $sensor = &$this->sensor;
 
-        return $circuit->getAcceleration();
+        return $sensor->getAcceleration();
     }
 
-    public static function as(IntegratedCircuit $circuit): static
+    public static function as(SensorChip $circuit): static
     {
         $attr = reflect_class($circuit, MeasuresAcceleration::class);
         if ($attr->getName() == MeasuresAcceleration::class) {
