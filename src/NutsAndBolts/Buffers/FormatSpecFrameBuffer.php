@@ -43,6 +43,10 @@ abstract class FormatSpecFrameBuffer extends Framebuffer
         return match ($this->format_spec->pixel_format) {
             PixelFormat::ROW_MAJOR => $this->packRowMajor($raw),
             PixelFormat::MONO_VERTICAL_PAGE => $this->packVerticalPages($raw),
+            PixelFormat::MONO_HORIZONTAL => $this->packMonoHorizontal(
+                $raw,
+                $this->format_spec->bit_order !== BitOrder::LSB_FIRST,
+            ),
             default => throw new RuntimeException(
                 "No packer for pixel format {$this->format_spec->pixel_format->value}."
             ),
@@ -119,6 +123,46 @@ abstract class FormatSpecFrameBuffer extends Framebuffer
                     if (! empty($grid[$source_row][$col])) {
                         $bit = $msb_first ? (7 - $offset) : $offset;
                         $byte |= (1 << $bit);
+                    }
+                }
+
+                $bytes[] = $byte;
+            }
+        }
+
+        return $bytes;
+    }
+
+    /**
+     * Pack a row-major logical grid into 1bpp horizontal bytes: 8 stacked
+     * columns per byte, emitted row-major. BitOrder picks which end of the byte
+     * the leftmost column lands on (MSB_FIRST = bit 7, the SSD1680/IL3820/TFT
+     * mono convention). $invert flips every bit, so a "set" cell packs as 0 and
+     * the background as 1 (the SSD1680 black-RAM bit sense). Rows are padded to
+     * a byte boundary; pad bits follow the background sense.
+     *
+     * @param  array<int, array<int, int>>  $grid
+     * @return array<int, int>
+     */
+    protected function packMonoHorizontal(array $grid, bool $msb_first = true, bool $invert = false): array
+    {
+        $bytes = [];
+
+        for ($row = 0; $row < $this->height; $row++) {
+            for ($col = 0; $col < $this->width; $col += 8) {
+                $byte = 0;
+
+                for ($bit = 0; $bit < 8; $bit++) {
+                    $x = $col + $bit;
+                    $on = ($x < $this->width) ? (($grid[$row][$x] ?? 0) & 1) : 0;
+
+                    if ($invert) {
+                        $on ^= 1;
+                    }
+
+                    if ($on === 1) {
+                        $position = $msb_first ? (7 - $bit) : $bit;
+                        $byte |= (1 << $position);
                     }
                 }
 

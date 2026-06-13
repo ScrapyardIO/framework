@@ -19,8 +19,8 @@ use ScrapyardIO\NutsAndBolts\Enums\ScanDirection;
  * Only pixel format and bit depth are always required. The remaining facts are
  * situational and default to null when they do not apply to a given packing
  * family: bit order is for sub-byte (monochrome/planar) packing, endianness for
- * multi-byte pixels (TFT 16/18/24/32-bit), and page axis only for paged
- * monochrome panels.
+ * multi-byte pixels (TFT 16/18/24/32-bit), page axis only for paged monochrome
+ * panels, and palette only for channel-sorted (multi-plane ePaper) surfaces.
  */
 readonly class FormatSpec
 {
@@ -31,5 +31,6 @@ readonly class FormatSpec
         public ?BitOrder $bit_order = null,
         public ?Endianness $endianness = null,
         public ?PageAxis $page_axis = null,
+        public ?ChannelPalette $palette = null,
     ) {}
 }

@@ -3,7 +3,7 @@
     "description": "The ScrapyardIO Framework.",
     "keywords": ["framework", "scrapyard-io"],
     "license": "MIT",
-    "version": "0.4.1",
+    "version": "0.4.3",
     "homepage": "https://scrapyard-io.projectsaturnstudios.com",
     "support": {
         "issues": "https://github.com/scrapyard-io/framework/issues",

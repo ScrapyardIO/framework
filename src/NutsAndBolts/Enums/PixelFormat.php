@@ -13,6 +13,8 @@ enum PixelFormat: string
 {
     case MONO_VERTICAL_PAGE = 'mono_vertical_page';
 
+    case MONO_HORIZONTAL = 'mono_horizontal';
+
     case ROW_MAJOR = 'row_major';
 
     case PLANAR = 'planar';

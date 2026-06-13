@@ -3,7 +3,7 @@
     "description": "The ScrapyardIO Core package",
     "license": "MIT",
     "homepage": "https://scrapyard-io.projectsaturnstudios.com",
-    "version": "0.4.1",
+    "version": "0.4.3",
     "support": {
         "issues": "https://github.com/scrapyard-io/framework/issues",
         "source": "https://github.com/scrapyard-io/framework"
