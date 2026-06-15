@@ -19,6 +19,11 @@ class NativeUARTConnectionBuilder extends UARTConnectionBuilder
 {
     public ?string $port_path = null;
 
+    public function firstly(string $identifier): static
+    {
+        return $this->port($identifier);
+    }
+
     public function port(string $path): static
     {
         $this->port_path = $path;

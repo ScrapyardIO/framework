@@ -21,6 +21,13 @@ abstract class UARTConnectionBuilder extends CarrierFactory
 
     public FlowControl $flow_control = FlowControl::NONE;
 
+    /**
+     * Bootstrap the driver-specific connection target. Each driver resolves the
+     * identifier into whatever it needs to open (a /dev path for native, an FTDI
+     * device name for USB) so the parent stays agnostic of concrete drivers.
+     */
+    abstract public function firstly(string $identifier): static;
+
     abstract public function boot(): UARTDevice;
 
     public function baud(int $rate): static

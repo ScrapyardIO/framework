@@ -14,6 +14,11 @@ class UsbUARTConnectionBuilder extends UARTConnectionBuilder
 {
     private ?FtdiProductId $device = null;
 
+    public function firstly(string $identifier): static
+    {
+        return $this->device($identifier);
+    }
+
     public function device(string $device): static
     {
         $device = strtoupper($device);
@@ -48,6 +53,11 @@ class UsbUARTConnectionBuilder extends UARTConnectionBuilder
             throw UsbUARTException::couldNotOpenDevice($this->device->name, $error);
         }
 
+        // Return the chip to plain async-serial mode. Multi-protocol parts like
+        // the FT232H retain a previously selected MPSSE/bitbang mode across
+        // opens, which would leave D0/D1 unusable as a UART.
+        ftdi_set_bitmode($context, 0x00, 0x00);
+
         ftdi_set_baudrate($context, $this->baud_rate);
         ftdi_set_line_property($context, $this->data_bits->value, $this->ftdiStopBits(), $this->parity->value);
         ftdi_setflowctrl($context, $this->ftdiFlowControl());
@@ -78,5 +88,10 @@ class UsbUARTConnectionBuilder extends UARTConnectionBuilder
             FlowControl::HARDWARE => 256,
             FlowControl::SOFTWARE => 1024,
         };
+    }
+
+    public function connection(): string
+    {
+        return 'usb';
     }
 }

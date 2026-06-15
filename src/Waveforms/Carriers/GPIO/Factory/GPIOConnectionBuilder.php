@@ -25,7 +25,7 @@ abstract class GPIOConnectionBuilder extends CarrierFactory
      * default is a no-op. USB carriers override this to reuse the carrier's
      * single MPSSE engine instead of claiming the FTDI device a second time.
      */
-    public function shareConnectionWith(object $carrier): static
+    public function shareConnectionWith(CarrierFactory $carrier): static
     {
         return $this;
     }

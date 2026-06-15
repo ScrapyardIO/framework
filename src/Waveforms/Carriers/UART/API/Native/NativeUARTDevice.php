@@ -2,8 +2,8 @@
 
 namespace Waveforms\Carriers\UART\API\Native;
 
-use microscrap\uart\src\DataObjects\UARTPort;
-use microscrap\uart\src\Enums\TermiosQueue;
+use Microscrap\Bindings\UART\DataObjects\UARTPort;
+use Microscrap\Bindings\UART\Enums\TermiosQueue;
 use Waveforms\Carriers\UART\UARTDevice;
 
 class NativeUARTDevice extends UARTDevice

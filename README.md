@@ -64,7 +64,7 @@ Each layer depends only on the one below it. Chip drivers (DOSR packages) sit be
 | Mode | Used on | Backed by |
 |---|---|---|
 | `native` | Linux SBCs (Raspberry Pi, Jetson Orin, …) | `ext-posi` (POSIX syscalls) |
-| `usb` | Any Linux or macOS machine with an FTDI adapter | `ext-ftdi` + `microscrap/mpsse` |
+| `usb` | Any Linux or macOS machine with an FTDI adapter | `ext-ftdi` + `microscrap/mpsse` (SPI/I²C/GPIO); `ext-ftdi` + `microscrap/ftdi` (UART) |
 
 ---
 
@@ -72,7 +72,7 @@ Each layer depends only on the one below it. Chip drivers (DOSR packages) sit be
 
 - PHP 8.3+
 - For **native** (SBC) transport: [`ext-posi`](https://github.com/php-io-extensions/posi) ^0.4.0
-- For **USB** (MPSSE) transport: [`ext-ftdi`](https://github.com/php-io-extensions/ftdi) ^0.4.0 + `libftdi1`
+- For **USB** transport: [`ext-ftdi`](https://github.com/php-io-extensions/ftdi) ^0.4.0 + `libftdi1` (SPI/I²C/GPIO go over MPSSE; UART is plain async serial)
 
 Optional Composer packages that wrap those extensions with helpers and enums:
 
@@ -150,7 +150,7 @@ posix_close($fd);
 
 ### `ext-ftdi` — libftdi1 Bindings
 
-[`php-io-extensions/ftdi`](https://github.com/php-io-extensions/ftdi) wraps [libftdi1](https://www.intra2net.com/en/developer/libftdi/) so PHP can drive FTDI USB adapters (FT232H, FT232RL, etc.) directly. It powers the `usb` transport path — SPI, I²C, and GPIO all tunnelled over USB MPSSE.
+[`php-io-extensions/ftdi`](https://github.com/php-io-extensions/ftdi) wraps [libftdi1](https://www.intra2net.com/en/developer/libftdi/) so PHP can drive FTDI USB adapters (FT232H, FT232RL, etc.) directly. It powers the `usb` transport path — SPI, I²C, and GPIO are tunnelled over USB MPSSE, while UART runs as plain async serial through `microscrap/ftdi` (no MPSSE).
 
 Runtime library requirements:
 
@@ -243,7 +243,7 @@ Consult each DOSR package's README for the exact `startup` key shape for that ch
 
 ## Waveforms — the Transport Layer
 
-`Waveforms\` provides the four bus protocols that chip drivers build on. Each has a `native` path (Linux kernel drivers via `ext-posi`) and a `usb` path (FT232H via `ext-ftdi` + `microscrap/mpsse`).
+`Waveforms\` provides the four bus protocols that chip drivers build on. Each has a `native` path (Linux kernel drivers via `ext-posi`) and a `usb` path. SPI, I²C, and GPIO drive the FT232H over `ext-ftdi` + `microscrap/mpsse`; UART instead uses `ext-ftdi` + `microscrap/ftdi` as plain async serial (no MPSSE).
 
 ### SPI
 
@@ -327,7 +327,7 @@ use Waveforms\Carriers\UART\UART;
 
 // Native — /dev/ttyUSB0 via termios
 $uart = UART::connection('native')
-    ->device('/dev/ttyUSB0')
+    ->port('/dev/ttyUSB0')
     ->baud(115200)
     ->create();
 
@@ -337,6 +337,8 @@ $uart = UART::connection('usb')
     ->baud(115200)
     ->create();
 ```
+
+Under the hood the native path uses `microscrap/uart` (termios). Unlike SPI, I²C, and GPIO, the USB path does **not** use MPSSE — it drives the FTDI chip as a plain async serial port via `microscrap/ftdi` (the adapter is reset to async-serial bitmode on open).
 
 ---
 
@@ -410,6 +412,8 @@ $screen
 | `RelativeHumiditySensor` | `MeasuresRelativeHumidity` | `RHSensor` |
 | `BarometricPressureSensor` | `MeasuresBarometricPressure` | `PressureSensor` |
 | `RFIDScanner` | `NearFieldCommunications` | `GenericRFIDScanner` |
+| `GPSSensor` | `TriangulatesPosition` | `GlobalPositioningSystem` |
+| `HumanPresenceDetector` | `MeasuresObjectPresence` | `HumanPresenseSensor` |
 
 ### Reading a sensor
 
@@ -422,6 +426,27 @@ $sensor = TimeOfFlightDistanceSensor::as($chip);
 
 $reading = $sensor->getDistance();
 echo $reading->millimeters() . ' mm';
+```
+
+### Driver-agnostic GPS
+
+`GPSSensor` wraps any NMEA GPS chip behind one common API. Inject an MTK3339 or a GY-NEO6M and the
+application code is identical — `fixQuality()` returns a driver-agnostic `GpsFixQuality` enum so
+callers never need to know which module is plugged in.
+
+```php
+use DeptOfScrapyardRobotics\Sensors\GYNEO6M\GYNEO6M\GYNEO6M;
+use RealityInterface\Sensors\Applied\GPS\GPSSensor;
+use RealityInterface\Sensors\Enums\GpsFixQuality;
+
+$chip = GYNEO6M::connection('usb')->uart('ft232h', 9600)->create();
+$gps  = GPSSensor::as($chip);
+
+$gps->update(); // fold the next NMEA sentence into the running fix
+
+if ($gps->fixQuality() === GpsFixQuality::GPS) {
+    printf("%.6f, %.6f\n", $gps->getLatitude(), $gps->getLongitude());
+}
 ```
 
 ---
@@ -502,6 +527,9 @@ All chip drivers live in separate `dept-of-scrapyard-robotics/*` packages. Every
 | `bmp` | BMP280 | Temp + pressure (I²C/SPI) | `TemperatureSensor`, `BarometricPressureSensor` |
 | `as3935` | AS3935 | Lightning detector (SPI) | Direct (no typed wrapper) |
 | `rfid` | NFC/RFID controllers | I²C/SPI/UART + GPIO | `RFIDScanner` |
+| `mtk3339` | MTK3339 | GPS (UART + optional GPIO) | `GPSSensor` |
+| `gy-neo6m` | GY-NEO6M (u-blox NEO-6M) | GPS (UART) | `GPSSensor` |
+| `ld24xx` | LD2410C | Human presence radar (UART) | `HumanPresenceDetector` |
 
 Each package's README documents the exact `::connection()` builder chain and the `scrapyard-io.php` config shape for that chip.
 

@@ -14,4 +14,6 @@ enum SensorType: string
     case BAROMETER = 'barometer';
     case RFID = 'rfid';
     case LUX = 'lux';
+    case WAVE_EMISSION = 'waves';
+    case GPS = 'gps';
 }
