@@ -1,0 +1,8 @@
+{
+    "name": "fixtures/alpha",
+    "autoload": {
+        "psr-4": {
+            "DeptOfScrapyardRobotics\\Tests\\Fixtures\\Reflection\\Packages\\Alpha\\": "src/"
+        }
+    }
+}

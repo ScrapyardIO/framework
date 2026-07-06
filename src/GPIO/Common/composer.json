@@ -1,0 +1,36 @@
+{
+    "name": "waveforms/common",
+    "description": "The ScrapyardIO GPIO Common Components package.",
+    "license": "MIT",
+    "homepage": "https://scrapyard-io.projectsaturnstudios.com",
+    "version": "0.5.0",
+    "support": {
+        "issues": "https://github.com/scrapyard-io/framework/issues",
+        "source": "https://github.com/scrapyard-io/framework"
+    },
+    "authors": [
+        {
+            "name": "Angel Gonzalez",
+            "email": "angel@projectsaturnstudios.com"
+        }
+    ],
+    "require": {
+        "php": "^8.3",
+        "waveforms/contracts": "^0.5.0",
+        "scrapyard-io/nuts-and-bolts": "^0.5.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "GPIO\\Common\\": ""
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "0.5.x-dev"
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "dev"
+}
