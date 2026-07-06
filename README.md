@@ -433,7 +433,7 @@ echo $reading->millimeters() . ' mm';
 
 ## GFX Renderer
 
-[`microscrap/phpdafruit-gfx`](https://github.com/microscrap/phpdafruit-gfx) is the rendering engine used by `Screen`. It is modelled on [Adafruit-GFX](https://github.com/adafruit/Adafruit-GFX-Library) and draws into a `FormatSpecFrameBuffer`. The buffer's `FormatSpec` determines how pixels are packed on `dump()` — the same drawing calls produce 1bpp mono page buffers for an OLED or RGB565 for a TFT.
+[`microscrap/phpdafruit-gfx`](https://github.com/microscrap/phpdafruit-gfx) is the rendering engine used by `Screen`. It is modelled on [Adafruit-GFX](https://github.com/adafruit/Adafruit-GFX-Library) and draws into a `FormatSpecFramebuffer`. The buffer's `FormatSpec` determines how pixels are packed on `dump()` — the same drawing calls produce 1bpp mono page buffers for an OLED or RGB565 for a TFT.
 
 ### Primitives
 
