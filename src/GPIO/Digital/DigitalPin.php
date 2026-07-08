@@ -31,6 +31,11 @@ abstract class DigitalPin extends GPIOTransport implements DigitalPinTransportCo
         return $this->driver()->read($this->pin(), $this->handle());
     }
 
+    public function read(): bool
+    {
+        return $this->driver()->read($this->pin(), $this->handle()) == 1;
+    }
+
     protected function pin(): int
     {
         return $this->pin;

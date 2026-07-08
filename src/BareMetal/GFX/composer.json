@@ -1,0 +1,40 @@
+{
+    "name": "bare-metal/gfx",
+    "description": "The ScrapyardIO Renderers package.",
+    "license": "MIT",
+    "homepage": "https://scrapyard-io.projectsaturnstudios.com",
+    "version": "0.5.0",
+    "support": {
+        "issues": "https://github.com/scrapyard-io/framework/issues",
+        "source": "https://github.com/scrapyard-io/framework"
+    },
+    "authors": [
+        {
+            "name": "Angel Gonzalez",
+            "email": "angel@projectsaturnstudios.com"
+        }
+    ],
+    "require": {
+        "php": "^8.3",
+        "bare-metal/contracts": "^0.5.0"
+
+    },
+    "suggest": {
+        "microscrap/phpdafruit-gfx": "Software AdafruitGFX-style renderer for RenderingLibraries::phpdafruit()",
+        "microscrap/sdl3-gfx": "SDL3-native renderer for RenderingLibraries::sdl3()"
+    },
+    "autoload": {
+        "psr-4": {
+            "BareMetal\\GFX\\": ""
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "0.5.x-dev"
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "dev"
+}

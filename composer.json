@@ -31,6 +31,7 @@
         "bare-metal/contracts": "self.version",
         "bare-metal/displays": "self.version",
         "bare-metal/framebuffers": "self.version",
+        "bare-metal/gfx": "self.version",
         "bare-metal/sensors": "self.version",
 
         "waveforms/common": "self.version",
