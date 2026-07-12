@@ -15,4 +15,19 @@ class ActuationException extends IntegratedCircuitException
     {
         return new static("Invalid property [{$name}] on [{$class}]");
     }
+
+    public static function buttonNotFound(string $label, string $class): static
+    {
+        return new static("Button [{$label}] was not found on [{$class}].");
+    }
+
+    public static function duplicateButtonLabel(string $label, string $class): static
+    {
+        return new static("Duplicate button label [{$label}] on [{$class}].");
+    }
+
+    public static function invalidButtonLayout(string $class): static
+    {
+        return new static("[{$class}] expects an iterable of BasicButton instances.");
+    }
 }
