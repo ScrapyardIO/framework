@@ -14,7 +14,7 @@ abstract class ScrapyardLibrary implements ScrapyardIO
         // Prevent cloning
     }
 
-    protected function __wakeup(): void
+    public function __wakeup(): void
     {
         throw new RuntimeException('Cannot unserialize singleton');
     }

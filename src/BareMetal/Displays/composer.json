@@ -1,6 +1,6 @@
 {
     "name": "bare-metal/displays",
-    "description": "The ScrapyardIO Actuation package.",
+    "description": "The ScrapyardIO Displays package.",
     "license": "MIT",
     "homepage": "https://scrapyard-io.projectsaturnstudios.com",
     "version": "0.5.0",
