@@ -2,16 +2,17 @@
 
 namespace BareMetal\Actuation\Fans;
 
+use BareMetal\Sensors\Speed\TachometerComponent;
 use BareMetal\Contracts\Actuators\ActuationException;
 use BareMetal\Contracts\Actuators\Fans\FanSpeedControl;
 use BareMetal\Contracts\Actuators\Fans\FanSpeedControl as FanSpeedControlInterface;
-use BareMetal\Contracts\Sensors\Speed\MeasuresRPM as MeasuresRPMInterface;
+
 
 class SpeedControllableFan extends FanComponent implements FanSpeedControl
 {
     public function __construct(
         protected FanSpeedControlInterface $fan,
-        protected ?MeasuresRPMInterface $tachometer = null,
+        protected ?TachometerComponent $tachometer = null,
     ) {}
 
     public function on(): void

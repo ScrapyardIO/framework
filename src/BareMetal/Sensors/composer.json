@@ -1,6 +1,6 @@
 {
     "name": "bare-metal/sensors",
-    "description": "The ScrapyardIO Actuation package.",
+    "description": "The ScrapyardIO Sensors package.",
     "license": "MIT",
     "homepage": "https://scrapyard-io.projectsaturnstudios.com",
     "version": "0.5.0",

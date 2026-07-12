@@ -4,7 +4,7 @@ namespace BareMetal\Contracts\Sensors\Speed;
 
 use BareMetal\Contracts\Sensors\MeasuresData;
 
-interface MeasuresRPM extends MeasuresData
+interface RPMReadings extends MeasuresData
 {
     /**
      * Sample tach edges and return revolutions per minute.
