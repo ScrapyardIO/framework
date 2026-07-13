@@ -126,6 +126,26 @@ interface Application extends Container
     public function loadDeferredProviders(): void;
 
     /**
+     * Get the application's deferred services.
+     */
+    public function getDeferredServices(): array;
+
+    /**
+     * Set the application's deferred services.
+     */
+    public function setDeferredServices(array $services): void;
+
+    /**
+     * Add an array of services to the application's deferred services.
+     */
+    public function addDeferredServices(array $services): void;
+
+    /**
+     * Remove an array of services from the application's deferred services.
+     */
+    public function removeDeferredServices(array $services): void;
+
+    /**
      * Set the current application locale.
      */
     public function setLocale(string $locale): void;

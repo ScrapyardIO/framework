@@ -644,6 +644,40 @@ class Scrapyard extends Container implements ScrapyardContract
     }
 
     /**
+     * Get the application's deferred services.
+     */
+    public function getDeferredServices(): array
+    {
+        return $this->deferred_services;
+    }
+
+    /**
+     * Set the application's deferred services.
+     */
+    public function setDeferredServices(array $services): void
+    {
+        $this->deferred_services = $services;
+    }
+
+    /**
+     * Add an array of services to the application's deferred services.
+     */
+    public function addDeferredServices(array $services): void
+    {
+        $this->deferred_services = array_merge($this->deferred_services, $services);
+    }
+
+    /**
+     * Remove an array of services from the application's deferred services.
+     */
+    public function removeDeferredServices(array $services): void
+    {
+        foreach ($services as $service) {
+            unset($this->deferred_services[$service]);
+        }
+    }
+
+    /**
      * Boot the given service provider.
      */
     protected function bootProvider(ServiceProvider $provider): void

@@ -43,6 +43,8 @@ class ProviderRepository
 
     /**
      * Register the application service providers.
+     * @throws FileNotFoundException
+     * @throws Exception
      */
     public function load(array $providers): void
     {
@@ -88,12 +90,14 @@ class ProviderRepository
                 return array_merge(['when' => []], $manifest);
             }
         }
+
+        return null;
     }
 
     /**
      * Determine if the manifest should be compiled.
      */
-    public function shouldRecompile(array $manifest, array $providers): bool
+    public function shouldRecompile(?array $manifest, array $providers): bool
     {
         return is_null($manifest) || $manifest['providers'] != $providers;
     }

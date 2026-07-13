@@ -2,8 +2,11 @@
 
 namespace BareMetal\Core\Console;
 
+use BareMetal\Core\Bootstrap\BootProviders;
 use BareMetal\Core\Bootstrap\LoadConfigs;
 use BareMetal\Core\Bootstrap\LoadENV;
+use BareMetal\Core\Bootstrap\RegisterProviders;
+use Illuminate\Contracts\Container\BindingResolutionException;
 use Throwable;
 use ReflectionClass;
 use SplFileInfo;
@@ -27,9 +30,9 @@ class ConsoleKernel implements KernelContract
     protected ScrapyardAppInterface $app;
 
     /**
-     * The ScrapyardIO console application instance.
+     * The Kit console application instance.
      */
-    protected ?SymfonyApplication $scrapyard_io = null;
+    protected ?SymfonyApplication $kit = null;
 
     /**
      * The output from the previous command.
@@ -37,12 +40,12 @@ class ConsoleKernel implements KernelContract
     protected ?OutputInterface $last_output = null;
 
     /**
-     * The ScrapyardIO commands provided by the application.
+     * The Kit commands provided by the application.
      */
     protected array $commands = [];
 
     /**
-     * The paths where ScrapyardIO commands should be automatically discovered.
+     * The paths where Kit commands should be automatically discovered.
      */
     protected array $command_paths = [];
 
@@ -64,12 +67,14 @@ class ConsoleKernel implements KernelContract
     protected array $bootstrappers = [
         LoadENV::class,
         LoadConfigs::class,
+        RegisterProviders::class,
+        BootProviders::class,
     ];
 
     public function __construct(ScrapyardAppInterface $app)
     {
-        if (! defined('SCRAPYARD_IO_BINARY')) {
-            define('SCRAPYARD_IO_BINARY', 'scrapyard-io');
+        if (! defined('KIT_BINARY')) {
+            define('KIT_BINARY', 'kit');
         }
 
         $this->app = $app;
@@ -110,7 +115,7 @@ class ConsoleKernel implements KernelContract
         try {
             $this->bootstrap();
 
-            return $this->getScrapyardIo()->run($input, $output);
+            return $this->getKit()->run($input, $output);
         } catch (Throwable $e) {
             $this->reportException($e);
             $this->renderException($output, $e);
@@ -120,7 +125,7 @@ class ConsoleKernel implements KernelContract
     }
 
     /**
-     * Run a ScrapyardIO console command by name.
+     * Run a Kit console command by name.
      *
      * @param  \Symfony\Component\Console\Command\Command|string  $command
      * @param  array  $parameters
@@ -134,11 +139,11 @@ class ConsoleKernel implements KernelContract
 
         $this->last_output = $output_buffer ?: new BufferedOutput;
 
-        return $this->getScrapyardIo()->run($input, $this->last_output);
+        return $this->getKit()->run($input, $this->last_output);
     }
 
     /**
-     * Queue a ScrapyardIO console command by name.
+     * Queue a Kit console command by name.
      *
      * @param  string  $command
      * @param  array  $parameters
@@ -155,7 +160,7 @@ class ConsoleKernel implements KernelContract
     {
         $this->bootstrap();
 
-        return $this->getScrapyardIo()->all();
+        return $this->getKit()->all();
     }
 
     /**
@@ -182,25 +187,26 @@ class ConsoleKernel implements KernelContract
     }
 
     /**
-     * Get the ScrapyardIO console application instance.
+     * Get the Kit console application instance.
      */
-    protected function getScrapyardIo(): SymfonyApplication
+    protected function getKit(): SymfonyApplication
     {
-        if (is_null($this->scrapyard_io)) {
-            $this->scrapyard_io = new SymfonyApplication('ScrapyardIO', $this->app->version());
-            $this->scrapyard_io->setAutoExit(false);
-            $this->scrapyard_io->setCatchExceptions(false);
+        if (is_null($this->kit)) {
+            // Banner is framework name (like "Laravel Framework"); binary is kit.
+            $this->kit = new SymfonyApplication('ScrapyardIO Framework', $this->app->version());
+            $this->kit->setAutoExit(false);
+            $this->kit->setCatchExceptions(false);
 
             foreach ($this->commands as $command) {
                 if (is_string($command)) {
                     $command = $this->app->make($command);
                 }
 
-                $this->scrapyard_io->add($command);
+                $this->kit->add($command);
             }
         }
 
-        return $this->scrapyard_io;
+        return $this->kit;
     }
 
     /**
@@ -218,7 +224,7 @@ class ConsoleKernel implements KernelContract
 
         if ($parameters === []) {
             $input = new StringInput((string) $command);
-            $command_name = $this->getScrapyardIo()->getDefinition()->hasArgument('command')
+            $command_name = $this->getKit()->getDefinition()->hasArgument('command')
                 ? (new StringInput((string) $command))->getFirstArgument() ?? (string) $command
                 : (string) $command;
 
@@ -286,6 +292,7 @@ class ConsoleKernel implements KernelContract
      *
      * Discovers concrete Symfony Console Command subclasses. A Scrapyard-specific
      * command base class can tighten this later.
+     * @throws BindingResolutionException
      */
     protected function load(array|string $paths): void
     {
@@ -318,8 +325,8 @@ class ConsoleKernel implements KernelContract
 
             $this->commands[] = $command_class;
 
-            if (! is_null($this->scrapyard_io)) {
-                $this->scrapyard_io->add($this->app->make($command_class));
+            if (! is_null($this->kit)) {
+                $this->kit->add($this->app->make($command_class));
             }
         }
     }
