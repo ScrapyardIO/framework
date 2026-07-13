@@ -3,6 +3,7 @@
 namespace BareMetal\Core;
 
 use Closure;
+use Illuminate\Support\Collection;
 use RuntimeException;
 use Illuminate\Support\Env;
 use Illuminate\Support\Str;
@@ -141,6 +142,12 @@ class Scrapyard extends Container implements ScrapyardContract
      * The prefixes of absolute cache paths for use during normalization.
      */
     protected array $absolute_cache_path_prefixes = ['/', '\\'];
+
+    /**
+     * The array of registered callbacks.
+     * @var callable[]
+     */
+    protected array $registered_callbacks = [];
 
     public function __construct($base_path = null)
     {
@@ -359,10 +366,27 @@ class Scrapyard extends Container implements ScrapyardContract
      * Register every configured provider.
      *
      * Needs config + provider discovery before this can mirror Laravel.
+     * @throws BindingResolutionException
      */
     public function registerConfiguredProviders(): void
     {
-        // TODO: Implement registerConfiguredProviders() method.
+        $providers = (new Collection($this->make('config')->get('scrapyard.providers')))
+            ->partition(fn ($provider) => str_starts_with($provider, 'BareMetal\\'));
+
+        $providers->splice(1, 0, [$this->make(PackageManifest::class)->providers()]);
+
+        (new ProviderRepository($this, new Filesystem, $this->getCachedServicesPath()))
+            ->load($providers->collapse()->toArray());
+
+        $this->fireAppCallbacks($this->registered_callbacks);
+    }
+
+    /**
+     * Get the path to the cached services.php file.
+     */
+    public function getCachedServicesPath(): string
+    {
+        return $this->normalizeCachePath('APP_SERVICES_CACHE', 'cache/services.php');
     }
 
     /**
