@@ -4,7 +4,7 @@ namespace BareMetal\Contracts\Core;
 
 use RuntimeException;
 use Illuminate\Contracts\Container\Container;
-use ScrapyardIO\NutsAndBolts\ServiceProvider;
+use Illuminate\Support\ServiceProvider;
 use BareMetal\Contracts\Core\Application as ScrapyardAppInterface;
 
 interface Application extends Container
@@ -134,4 +134,29 @@ interface Application extends Container
      * Terminate the application.
      */
     public function terminate(): void;
+
+    /**
+     * Determine if the application is running in the console.
+     */
+    public function runningInConsole(): bool;
+
+    /**
+     * Determine if the application configuration is cached.
+     */
+    public function configurationIsCached(): bool;
+
+    /**
+     * Get the path to the environment file directory.
+     */
+    public function environmentPath(): string;
+
+    /**
+     * Get the environment file the application is using.
+     */
+    public function environmentFile(): string;
+
+    /**
+     * Set the environment file to be loaded during bootstrapping.
+     */
+    public function loadEnvironmentFrom(string $file): ScrapyardAppInterface;
 }

@@ -2,18 +2,17 @@
 
 namespace BareMetal\Core;
 
-use GPIO\Contracts\Common\GPIOLibrary;
-use Illuminate\Filesystem\Filesystem;
+use RuntimeException;
 use Illuminate\Support\Env;
 use Illuminate\Support\Str;
-use Psr\Container\ContainerInterface;
-use RuntimeException;
 use Illuminate\Container\Container;
+use Psr\Container\ContainerInterface;
+use Illuminate\Filesystem\Filesystem;
+use GPIO\Contracts\Common\GPIOLibrary;
 use BareMetal\Core\Setup\ScrapyardBuilder;
-use Symfony\Component\Console\Input\InputInterface;
+use Illuminate\Support\ServiceProvider;
 use Symfony\Component\Console\Output\ConsoleOutput;
-use ScrapyardIO\NutsAndBolts\ServiceProvider;
-use Illuminate\Contracts\Foundation\Application;
+use Symfony\Component\Console\Input\InputInterface;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use BareMetal\Contracts\Core\Application as ScrapyardContract;
 use Illuminate\Contracts\Console\Kernel as ConsoleKernelContract;
@@ -49,6 +48,21 @@ class Scrapyard extends Container implements ScrapyardContract
      * The custom storage path defined by the developer.
      */
     protected ?string $storage_path = null;
+
+    /**
+     * The custom environment path defined by the developer.
+     */
+    protected ?string $environment_path = null;
+
+    /**
+     * The environment file to load during bootstrapping.
+     */
+    protected string $environment_file = '.env';
+
+    /**
+     * Indicates if the application is running in the console.
+     */
+    protected ?bool $is_running_in_console = null;
 
     /**
      * The application environment.
@@ -134,7 +148,7 @@ class Scrapyard extends Container implements ScrapyardContract
         }
 
         $this->registerBaseBindings();
-        //$this->registerBaseServiceProviders();
+        $this->registerBaseServiceProviders();
         $this->registerCoreContainerAliases();
     }
 
@@ -144,8 +158,17 @@ class Scrapyard extends Container implements ScrapyardContract
             ->withKernels()
             //->withEvents()
             //->withCommands()
-            //->withProviders()
-            ;
+            ->withProviders();
+    }
+
+    /**
+     * Register every base service provider.
+     */
+    protected function registerBaseServiceProviders(): void
+    {
+        //$this->register(new EventServiceProvider($this));
+        //$this->register(new LogServiceProvider($this));
+        //$this->register(new ContextServiceProvider($this));
     }
 
     /**
@@ -331,6 +354,7 @@ class Scrapyard extends Container implements ScrapyardContract
 
     /**
      * Register a service provider with the application.
+     * @throws \ReflectionException
      */
     public function register(ServiceProvider|string $provider, bool $force = false): ServiceProvider
     {
@@ -682,5 +706,89 @@ class Scrapyard extends Container implements ScrapyardContract
                 $this->alias($key, $alias);
             }
         }
+    }
+
+    /**
+     * Get the path to the service provider list in the bootstrap directory.
+     */
+    public function getBootstrapProvidersPath(): string
+    {
+        return $this->bootstrapPath('providers.php');
+    }
+
+    /**
+     * Determine if the application is running in the console.
+     */
+    public function runningInConsole(): bool
+    {
+        if ($this->is_running_in_console === null) {
+            $this->is_running_in_console = Env::get('SCRAPYARD_RUNNING_IN_CONSOLE') ?? (\PHP_SAPI === 'cli' || \PHP_SAPI === 'phpdbg');
+        }
+
+        return $this->is_running_in_console;
+    }
+
+    /**
+     * Determine if the application configuration is cached.
+     */
+    public function configurationIsCached(): bool
+    {
+        if ($this->bound('config_loaded_from_cache')) {
+            return (bool) $this->make('config_loaded_from_cache');
+        }
+
+        return $this->instance('config_loaded_from_cache', is_file($this->getCachedConfigPath()));
+    }
+
+    /**
+     * Get the path to the configuration cache file.
+     */
+    public function getCachedConfigPath(): string
+    {
+        return $this->normalizeCachePath('APP_CONFIG_CACHE', 'cache/config.php');
+    }
+
+    /**
+     * Get the path to the environment file directory.
+     */
+    public function environmentPath(): string
+    {
+        return $this->environment_path ?: $this->base_path;
+    }
+
+    /**
+     * Set the directory for the environment file.
+     */
+    public function useEnvironmentPath(string $path): static
+    {
+        $this->environment_path = $path;
+
+        return $this;
+    }
+
+    /**
+     * Get the environment file the application is using.
+     */
+    public function environmentFile(): string
+    {
+        return $this->environment_file ?: '.env';
+    }
+
+    /**
+     * Get the fully-qualified path to the environment file.
+     */
+    public function environmentFilePath(): string
+    {
+        return $this->environmentPath().DIRECTORY_SEPARATOR.$this->environmentFile();
+    }
+
+    /**
+     * Set the environment file to be loaded during bootstrapping.
+     */
+    public function loadEnvironmentFrom(string $file): static
+    {
+        $this->environment_file = $file;
+
+        return $this;
     }
 }
