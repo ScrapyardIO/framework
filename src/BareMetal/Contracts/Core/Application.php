@@ -45,6 +45,11 @@ interface Application extends Container
     public function environment(string|array ...$environments): string|bool;
 
     /**
+     * Detect the application's current environment.
+     */
+    public function detectEnvironment(\Closure $callback): string;
+
+    /**
      * Determine if the application is running unit tests.
      */
     public function runningUnitTests(): bool;

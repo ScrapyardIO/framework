@@ -2,6 +2,8 @@
 
 namespace BareMetal\Core\Console;
 
+use BareMetal\Core\Bootstrap\LoadConfigs;
+use BareMetal\Core\Bootstrap\LoadENV;
 use Throwable;
 use ReflectionClass;
 use SplFileInfo;
@@ -60,7 +62,8 @@ class ConsoleKernel implements KernelContract
      * @var class-string[]
      */
     protected array $bootstrappers = [
-
+        LoadENV::class,
+        LoadConfigs::class,
     ];
 
     public function __construct(ScrapyardAppInterface $app)

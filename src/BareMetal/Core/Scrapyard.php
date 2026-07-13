@@ -2,6 +2,7 @@
 
 namespace BareMetal\Core;
 
+use Closure;
 use RuntimeException;
 use Illuminate\Support\Env;
 use Illuminate\Support\Str;
@@ -316,6 +317,18 @@ class Scrapyard extends Container implements ScrapyardContract
         }
 
         return $this->environment;
+    }
+
+    /**
+     * Detect the application's current environment.
+     */
+    public function detectEnvironment(Closure $callback): string
+    {
+        $args = $this->runningInConsole() && isset($_SERVER['argv'])
+            ? $_SERVER['argv']
+            : null;
+
+        return $this->environment = $this['env'] = (new EnvironmentDetector)->detect($callback, $args);
     }
 
     /**
@@ -722,7 +735,7 @@ class Scrapyard extends Container implements ScrapyardContract
     public function runningInConsole(): bool
     {
         if ($this->is_running_in_console === null) {
-            $this->is_running_in_console = Env::get('SCRAPYARD_RUNNING_IN_CONSOLE') ?? (\PHP_SAPI === 'cli' || \PHP_SAPI === 'phpdbg');
+            $this->is_running_in_console = Env::get('APP_RUNNING_IN_CONSOLE') ?? (\PHP_SAPI === 'cli' || \PHP_SAPI === 'phpdbg');
         }
 
         return $this->is_running_in_console;
@@ -730,6 +743,7 @@ class Scrapyard extends Container implements ScrapyardContract
 
     /**
      * Determine if the application configuration is cached.
+     * @throws BindingResolutionException
      */
     public function configurationIsCached(): bool
     {
