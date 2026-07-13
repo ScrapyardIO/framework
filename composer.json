@@ -16,14 +16,19 @@
         }
     ],
     "require": {
-        "php": "^8.3"
+        "php": "^8.3",
+        "illuminate/redis": "^13.0",
+        "illuminate/support": "^13.0",
+        "illuminate/container": "^13.0",
+        "illuminate/contracts": "^13.0",
+        "illuminate/filesystem": "^13.0"
     },
     "suggest": {
-        "ext-posi": "^0.4.0",
-        "ext-ftdi": "^0.4.0",
-        "microscrap/posix": "^0.4.0",
-        "microscrap/ftdi": "^0.4.0",
-        "microscrap/mpsse": "^0.4.0"
+        "ext-posi": "^0.5.0",
+        "ext-ftdi": "^0.5.0",
+        "microscrap/posix": "^0.5.1",
+        "microscrap/ftdi": "^0.5.1",
+        "microscrap/mpsse": "^0.5.1"
     },
     "replace": {
         "bare-metal/actuation": "self.version",

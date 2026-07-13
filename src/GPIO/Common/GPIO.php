@@ -5,6 +5,7 @@ namespace GPIO\Common;
 use ReflectionException;
 use GPIO\Contracts\Common\GPIOException;
 use ScrapyardIO\NutsAndBolts\ScrapyardLibrary;
+use GPIO\Contracts\Common\GPIOLibrary as GPIOLibraryContract;
 use GPIO\Contracts\I2C\I2CConnectionFactory as I2CConnectionFactoryInterface;
 use GPIO\Contracts\PWM\PWMConnectionFactory as PWMConnectionFactoryInterface;
 use GPIO\Contracts\SPI\SPIConnectionFactory as SPIConnectionFactoryInterface;
@@ -21,7 +22,7 @@ use GPIO\Contracts\Digital\DigitalOutputConnectionFactory as DigitalOutputConnec
  * @method static SPIConnectionFactoryInterface spi(string $driver)
  * @method static UARTConnectionFactoryInterface uart(string $driver)
  */
-class GPIO extends ScrapyardLibrary
+class GPIO extends ScrapyardLibrary implements GPIOLibraryContract
 {
     protected static ?self $instance = null;
 

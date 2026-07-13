@@ -28,3 +28,21 @@ if (! function_exists('reflect_parameter')) {
         return Reflection::reflect_parameter($class, $method, $attribute);
     }
 }
+
+if (! function_exists('join_paths')) {
+    /**
+     * Join the given paths together.
+     */
+    function join_paths(?string $base_path, string ...$paths): string
+    {
+        foreach ($paths as $index => $path) {
+            if (empty($path) && $path !== '0') {
+                unset($paths[$index]);
+            } else {
+                $paths[$index] = DIRECTORY_SEPARATOR.ltrim($path, DIRECTORY_SEPARATOR);
+            }
+        }
+
+        return $base_path.implode('', $paths);
+    }
+}
