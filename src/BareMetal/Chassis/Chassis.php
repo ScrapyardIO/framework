@@ -1254,12 +1254,12 @@ class Chassis implements ArrayAccess, ChassisContract
     /**
      * Get all callbacks for a given type.
      */
-    protected function getCallbacksForType(string $abstract, object $object, array $callbacksPerType): array
+    protected function getCallbacksForType(string $abstract, mixed $object, array $callbacksPerType): array
     {
         $results = [];
 
         foreach ($callbacksPerType as $type => $callbacks) {
-            if ($type === $abstract || $object instanceof $type) {
+            if ($type === $abstract || (is_object($object) && $object instanceof $type)) {
                 $results = array_merge($results, $callbacks);
             }
         }

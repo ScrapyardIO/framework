@@ -158,4 +158,6 @@ interface Machine extends Chassis
      * Get the environment file the application is using.
      */
     public function environmentFile(): string;
+
+    public function addDeferredServices(array $services): void;
 }

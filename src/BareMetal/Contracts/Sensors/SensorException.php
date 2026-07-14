@@ -10,4 +10,14 @@ class SensorException extends IntegratedCircuitException
     {
         return new static("{$class} is disabled — call enable() before reading data.");
     }
+
+    public static function sensorTypeNotEnabled(string $type): static
+    {
+        return new static("{$type} sensors are not enabled.");
+    }
+
+    public static function sensorNotRegistered(string $type, string $name): static
+    {
+        return new static("{$type} sensors {$name} has not been registered.");
+    }
 }

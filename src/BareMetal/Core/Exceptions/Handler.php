@@ -53,17 +53,52 @@ class Handler implements ExceptionHandlerContract
 
     public function report(Throwable $e): void
     {
-        // TODO: Implement report() method.
+        if (! $this->shouldReport($e)) {
+            return;
+        }
+
+        $this->reported_exception_map[$e] = true;
+
+        if (method_exists($e, 'report') && $this->container->call([$e, 'report']) === false) {
+            return;
+        }
+
+        if (! $this->container->bound('log')) {
+            return;
+        }
+
+        try {
+            $this->container->make('log')->error(
+                $e->getMessage(),
+                ['exception' => $e]
+            );
+        } catch (Throwable) {
+            // Logging is optional until a log manager is bound.
+        }
     }
 
     public function shouldReport(Throwable $e): bool
     {
-        // TODO: Implement shouldReport() method.
+        return ! $this->isDontReport($e);
+    }
+
+    /**
+     * Determine if the exception is in the "do not report" list.
+     */
+    protected function isDontReport(Throwable $e): bool
+    {
+        foreach ($this->dont_report as $type) {
+            if ($e instanceof $type) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function renderForConsole(OutputInterface $output, Throwable $e): void
     {
-        // TODO: Implement renderForConsole() method.
+        (new \Symfony\Component\Console\Application)->renderThrowable($e, $output);
     }
 
     public function __call(string $name, array $arguments)

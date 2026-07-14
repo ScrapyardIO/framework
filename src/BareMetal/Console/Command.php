@@ -14,6 +14,7 @@ use BareMetal\Contracts\Console\Isolatable;
 use BareMetal\Contracts\Core\Machine;
 use ReflectionClass;
 use ScrapyardIO\NutsAndBolts\Concerns\Macroable;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command as SymfonyCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -38,17 +39,17 @@ class Command extends SymfonyCommand
     /**
      * The name and signature of the console command.
      */
-    protected $signature;
+    protected ?string $signature = null;
 
     /**
      * The console command name.
      */
-    public string $name;
+    protected string $name = '';
 
     /**
      * The console command description.
      */
-    protected $description = '';
+    protected string $description = '';
 
     /**
      * The console command help text.
@@ -129,6 +130,36 @@ class Command extends SymfonyCommand
     protected function configureFromAttributes(): void
     {
         $reflection = new ReflectionClass($this);
+
+        $asCommand = $reflection->getAttributes(AsCommand::class);
+
+        if ($asCommand !== []) {
+            $attribute = $asCommand[0]->newInstance();
+
+            if (! is_null($attribute->name) && $attribute->name !== '') {
+                $aliases = explode('|', $attribute->name);
+                $name = array_shift($aliases);
+
+                if ($name === '') {
+                    $this->hidden = true;
+                    $name = array_shift($aliases) ?? '';
+                }
+
+                $this->name = $name;
+
+                if ($aliases !== []) {
+                    $this->aliases = array_values(array_unique(array_merge($this->aliases ?? [], $aliases)));
+                }
+            }
+
+            if (! is_null($attribute->description) && $attribute->description !== '') {
+                $this->description = $attribute->description;
+            }
+
+            if (! is_null($attribute->help) && $attribute->help !== '') {
+                $this->help = $attribute->help;
+            }
+        }
 
         $signature = $reflection->getAttributes(Signature::class);
 

@@ -2,6 +2,7 @@
 
 namespace ScrapyardIO\NutsAndBolts;
 
+use BareMetal\Circuits\GPIOProtocolServiceProvider;
 use ScrpayardIO\NutsAndBolts\Collection;
 
 class DefaultProviders
@@ -21,7 +22,9 @@ class DefaultProviders
             //\BareMetal\Broadcasting\BroadcastServiceProvider::class,
             //\BareMetal\Bus\BusServiceProvider::class,
             //\BareMetal\Cache\CacheServiceProvider::class,
-            //\BareMetal\Foundation\Providers\ConsoleSupportServiceProvider::class,
+            GPIOProtocolServiceProvider::class,
+            \BareMetal\Sensors\SensorsServiceProvider::class,
+            \BareMetal\Core\Providers\ConsoleSupportServiceProvider::class,
             //\BareMetal\Concurrency\ConcurrencyServiceProvider::class,
             //\BareMetal\Cookie\CookieServiceProvider::class,
             //\BareMetal\Database\DatabaseServiceProvider::class,

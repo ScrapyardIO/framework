@@ -2,6 +2,7 @@
 
 namespace BareMetal\Core;
 
+use RuntimeException;
 use BareMetal\Filesystem\Filesystem;
 use Composer\Autoload\ClassLoader;
 use ReflectionException;
@@ -17,6 +18,7 @@ use ScrapyardIO\NutsAndBolts\ServiceProvider;
 use BareMetal\Contracts\Console\Kernel as ConsoleKernelInterface;
 use ScrapyardIO\NutsAndBolts\Arr;
 use ScrapyardIO\NutsAndBolts\Str;
+use ScrpayardIO\NutsAndBolts\Collection;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use function BareMetal\Filesystem\join_paths;
@@ -117,6 +119,11 @@ class Machine extends Chassis implements MachineContract, CachesConfiguration
     protected string $environment_file = '.env';
 
     /**
+     * The current application environment.
+     */
+    protected string $environment = 'production';
+
+    /**
      * Indicates if the application is running in the console.
      */
     protected ?bool $is_running_in_console = null;
@@ -124,7 +131,7 @@ class Machine extends Chassis implements MachineContract, CachesConfiguration
     /**
      * The application namespace.
      */
-    protected string $namespace = "";
+    protected ?string $namespace = null;
 
     /**
      * Indicates if the framework's base configuration should be merged.
@@ -255,7 +262,27 @@ class Machine extends Chassis implements MachineContract, CachesConfiguration
 
     public function environment(string|array ...$environments): string|bool
     {
-        // TODO: Implement environment() method.
+        if ($environments !== []) {
+            $patterns = is_array($environments[0]) ? $environments[0] : $environments;
+
+            foreach ($patterns as $pattern) {
+                $pattern = (string) $pattern;
+
+                if ($pattern === '*' || $pattern === $this->environment) {
+                    return true;
+                }
+
+                $regex = '#^'.str_replace('\*', '.*', preg_quote($pattern, '#')).'\z#';
+
+                if (preg_match($regex, $this->environment) === 1) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        return $this->environment;
     }
 
     public function runningInConsole(): bool
@@ -277,9 +304,28 @@ class Machine extends Chassis implements MachineContract, CachesConfiguration
         // TODO: Implement hasDebugModeEnabled() method.
     }
 
+    /**
+     * Register every configured provider.
+     */
     public function registerConfiguredProviders(): void
     {
-        // TODO: Implement registerConfiguredProviders() method.
+        $providers = (new Collection($this->make('config')->get('scrapyard-io.providers')))
+            ->partition(fn ($provider) => str_starts_with($provider, 'BareMetal\\'));
+
+        $providers->splice(1, 0, [$this->make(PackageManifest::class)->providers()]);
+
+        (new ProviderRepository($this, new Filesystem, $this->getCachedServicesPath()))
+            ->load($providers->collapse()->toArray());
+
+        $this->fireAppCallbacks($this->registeredCallbacks);
+    }
+
+    /**
+     * Add an array of services to the application's deferred services.
+     */
+    public function addDeferredServices(array $services): void
+    {
+        $this->deferred_services = array_merge($this->deferred_services, $services);
     }
 
     /**
@@ -470,9 +516,27 @@ class Machine extends Chassis implements MachineContract, CachesConfiguration
         // TODO: Implement getLocale() method.
     }
 
+    /**
+     * Get the application namespace.
+     * @throws RuntimeException
+     */
     public function getNamespace(): string
     {
-        // TODO: Implement getNamespace() method.
+        if (! is_null($this->namespace)) {
+            return $this->namespace;
+        }
+
+        $composer = json_decode(file_get_contents($this->basePath('composer.json')), true);
+
+        foreach ((array) data_get($composer, 'autoload.psr-4') as $namespace => $path) {
+            foreach ((array) $path as $pathChoice) {
+                if (realpath($this->path()) === realpath($this->basePath($pathChoice))) {
+                    return $this->namespace = $namespace;
+                }
+            }
+        }
+
+        throw new RuntimeException('Unable to detect application namespace.');
     }
 
     public function getProviders(string|ServiceProvider $provider): array
@@ -492,7 +556,35 @@ class Machine extends Chassis implements MachineContract, CachesConfiguration
 
     public function loadDeferredProviders(): void
     {
-        // TODO: Implement loadDeferredProviders() method.
+        foreach ($this->deferred_services as $service => $provider) {
+            $this->loadDeferredProvider($service);
+        }
+
+        $this->deferred_services = [];
+    }
+
+    /**
+     * Load the provider for a deferred service.
+     */
+    public function loadDeferredProvider(string $service): void
+    {
+        if (! $this->isDeferredService($service)) {
+            return;
+        }
+
+        $provider = $this->deferred_services[$service];
+
+        if (! isset($this->loaded_providers[$provider])) {
+            $this->registerDeferredProvider($provider, $service);
+        }
+    }
+
+    /**
+     * Determine if the given service is a deferred service.
+     */
+    public function isDeferredService(string $service): bool
+    {
+        return isset($this->deferred_services[$service]);
     }
 
     public function setLocale(string $locale): void
@@ -631,7 +723,7 @@ class Machine extends Chassis implements MachineContract, CachesConfiguration
             ? $_SERVER['argv']
             : null;
 
-        return $this['env'] = (new EnvironmentDetector)->detect($callback, $args);
+        return $this->environment = $this['env'] = (new EnvironmentDetector)->detect($callback, $args);
     }
 
     /**
@@ -713,7 +805,7 @@ class Machine extends Chassis implements MachineContract, CachesConfiguration
         return (new MachineBuilder(new static($base_path)))
             ->withKernels()
             ->withEvents(false)
-            //->withCommands()
+            ->withCommands()
             ->withProviders();
     }
 

@@ -2,8 +2,11 @@
 
 namespace ScrapyardIO\NutsAndBolts\MagicAliases;
 
-use Illuminate\Contracts\Broadcasting\BroadcastingFactory as BroadcastingFactoryInterface;
+use BareMetal\Contracts\Broadcasting\BroadcastingFactory;
 
+/**
+ * @see \BareMetal\Contracts\Broadcasting\BroadcastingFactory
+ */
 class Broadcast extends MagicAlias
 {
     /**
@@ -11,7 +14,6 @@ class Broadcast extends MagicAlias
      */
     protected static function getAliasAccessor(): string
     {
-        return BroadcastingFactoryInterface::class;
+        return BroadcastingFactory::class;
     }
-
 }

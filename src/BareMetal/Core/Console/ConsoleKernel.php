@@ -103,8 +103,8 @@ class ConsoleKernel implements KernelContract
     protected array $bootstrappers = [
         \BareMetal\Core\Bootstrap\LoadEnvironmentVariables::class,
         \BareMetal\Core\Bootstrap\LoadConfiguration::class,
-        //\BareMetal\Core\Bootstrap\HandleExceptions::class,
-        //\BareMetal\Core\Bootstrap\RegisterFacades::class,
+        \BareMetal\Core\Bootstrap\HandleExceptions::class,
+        \BareMetal\Core\Bootstrap\RegisterMagicAliases::class,
         \BareMetal\Core\Bootstrap\RegisterProviders::class,
         \BareMetal\Core\Bootstrap\BootProviders::class,
     ];
@@ -171,10 +171,9 @@ class ConsoleKernel implements KernelContract
 
             return $this->getWorkshop()->run($input, $output);
         } catch (Throwable $e) {
-            dd($e);
             $this->reportException($e);
 
-            $this->renderException($output, $e);
+            $this->renderException($output ?? new \Symfony\Component\Console\Output\ConsoleOutput, $e);
 
             return 1;
         }

@@ -9,6 +9,7 @@ use InvalidArgumentException;
 use JsonSerializable;
 use Random\Randomizer;
 use ScrapyardIO\NutsAndBolts\Concerns\Macroable;
+use ScrpayardIO\NutsAndBolts\Collection;
 use SortDirection;
 use Traversable;
 use WeakMap;

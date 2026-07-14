@@ -82,4 +82,43 @@ return [
     */
 
     'providers' => null,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Waveform GPIO Protocols
+    |--------------------------------------------------------------------------
+    |
+    | Select the ones you want enabled.
+    | Make sure the appropriate extensions and packages are installed.
+    |
+    */
+    'protocols' => [
+        'i2c' => [
+            'enabled' => env('I2C_ENABLED', false),
+            'default_driver' => 'posix',
+            'drivers' => [
+                'posix' => [
+                    // @todo - driver class
+                ],
+                'usb' => [
+                    // @todo - driver class
+                ],
+            ]
+        ],
+        'spi' => [
+            'enabled' => env('SPI_ENABLED', false),
+        ],
+        'uart' => [
+            'enabled' => env('UART_ENABLED', false),
+        ],
+        'pwm' => [
+            'enabled' => env('PWM_ENABLED', false),
+        ],
+        'digital-in' => [
+            'enabled' => env('DIGITAL_IN_ENABLED', false),
+        ],
+        'digital-out' => [
+            'enabled' => env('DIGITAL_IN_ENABLED', false),
+        ],
+    ]
 ];

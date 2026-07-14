@@ -1,9 +1,13 @@
 <?php
 
+use BareMetal\Chassis\EntryNotFoundException;
+use BareMetal\Config\Repository;
 use BareMetal\Core\Machine;
 use BareMetal\Chassis\Chassis;
 use BareMetal\Contracts\Chassis\BindingResolutionException;
 use BareMetal\Contracts\Chassis\CircularDependencyException;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
 
 if (! function_exists('app')) {
     /**
@@ -99,6 +103,36 @@ if (! function_exists('app_path')) {
     function app_path(string $path = ''): string
     {
         return app()->path($path);
+    }
+}
+
+if (! function_exists('config')) {
+    /**
+     * Get / set the specified configuration value.
+     *
+     * If an array is passed as the key, we will assume you want to set an array of values.
+     *
+     * @param string|array<string, mixed>|null $key
+     * @param mixed|null $default
+     * @return ($key is null ? Repository : ($key is string ? mixed : null))
+     * @throws BindingResolutionException
+     * @throws CircularDependencyException
+     * @throws ReflectionException
+     * @throws EntryNotFoundException
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
+    function config(array|string|null $key = null, mixed $default = null): mixed
+    {
+        if (is_null($key)) {
+            return app('config');
+        }
+
+        if (is_array($key)) {
+            return app('config')->set($key);
+        }
+
+        return app('config')->get($key, $default);
     }
 }
 
