@@ -2,8 +2,10 @@
 
 namespace BareMetal\Core\Bootstrap;
 
-use BareMetal\Contracts\Core\Application as ScrapyardAppInterface;
-use Illuminate\Contracts\Container\BindingResolutionException;
+use BareMetal\Core\Machine;
+use ScrapyardIO\NutsAndBolts\ServiceProvider;
+use BareMetal\Contracts\Chassis\BindingResolutionException;
+use BareMetal\Contracts\Chassis\CircularDependencyException;
 
 class RegisterProviders
 {
@@ -14,14 +16,18 @@ class RegisterProviders
 
     /**
      * The path to the bootstrap provider configuration file.
+
      */
-    protected static ?string $bootstrap_provider_path;
+    protected static ?string $bootstrap_provider_path = null;
+
 
     /**
      * Bootstrap the given application.
      * @throws BindingResolutionException
+     * @throws CircularDependencyException
+     * @throws \ReflectionException
      */
-    public function bootstrap(ScrapyardAppInterface $app): void
+    public function bootstrap(Machine $app): void
     {
         if (! $app->bound('config_loaded_from_cache') ||
             $app->make('config_loaded_from_cache') === false) {
@@ -34,26 +40,28 @@ class RegisterProviders
     /**
      * Merge the additional configured providers into the configuration.
      * @throws BindingResolutionException
+     * @throws CircularDependencyException
+     * @throws \ReflectionException
      */
-    protected function mergeAdditionalProviders(ScrapyardAppInterface $app): void
+    protected function mergeAdditionalProviders(Machine $app): void
     {
         if (static::$bootstrap_provider_path &&
             file_exists(static::$bootstrap_provider_path)) {
-            $package_providers = require static::$bootstrap_provider_path;
+            $packageProviders = require static::$bootstrap_provider_path;
 
-            foreach ($package_providers as $index => $provider) {
+            foreach ($packageProviders as $index => $provider) {
                 if (! class_exists($provider)) {
-                    unset($package_providers[$index]);
+                    unset($packageProviders[$index]);
                 }
             }
         }
 
         $app->make('config')->set(
-            'scrapyard.providers',
+            'scrapyard-io.providers',
             array_merge(
-                $app->make('config')->get('scrapyard.providers') ?? [],
+                $app->make('config')->get('scrapyard-io.providers') ?? ServiceProvider::defaultProviders()->toArray(),
                 static::$merge,
-                array_values($package_providers ?? []),
+                array_values($packageProviders ?? []),
             ),
         );
     }
@@ -68,5 +76,15 @@ class RegisterProviders
         static::$merge = array_values(array_filter(array_unique(
             array_merge(static::$merge, $providers)
         )));
+    }
+
+    /**
+     * Flush the bootstrapper's global state.
+     */
+    public static function flushState(): void
+    {
+        static::$bootstrap_provider_path = null;
+
+        static::$merge = [];
     }
 }

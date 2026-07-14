@@ -1,6 +1,6 @@
 <?php
 
-use Illuminate\Support\Str;
+use ScrapyardIO\NutsAndBolts\Str;
 
 return [
 
@@ -37,18 +37,16 @@ return [
             'driver' => 'array',
             'serialize' => false,
         ],
-        /*'file' => [
+        'file' => [
             'driver' => 'file',
             'path' => storage_path('framework/cache/data'),
             'lock_path' => storage_path('framework/cache/data'),
-        ],*/
-
+        ],
         'storage' => [
             'driver' => 'storage',
             'disk' => env('CACHE_STORAGE_DISK'),
             'path' => env('CACHE_STORAGE_PATH', 'framework/cache/data'),
         ],
-
         'redis' => [
             'driver' => 'redis',
             'connection' => env('REDIS_CACHE_CONNECTION', 'cache'),

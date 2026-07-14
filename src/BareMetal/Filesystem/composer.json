@@ -1,0 +1,30 @@
+{
+    "name": "bare-metal/filesystem",
+    "description": "The BareMetal Filesystem package.",
+    "license": "MIT",
+    "require": {
+        "php": "^8.3",
+        "bare-metal/collections": "^0.5.0",
+        "bare-metal/contracts": "^0.5.0",
+        "bare-metal/macroable": "^0.5.0",
+        "scrapyard-io/nuts-and-bolts": "^0.5.0",
+        "symfony/finder": "^7.4.0 || ^8.0.0"
+    },
+    "minimum-stability": "dev",
+    "autoload": {
+        "psr-4": {
+            "BareMetal\\Filesystem\\": ""
+        },
+        "files": [
+            "functions.php"
+        ]
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "0.5.x-dev"
+        }
+    }
+}

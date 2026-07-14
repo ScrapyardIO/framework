@@ -9,10 +9,10 @@ class EnvironmentDetector
     /**
      * Detect the application's current environment.
      */
-    public function detect(Closure $callback, ?array $console_args = null): string
+    public function detect(Closure $callback, ?array $consoleArgs = null): string
     {
-        if ($console_args) {
-            return $this->detectConsoleEnvironment($callback, $console_args);
+        if ($consoleArgs) {
+            return $this->detectConsoleEnvironment($callback, $consoleArgs);
         }
 
         return $this->detectWebEnvironment($callback);
@@ -31,6 +31,9 @@ class EnvironmentDetector
      */
     protected function detectConsoleEnvironment(Closure $callback, array $args): string
     {
+        // First we will check if an environment argument was passed via console arguments
+        // and if it was that automatically overrides as the environment. Otherwise, we
+        // will check the environment as a "web" request like a typical HTTP request.
         if (! is_null($value = $this->getEnvironmentArgument($args))) {
             return $value;
         }
@@ -49,7 +52,7 @@ class EnvironmentDetector
             }
 
             if (str_starts_with($value, '--env=')) {
-                return explode('=', $value, 2)[1] ?? null;
+                return head(array_slice(explode('=', $value), 1));
             }
         }
 

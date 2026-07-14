@@ -3,7 +3,7 @@
     "description": "The ScrapyardIO Support package",
     "license": "MIT",
     "homepage": "https://scrapyard-io.projectsaturnstudios.com",
-    "version": "0.5.0",
+    "version": "0.5.1",
     "support": {
         "issues": "https://github.com/scrapyard-io/framework/issues",
         "source": "https://github.com/scrapyard-io/framework"
@@ -15,8 +15,12 @@
         }
     ],
     "require": {
-        "php": "^8.3"
-
+        "php": "^8.3",
+        "ramsey/uuid": "^4.7",
+        "nesbot/carbon": "^3.8.4",
+        "league/commonmark": "^2.8.1",
+        "voku/portable-ascii": "^2.0.2",
+        "symfony/uid": "^7.4.0 || ^8.0.0"
     },
     "autoload": {
         "psr-4": {

@@ -2,34 +2,70 @@
 
 namespace BareMetal\Core;
 
+use BareMetal\Contracts\Filesystem\FileNotFoundException;
 use Exception;
-use Illuminate\Contracts\Filesystem\FileNotFoundException;
-use Illuminate\Support\Env;
-use Illuminate\Support\Collection;
-use Illuminate\Filesystem\Filesystem;
+use BareMetal\Filesystem\Filesystem;
+use ScrpayardIO\NutsAndBolts\Collection;
+use ScrapyardIO\NutsAndBolts\Env;
 
 class PackageManifest
 {
+    /**
+     * The filesystem instance.
+     */
+    public Filesystem $files;
+
+    /**
+     * The base path.
+     */
+    public string $base_path;
+
     /**
      * The vendor path.
      */
     public string $vendor_path;
 
     /**
+     * The manifest path.
+     */
+    public ?string $manifest_path;
+
+    /**
      * The loaded manifest array.
      */
-    public array $manifest = [];
+    public array $manifest;
 
-    public function __construct(
-        public Filesystem $files,
-        public string $base_path,
-        public ?string $manifest_path
-    ) {
+    /**
+     * Create a new package manifest instance.
+     */
+    public function __construct(Filesystem $files, string $base_path, string $manifest_path)
+    {
+        $this->files = $files;
+        $this->base_path = $base_path;
+        $this->manifest_path = $manifest_path;
         $this->vendor_path = Env::get('COMPOSER_VENDOR_DIR') ?: $base_path.'/vendor';
     }
 
     /**
+     * Get every service provider class name for all packages.
+     */
+    public function providers(): array
+    {
+        return $this->config('providers');
+    }
+
+    /**
+     * Get every alias for all packages.
+     * @throws FileNotFoundException
+     */
+    public function aliases(): array
+    {
+        return $this->config('aliases');
+    }
+
+    /**
      * Get every value for all packages for the given configuration name.
+     * @throws FileNotFoundException
      */
     public function config(string $key): array
     {
@@ -60,6 +96,7 @@ class PackageManifest
     /**
      * Build the manifest and write it to disk.
      * @throws FileNotFoundException
+     * @throws Exception
      */
     public function build(): void
     {
@@ -71,14 +108,14 @@ class PackageManifest
             $packages = $installed['packages'] ?? $installed;
         }
 
-        $ignore_all = in_array('*', $ignore = $this->packagesToIgnore());
+        $ignoreAll = in_array('*', $ignore = $this->packagesToIgnore());
 
         $this->write((new Collection($packages))->mapWithKeys(function ($package) {
-            return [$this->format($package['name']) => $package['extra']['scrapyard-io'] ?? []];
+            return [$this->format($package['name']) => $package['extra']['laravel'] ?? []];
         })->each(function ($configuration) use (&$ignore) {
             $ignore = array_merge($ignore, $configuration['dont-discover'] ?? []);
-        })->reject(function ($configuration, $package) use ($ignore, $ignore_all) {
-            return $ignore_all || in_array($package, $ignore);
+        })->reject(function ($configuration, $package) use ($ignore, $ignoreAll) {
+            return $ignoreAll || in_array($package, $ignore);
         })->filter()->all());
     }
 
@@ -88,21 +125,6 @@ class PackageManifest
     protected function format(string $package): string
     {
         return str_replace($this->vendor_path.'/', '', $package);
-    }
-
-    /**
-     * Write the given manifest array to disk.
-     * @throws Exception
-     */
-    protected function write(array $manifest): void
-    {
-        if (! is_writable($dirname = dirname($this->manifest_path))) {
-            throw new Exception("The {$dirname} directory must be present and writable.");
-        }
-
-        $this->files->replace(
-            $this->manifest_path, '<?php return '.var_export($manifest, true).';'
-        );
     }
 
     /**
@@ -120,24 +142,17 @@ class PackageManifest
     }
 
     /**
-     * Get every service provider class name for all packages.
-     *
-     * @return array
+     * Write the given manifest array to disk.
+     * @throws Exception
      */
-    public function providers(): array
+    protected function write(array $manifest): void
     {
-        return $this->config('providers');
+        if (! is_writable($dirname = dirname($this->manifest_path))) {
+            throw new Exception("The {$dirname} directory must be present and writable.");
+        }
+
+        $this->files->replace(
+            $this->manifest_path, '<?php return '.var_export($manifest, true).';'
+        );
     }
-
-    /**
-     * Get every alias for all packages.
-     */
-    public function aliases(): array
-    {
-        return $this->config('aliases');
-    }
-
-
 }
-
-
