@@ -1,8 +1,0 @@
-{
-    "name": "fixtures/beta",
-    "autoload": {
-        "psr-4": {
-            "DeptOfScrapyardRobotics\\Tests\\Fixtures\\Reflection\\Packages\\Beta\\Nested\\": "lib/"
-        }
-    }
-}

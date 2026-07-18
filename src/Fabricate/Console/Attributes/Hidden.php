@@ -1,0 +1,17 @@
+<?php
+
+namespace Fabricate\Console\Attributes;
+
+use Attribute;
+
+#[Attribute(Attribute::TARGET_CLASS)]
+class Hidden
+{
+    /**
+     * Create a new attribute instance.
+     */
+    public function __construct()
+    {
+        //
+    }
+}

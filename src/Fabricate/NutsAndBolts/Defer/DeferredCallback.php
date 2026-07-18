@@ -1,0 +1,44 @@
+<?php
+
+namespace Fabricate\NutsAndBolts\Defer;
+
+use Fabricate\NutsAndBolts\Str;
+
+class DeferredCallback
+{
+    /**
+     * Create a new deferred callback instance.
+     */
+    public function __construct(public mixed $callback, public ?string $name = null, public bool $always = false)
+    {
+        $this->name = $name ?? (string) Str::uuid();
+    }
+
+    /**
+     * Specify the name of the deferred callback so it can be cancelled later.
+     */
+    public function name(string $name): static
+    {
+        $this->name = $name;
+
+        return $this;
+    }
+
+    /**
+     * Indicate that the deferred callback should run even on unsuccessful requests and jobs.
+     */
+    public function always(bool $always = true): static
+    {
+        $this->always = $always;
+
+        return $this;
+    }
+
+    /**
+     * Invoke the deferred callback.
+     */
+    public function __invoke(): void
+    {
+        call_user_func($this->callback);
+    }
+}

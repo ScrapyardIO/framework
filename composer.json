@@ -16,75 +16,81 @@
         }
     ],
     "require": {
-        "php": "^8.3",
+        "ext-intl": "*",
+        "ext-ctype": "*",
+        "ext-filter": "*",
+        "ext-mbstring": "*",
         "ramsey/uuid": "^4.7",
+        "php": "^8.4|^8.5|^8.6",
         "nesbot/carbon": "^3.8.4",
+        "monolog/monolog": "^3.0",
+        "laravel/prompts": "^0.3.0",
         "vlucas/phpdotenv": "^5.6.1",
         "league/commonmark": "^2.8.1",
+        "nunomaduro/termwind": "^2.0",
+        "predis/predis": "^2.3|^3.0",
+        "doctrine/inflector": "^2.0.5",
         "voku/portable-ascii": "^2.0.2",
-        "symfony/polyfill-php84": "^1.36",
-        "symfony/polyfill-php85": "^1.36",
-        "symfony/polyfill-php86": "^1.36",
+        "league/flysystem-ftp": "^3.25.1",
         "symfony/uid": "^7.4.0 || ^8.0.0",
+        "symfony/mime": "^7.4.0 || ^8.0.0",
         "psr/container": "^1.1.1 || ^2.0.1",
         "symfony/finder": "^7.4.0 || ^8.0.0",
-        "symfony/mime": "^7.4.0 || ^8.0.0",
-        "symfony/process": "^7.4.5 || ^8.0.5",
+        "league/flysystem-sftp-v3": "^3.25.1",
         "symfony/console": "^7.4.0 || ^8.0.0",
-        "symfony/event-dispatcher": "^7.4.0 || ^8.0.0",
+        "league/flysystem-aws-s3-v3": "^3.25.1",
+        "league/flysystem-read-only": "^3.25.1",
         "symfony/filesystem": "^7.4.0 || ^8.0.0",
         "symfony/var-dumper": "^7.4.0 || ^8.0.0",
-        "laravel/prompts": "^0.3.0",
-        "nunomaduro/termwind": "^2.0"
+        "symfony/error-handler": "^7.4.0 || ^8.0.0",
+        "league/flysystem-path-prefixing": "^3.25.1",
+        "symfony/event-dispatcher": "^7.4.0 || ^8.0.0"
     },
     "suggest": {
-        "ext-posi": "^0.5.0",
-        "ext-ftdi": "^0.5.0",
-        "microscrap/posix": "^0.5.1",
-        "microscrap/ftdi": "^0.5.1",
-        "microscrap/mpsse": "^0.5.1"
+        "ext-redis": "Required to use the phpredis connector (^4.0 || ^5.0 || ^6.0)."
     },
     "replace": {
-        "bare-metal/actuation": "self.version",
-        "bare-metal/circuits": "self.version",
-        "bare-metal/chassis": "self.version",
-        "bare-metal/contracts": "self.version",
-        "bare-metal/collections": "self.version",
-        "bare-metal/filesystem": "self.version",
-        "bare-metal/displays": "self.version",
-        "bare-metal/framebuffers": "self.version",
-        "bare-metal/gfx": "self.version",
-        "bare-metal/sensors": "self.version",
+        "fabricate/gfx": "self.version",
+        "fabricate/chassis": "self.version",
+        "fabricate/displays": "self.version",
+        "fabricate/framebuffers": "self.version",
+        "fabricate/macroable": "self.version",
+        "fabricate/contracts": "self.version",
+        "fabricate/filesystem": "self.version",
+        "fabricate/reflections": "self.version",
+        "fabricate/collections": "self.version",
+        "fabricate/conditionable": "self.version",
+        "fabricate/nuts-and-bolts": "self.version",
 
-        "waveforms/common": "self.version",
-        "waveforms/contracts": "self.version",
-        "waveforms/digital": "self.version",
-        "waveforms/i2c": "self.version",
-        "waveforms/spi": "self.version",
-        "waveforms/pwm": "self.version",
-        "waveforms/uart": "self.version",
-
-        "scrapyard-io/nuts-and-bolts": "self.version"
+        "gpio/common": "self.version",
+        "gpio/contracts": "self.version",
+        "gpio/digital": "self.version",
+        "gpio/i2c": "self.version",
+        "gpio/spi": "self.version",
+        "gpio/pwm": "self.version",
+        "gpio/uart": "self.version"
     },
     "require-dev": {
         "pestphp/pest": "^4"
     },
     "autoload": {
         "files": [
-            "src/NutsAndBolts/Helpers/bytes.php",
-            "src/NutsAndBolts/Helpers/support.php",
-            "src/NutsAndBolts/Helpers/functions.php",
-            "src/BareMetal/Core/Helpers/helpers.php",
-            "src/BareMetal/Filesystem/functions.php",
-            "src/BareMetal/Collections/Helpers/helpers.php",
-            "src/BareMetal/Collections/Helpers/functions.php"
+            "src/Fabricate/Core/helpers.php",
+            "src/Fabricate/Collections/helpers.php",
+            "src/Fabricate/Collections/functions.php",
+            "src/Fabricate/Filesystem/functions.php",
+            "src/Fabricate/NutsAndBolts/helpers.php",
+            "src/Fabricate/NutsAndBolts/functions.php",
+            "src/Fabricate/Log/functions.php"
         ],
         "psr-4": {
-            "GPIO\\": "src/GPIO/",
-            "BareMetal\\": "src/BareMetal/",
-            "ScrapyardIO\\NutsAndBolts\\": [
-                "src/NutsAndBolts/",
-                "src/BareMetal/Collections/"
+            "Fabricate\\": "src/Fabricate/",
+            "GeneralPurposeIO\\": "src/GeneralPurposeIO/",
+            "Fabricate\\NutsAndBolts\\": [
+                "src/Fabricate/Macroable/",
+                "src/Fabricate/Collections/",
+                "src/Fabricate/Conditionable/",
+                "src/Fabricate/Reflection/"
             ]
         }
     },

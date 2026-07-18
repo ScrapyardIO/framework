@@ -1,6 +1,6 @@
 <?php
 
-use ScrapyardIO\NutsAndBolts\Str;
+use Fabricate\NutsAndBolts\Str;
 
 return [
 
@@ -15,43 +15,72 @@ return [
     |
     */
 
-    'default' => env('CACHE_STORE', 'redis'),
+    'default' => env('CACHE_STORE', 'file'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Cache Limiter Store
+    |--------------------------------------------------------------------------
+    |
+    | This option controls which cache store the RateLimiter uses when no
+    | store is explicitly provided. Defaults to the array store for local
+    | CLI workloads without depending on Redis availability.
+    |
+    */
+
+    'limiter' => env('CACHE_LIMITER_STORE', 'array'),
 
     /*
     |--------------------------------------------------------------------------
     | Cache Stores
     |--------------------------------------------------------------------------
     |
-    | Here you may define all of the cache "stores" for your application as
-    | well as their drivers. You may even define multiple stores for the
-    | same cache driver to group types of items stored in your caches.
+    | You may define all of the cache "stores" for your application as well
+    | as their drivers. Supported for ScrapyardIO / Fabricate (non-server):
+    | "array", "file", "redis", "storage", "failover", "null"
     |
-    | Supported drivers: "array", "file",
-    |                    "redis",  "storage",
-    |                    "null"
+    | Deferred: database, memcached, dynamodb, session, apc, octane
     |
     */
 
     'stores' => [
+
         'array' => [
             'driver' => 'array',
             'serialize' => false,
         ],
+
         'file' => [
             'driver' => 'file',
             'path' => storage_path('framework/cache/data'),
             'lock_path' => storage_path('framework/cache/data'),
         ],
+
         'storage' => [
             'driver' => 'storage',
             'disk' => env('CACHE_STORAGE_DISK'),
             'path' => env('CACHE_STORAGE_PATH', 'framework/cache/data'),
         ],
+
         'redis' => [
             'driver' => 'redis',
             'connection' => env('REDIS_CACHE_CONNECTION', 'cache'),
             'lock_connection' => env('REDIS_CACHE_LOCK_CONNECTION', 'default'),
         ],
+
+        'failover' => [
+            'driver' => 'failover',
+            'stores' => [
+                'redis',
+                'file',
+                'array',
+            ],
+        ],
+
+        'null' => [
+            'driver' => 'null',
+        ],
+
     ],
 
     /*
@@ -59,25 +88,11 @@ return [
     | Cache Key Prefix
     |--------------------------------------------------------------------------
     |
-    | When utilizing the APC, database, memcached, Redis, and DynamoDB cache
-    | stores, there might be other applications using the same cache. For
-    | that reason, you may prefix every cache key to avoid collisions.
+    | When utilizing Redis (and similar) cache stores, there might be other
+    | applications using the same cache. Prefix keys to avoid collisions.
     |
     */
 
-    'prefix' => env('CACHE_PREFIX', Str::slug((string) env('APP_NAME', 'laravel')).'-cache-'),
-
-    /*
-    |--------------------------------------------------------------------------
-    | Serializable Classes
-    |--------------------------------------------------------------------------
-    |
-    | This value determines the classes that can be unserialized from cache
-    | storage. By default, no PHP classes will be unserialized from your
-    | cache to prevent gadget chain attacks if your APP_KEY is leaked.
-    |
-    */
-
-    'serializable_classes' => false,
+    'prefix' => env('CACHE_PREFIX', Str::slug((string) env('APP_NAME', 'scrapyard-io')).'-cache-'),
 
 ];

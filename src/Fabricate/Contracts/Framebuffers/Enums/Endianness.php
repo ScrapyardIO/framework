@@ -1,0 +1,10 @@
+<?php
+
+namespace Fabricate\Contracts\Framebuffers\Enums;
+
+enum Endianness: int
+{
+    case LSB = 0;
+    case MSB = 1;
+
+}

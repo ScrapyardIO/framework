@@ -1,0 +1,217 @@
+<?php
+
+namespace Fabricate\Core;
+
+use Exception;
+use Fabricate\Contracts\Chassis\BindingResolutionException;
+use Fabricate\Contracts\Filesystem\FileNotFoundException;
+use Fabricate\Filesystem\Filesystem;
+use Fabricate\Contracts\Core\Machine as MachineInterface;
+use Fabricate\NutsAndBolts\ServiceProvider;
+
+class ProviderRepository
+{
+    /**
+     * The application implementation.
+     *
+     * @var MachineInterface
+     */
+    protected MachineInterface $machine;
+
+    /**
+     * The filesystem instance.
+     *
+     * @var Filesystem
+     */
+    protected Filesystem $files;
+
+    /**
+     * The path to the manifest file.
+     *
+     * @var string
+     */
+    protected string $manifestPath;
+
+    /**
+     * Create a new service repository instance.
+     *
+     * @param  MachineInterface  $machine
+     * @param Filesystem $files
+     * @param  string  $manifestPath
+     */
+    public function __construct(MachineInterface $machine, Filesystem $files, $manifestPath)
+    {
+        $this->machine = $machine;
+        $this->files = $files;
+        $this->manifestPath = $manifestPath;
+    }
+
+    /**
+     * Register the application service providers.
+     *
+     * @param array $providers
+     * @return void
+     * @throws BindingResolutionException
+     * @throws Exception
+     */
+    public function load(array $providers): void
+    {
+        $manifest = $this->loadManifest();
+
+        // First we will load the service manifest, which contains information on all
+        // service providers registered with the application and which services it
+        // provides. This is used to know which services are "deferred" loaders.
+        if ($this->shouldRecompile($manifest, $providers)) {
+            $manifest = $this->compileManifest($providers);
+        }
+
+        // Next, we will register events to load the providers for each of the events
+        // that it has requested. This allows the service provider to defer itself
+        // while still getting automatically loaded when a certain event occurs.
+        foreach ($manifest['when'] as $provider => $events) {
+            $this->registerLoadEvents($provider, $events);
+        }
+
+        // We will go ahead and register every eagerly loaded provider with the
+        // application so their services can be registered with the application as
+        // a provided service. Then we will set the deferred service list on it.
+        foreach ($manifest['eager'] as $provider) {
+            $this->machine->register($provider);
+        }
+
+        $this->machine->addDeferredServices($manifest['deferred']);
+    }
+
+    /**
+     * Load the service provider manifest JSON file.
+     *
+     * @return array|null
+     * @throws FileNotFoundException
+     */
+    public function loadManifest(): ?array
+    {
+        // The service manifest is a file containing a JSON representation of every
+        // service provided by the application and whether its provider is using
+        // deferred loading or should be eagerly loaded on each request to us.
+        if ($this->files->exists($this->manifestPath)) {
+            $manifest = $this->files->getRequire($this->manifestPath);
+
+            if ($manifest) {
+                return array_merge(['when' => []], $manifest);
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Determine if the manifest should be compiled.
+     *
+     * @param ?array $manifest
+     * @param array $providers
+     * @return bool
+     */
+    public function shouldRecompile(?array $manifest, array $providers): bool
+    {
+        return is_null($manifest) || $manifest['providers'] != $providers;
+    }
+
+    /**
+     * Register the load events for the given provider.
+     *
+     * @param string $provider
+     * @param array $events
+     * @return void
+     * @throws BindingResolutionException
+     */
+    protected function registerLoadEvents(string $provider, array $events): void
+    {
+        if (count($events) < 1) {
+            return;
+        }
+
+        $this->machine->make('events')->listen($events, fn () => $this->machine->register($provider));
+    }
+
+    /**
+     * Compile the application service manifest file.
+     *
+     * @param array $providers
+     * @return array
+     * @throws Exception
+     */
+    protected function compileManifest(array $providers): array
+    {
+        // The service manifest should contain a list of every provider for
+        // the application so we can compare it on each request to the service
+        // and determine if the manifest should be recompiled or is current.
+        $manifest = $this->freshManifest($providers);
+
+        foreach ($providers as $provider) {
+            $instance = $this->createProvider($provider);
+
+            // When recompiling the service manifest, we will spin through each of the
+            // providers and check if it's a deferred provider or not. If so we'll
+            // add it's provided services to the manifest and note the provider.
+            if ($instance->isDeferred()) {
+                foreach ($instance->provides() as $service) {
+                    $manifest['deferred'][$service] = $provider;
+                }
+
+                $manifest['when'][$provider] = $instance->when();
+            }
+
+            // If the service providers are not deferred, we will simply add it to an
+            // array of eagerly loaded providers that will get registered on every
+            // request to this application instead of "lazy" loading every time.
+            else {
+                $manifest['eager'][] = $provider;
+            }
+        }
+
+        return $this->writeManifest($manifest);
+    }
+
+    /**
+     * Create a fresh service manifest data structure.
+     *
+     * @param  array  $providers
+     * @return array
+     */
+    protected function freshManifest(array $providers): array
+    {
+        return ['providers' => $providers, 'eager' => [], 'deferred' => []];
+    }
+
+    /**
+     * Write the service manifest file to disk.
+     *
+     * @param array $manifest
+     * @return array
+     *
+     * @throws Exception
+     */
+    public function writeManifest(array $manifest): array
+    {
+        if (! is_writable($dirname = dirname($this->manifestPath))) {
+            throw new Exception("The {$dirname} directory must be present and writable.");
+        }
+
+        $this->files->replace(
+            $this->manifestPath, '<?php return '.var_export($manifest, true).';'
+        );
+
+        return array_merge(['when' => []], $manifest);
+    }
+
+    /**
+     * Create a new provider instance.
+     *
+     * @param string $provider
+     * @return ServiceProvider
+     */
+    public function createProvider(string $provider): ServiceProvider
+    {
+        return new $provider($this->machine);
+    }
+}
