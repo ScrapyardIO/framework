@@ -574,6 +574,7 @@ class Machine extends Chassis implements MachineContract, CachesConfiguration
      * @param InputInterface $input
      * @return int
      * @throws BindingResolutionException|CircularDependencyException
+     * @throws ReflectionException
      */
     public function handleCommand(InputInterface $input): int
     {
@@ -698,6 +699,8 @@ class Machine extends Chassis implements MachineContract, CachesConfiguration
             //'router' => [\Fabricate\Routing\Router::class, \Fabricate\Contracts\Routing\Registrar::class, \Fabricate\Contracts\Routing\BindingRegistrar::class],
             //'session' => [\Fabricate\Session\SessionManager::class],
             //'session.store' => [\Fabricate\Session\Store::class, \Fabricate\Contracts\Session\Session::class],
+            'actuator' => [\Fabricate\Actuation\ActuatorFactory::class],
+            'sensor' => [\Fabricate\Sensors\SensorFactory::class],
             //'translator' => [\Fabricate\Translation\Translator::class, \Fabricate\Contracts\Translation\Translator::class],
             //'url' => [\Fabricate\Routing\UrlGenerator::class, \Fabricate\Contracts\Routing\UrlGenerator::class],
             //'validator' => [\Fabricate\Validation\Factory::class, \Fabricate\Contracts\Validation\Factory::class],

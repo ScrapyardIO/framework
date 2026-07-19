@@ -10,8 +10,9 @@ abstract class VisualOutput implements OutputContract
     protected FormatSpec $format_spec;
 
     public function __construct(
-        protected int $width,
-        protected int $height,
+        protected VisualOutputInterface &$output,
+
+
     ) {
         $this->format_spec = $this->generateFormatSpec();
     }
@@ -20,12 +21,12 @@ abstract class VisualOutput implements OutputContract
 
     public function width(): int
     {
-        return $this->width;
+        return $this->output->width();
     }
 
     public function height(): int
     {
-        return $this->height;
+        return $this->output->height();
     }
 
     /**

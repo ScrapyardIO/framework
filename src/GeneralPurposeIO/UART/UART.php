@@ -2,9 +2,10 @@
 
 namespace GeneralPurposeIO\UART;
 
+use GeneralPurposeIO\Contracts\UART\UARTAPI;
 use GeneralPurposeIO\UART\Drivers\UARTDriver;
 
-class UART
+class UART implements UARTAPI
 {
     public function __construct(
         protected UARTDriver $driver,

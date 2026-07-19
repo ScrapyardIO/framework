@@ -2,9 +2,10 @@
 
 namespace GeneralPurposeIO\SPI;
 
+use GeneralPurposeIO\Contracts\SPI\SPIAPI;
 use GeneralPurposeIO\SPI\Drivers\SPIDriver;
 
-class SPI
+class SPI implements SPIAPI
 {
     public function __construct(
         protected SPIDriver $driver,

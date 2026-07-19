@@ -2,6 +2,8 @@
 
 namespace GeneralPurposeIO\SPI\Drivers;
 
+use GeneralPurposeIO\Contracts\SPI\SPIAPI;
+
 abstract class SPIDriver
 {
     abstract public function close(): void;

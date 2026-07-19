@@ -2,10 +2,10 @@
 
 namespace Fabricate\Chassis;
 
-use Exception;
 use Psr\Container\NotFoundExceptionInterface;
+use Fabricate\NutsAndBolts\ScrapyardIOException;
 
-class EntryNotFoundException extends Exception implements NotFoundExceptionInterface
+class EntryNotFoundException extends ScrapyardIOException implements NotFoundExceptionInterface
 {
     //
 }

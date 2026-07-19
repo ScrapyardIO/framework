@@ -237,11 +237,21 @@ class DisplayComponent implements ComponentContract
     }
 
     /**
-     * Present the drawn surface. For windowed outputs: show/raise, swap, then
-     * pump/poll the OS event queue (required on macOS for a visible frame).
+     * Present the drawn surface.
+     *
+     * Windowed: show/raise, swap, then pump/poll the OS event queue.
+     * Embedded: dump the renderer framebuffer and transmit each frame to the panel IC.
      */
     public function present(): static
     {
+        if ($this->output instanceof EmbeddedVisualOutput) {
+            foreach ($this->renderer->render() as $frame) {
+                $this->output->circuit->transmit($frame);
+            }
+
+            return $this;
+        }
+
         if ($this->output instanceof WindowedVisualOutput) {
             $window = $this->output->window;
 
@@ -274,12 +284,18 @@ class DisplayComponent implements ComponentContract
     }
 
     /**
-     * Dump renderer frames (embedded transmit path lands later).
-     *
      * @return array<int, mixed>
      */
     public function render(bool $partial_refresh = false): array
     {
-        return $this->renderer->render();
+        $frames = $this->renderer->render();
+
+        if ($this->output instanceof EmbeddedVisualOutput) {
+            foreach ($frames as $frame) {
+                $this->output->circuit->transmit($frame);
+            }
+        }
+
+        return $frames;
     }
 }

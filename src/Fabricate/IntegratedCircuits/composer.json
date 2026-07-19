@@ -1,0 +1,37 @@
+{
+    "name": "fabricate/circuits",
+    "description": "The Fabricate Integrated Circuit package.",
+    "license": "MIT",
+    "version": "0.5.1",
+    "require": {
+        "php": "^8.3",
+        "fabricate/contracts": "^0.5.0",
+        "fabricate/reflection": "^0.5.0",
+        "psr/container": "^1.1.1 || ^2.0.1"
+    },
+    "provide": {
+        "psr/container-implementation": "1.1 || 2.0"
+    },
+    "suggest": {
+        "fabricate/auth": "Required to use the Auth attribute",
+        "fabricate/cache": "Required to use the Cache attribute",
+        "fabricate/config": "Required to use the Config attribute",
+        "fabricate/database": "Required to use the DB attribute",
+        "fabricate/filesystem": "Required to use the Storage attribute",
+        "fabricate/log": "Required to use the Log or Context attributes"
+    },
+    "minimum-stability": "dev",
+    "autoload": {
+        "psr-4": {
+            "Fabricate\\IntegratedCircuits\\": ""
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "0.5.x-dev"
+        }
+    }
+}

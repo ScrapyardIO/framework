@@ -29,6 +29,7 @@ class DefaultProviders
             //\Fabricate\Concurrency\ConcurrencyServiceProvider::class,
             //\Fabricate\Cookie\CookieServiceProvider::class,
             //\Fabricate\Database\DatabaseServiceProvider::class,
+            \Fabricate\Displays\DisplaysServiceProvider::class,
             //\Fabricate\Encryption\EncryptionServiceProvider::class,
             \Fabricate\Filesystem\FilesystemServiceProvider::class,
             //\Fabricate\Foundation\Providers\FoundationServiceProvider::class,
@@ -44,10 +45,12 @@ class DefaultProviders
             \Fabricate\Redis\RedisServiceProvider::class,
             \Fabricate\Gfx\RenderingServiceProvider::class,
             //\Fabricate\Session\SessionServiceProvider::class,
+            \Fabricate\Actuation\ActuationServiceProvider::class,
+            \Fabricate\Sensors\SensorServiceProvider::class,
             //\Fabricate\Translation\TranslationServiceProvider::class,
             //\Fabricate\Validation\ValidationServiceProvider::class,
             //\Fabricate\View\ViewServiceProvider::class,
-            \Fabricate\Displays\DisplaysServiceProvider::class
+
         ];
     }
 

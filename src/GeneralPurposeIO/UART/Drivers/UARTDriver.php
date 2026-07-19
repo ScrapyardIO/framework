@@ -2,6 +2,8 @@
 
 namespace GeneralPurposeIO\UART\Drivers;
 
+use GeneralPurposeIO\Contracts\UART\UARTAPI;
+
 abstract class UARTDriver
 {
     abstract public function close(): void;

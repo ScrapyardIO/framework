@@ -9,7 +9,7 @@ class WindowedVisualOutput extends VisualOutput
     public function __construct(
         public readonly ManagedWindow $window,
     ) {
-        parent::__construct($window->width(), $window->height());
+        parent::__construct($window);
     }
 
     public function generateFormatSpec(): FormatSpec

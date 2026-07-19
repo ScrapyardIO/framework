@@ -52,6 +52,8 @@
     "replace": {
         "fabricate/gfx": "self.version",
         "fabricate/chassis": "self.version",
+        "fabricate/circuits": "self.version",
+        "fabricate/actuation": "self.version",
         "fabricate/displays": "self.version",
         "fabricate/framebuffers": "self.version",
         "fabricate/macroable": "self.version",
@@ -61,6 +63,7 @@
         "fabricate/collections": "self.version",
         "fabricate/conditionable": "self.version",
         "fabricate/nuts-and-bolts": "self.version",
+        "fabricate/sensors": "self.version",
 
         "gpio/common": "self.version",
         "gpio/contracts": "self.version",
@@ -85,7 +88,9 @@
         ],
         "psr-4": {
             "Fabricate\\": "src/Fabricate/",
-            "GeneralPurposeIO\\": "src/GeneralPurposeIO/",
+            "GeneralPurposeIO\\": [
+                "src/GeneralPurposeIO/"
+            ],
             "Fabricate\\NutsAndBolts\\": [
                 "src/Fabricate/Macroable/",
                 "src/Fabricate/Collections/",

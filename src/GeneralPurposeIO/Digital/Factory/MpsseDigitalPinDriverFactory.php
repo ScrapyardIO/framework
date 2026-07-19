@@ -55,7 +55,7 @@ abstract class MpsseDigitalPinDriverFactory
         return $this->device($device)->create();
     }
 
-    protected function consumer(): string
+    public function consumer(): string
     {
         return $this->name ?? 'scrapyard-io-gpio';
     }

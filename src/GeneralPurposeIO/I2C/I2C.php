@@ -2,9 +2,10 @@
 
 namespace GeneralPurposeIO\I2C;
 
+use GeneralPurposeIO\Contracts\I2C\I2CAPI;
 use GeneralPurposeIO\I2C\Drivers\I2CDriver;
 
-class I2C
+class I2C implements I2CAPI
 {
     public function __construct(
         protected I2CDriver $driver,
