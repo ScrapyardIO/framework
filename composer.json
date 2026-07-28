@@ -100,7 +100,8 @@
             "src/Fabricate/NutsAndBolts/Helpers/helpers.php",
             "src/Fabricate/NutsAndBolts/Helpers/bytes.php",
             "src/Fabricate/NutsAndBolts/Helpers/time.php",
-            "src/Fabricate/Reflection/Helpers/helpers.php"
+            "src/Fabricate/Reflection/Helpers/helpers.php",
+            "src/Fabricate/Console/Prompts/helpers.php"
         ],
         "psr-4": {
             "Fabricate\\": "src/Fabricate/",

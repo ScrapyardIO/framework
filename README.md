@@ -10,35 +10,21 @@ The framework supplies the application runtime: dependency injection, configurat
 
 ## Requirements
 
-- PHP 8.4, 8.5, or 8.6 for the `0.6.x` framework package
+- PHP 8.4, 8.5, or 8.6
 - The `mbstring` PHP extension
 - [Composer](https://getcomposer.org/)
 
-Optional framework services and hardware integrations have additional requirements. For example, local filesystem features need `fileinfo`, Redis needs either `ext-redis` or `predis/predis`, and hardware packages may require native extensions and libraries. Consult the selected service, adapter, and device-driver packages before installation or wiring.
-
 ## Installation
 
-### Development branch
-
-Install the API documented here into a Composer project with an explicit development constraint:
-
 ```bash
-composer require "scrapyard-io/framework:0.6.x-dev"
+composer require scrapyard-io/framework
 ```
 
-To use the latest stable generation instead:
-
-```bash
-composer require "scrapyard-io/framework:^0.5"
-```
-
-The 0.6 application skeleton is not yet published on Packagist, so there is currently no supported `composer create-project` command for this branch. The [`ScrapyardIO/scrapyard-io`](https://github.com/ScrapyardIO/scrapyard-io) repository shows the application layout, but its public branch and the framework's development branch may move independently until the next release.
-
-The framework package does not scaffold an application. A consuming project must provide Composer autoloading and package-discovery scripts, bootstrap files, a `workshop` console entry point, writable cache and storage directories, and the base application sketch class.
+The framework package does not scaffold an application. Wire up the project with the files below, or start from the [`ScrapyardIO/scrapyard-io`](https://github.com/ScrapyardIO/scrapyard-io) skeleton.
 
 ### Minimal application bootstrap
 
-After requiring `0.6.x-dev`, merge these entries into the project's `composer.json`:
+Merge these entries into the project's `composer.json`:
 
 ```json
 {
@@ -61,7 +47,7 @@ After requiring `0.6.x-dev`, merge these entries into the project's `composer.js
 }
 ```
 
-Create these directories and ensure the cache and storage paths are writable by the PHP process:
+Create these directories:
 
 ```text
 app/Sketches/
@@ -82,7 +68,7 @@ return Machine::configure(basePath: dirname(__DIR__))
     ->create();
 ```
 
-Create `bootstrap/providers.php`. Application providers can be added to this array later:
+Create `bootstrap/providers.php`:
 
 ```php
 <?php
@@ -121,7 +107,7 @@ $app = require_once __DIR__.'/bootstrap/app.php';
 exit($app->handleCommand(new ArgvInput));
 ```
 
-Finish the bootstrap and verify the command runner:
+Make Workshop executable and verify the install:
 
 ```bash
 chmod +x workshop
@@ -137,7 +123,7 @@ A sketch is a foreground workload with a controlled lifecycle:
 2. `loop()` performs one cooperative unit of work.
 3. `shutdown()` releases resources, including when an exception escapes.
 
-In a scaffolded application, generate one with Workshop:
+Generate one with Workshop:
 
 ```bash
 php workshop make:sketch HelloHardware
@@ -239,7 +225,7 @@ Framework defaults are merged with application configuration. Common hardware de
 - `config/displays.php` for windowed or embedded displays
 - `config/gfx.php` for renderers and framebuffer behavior
 
-The exact circuit parameters are driver-specific. Use the README shipped with the selected `dept-of-scrapyard-robotics/*` package as the source of truth.
+Circuit parameters are documented by each `dept-of-scrapyard-robotics/*` package.
 
 Inspect and cache configuration with Workshop:
 
@@ -267,15 +253,15 @@ GPIO Framework transports
 Native or USB bindings
 ```
 
-Companion package families have distinct responsibilities. The `scrapyard-io/*` packages listed below are currently developed inside the ScrapyardIO monorepo and do not yet have public standalone repositories:
+Companion packages:
 
-- `scrapyard-io/gpio-framework` provides SPI, I²C, UART, digital I/O, PWM, and analog transport abstractions.
-- `scrapyard-io/waveforms` provides higher-level sensor abstractions.
-- `scrapyard-io/tubes` provides display-panel abstractions.
-- [`dept-of-scrapyard-robotics/*`](https://github.com/DeptOfScrapyardRobotics) packages implement specific chips and register their drivers.
-- [`microscrap/*`](https://github.com/microscrap) packages wrap native and USB I/O capabilities.
+- `scrapyard-io/gpio-framework` — SPI, I²C, UART, digital I/O, PWM, and analog transports
+- `scrapyard-io/waveforms` — higher-level sensor abstractions
+- `scrapyard-io/tubes` — display-panel abstractions
+- [`dept-of-scrapyard-robotics/*`](https://github.com/DeptOfScrapyardRobotics) — chip drivers
+- [`microscrap/*`](https://github.com/microscrap) — native and USB I/O bindings
 
-Packages can advertise service providers through Composer metadata. Applications based on the ScrapyardIO skeleton run package discovery after Composer autoload generation, allowing drivers to register themselves without application bootstrap edits. Existing projects must add the corresponding `post-autoload-dump` Composer script themselves.
+Packages advertise service providers through Composer metadata. ScrapyardIO discovers them after Composer autoload generation.
 
 Rebuild the package manifest manually when needed:
 
@@ -361,13 +347,9 @@ From the ScrapyardIO monorepo root:
 vendor/bin/pest scrapyard-io/framework/tests
 ```
 
-The application skeleton has its own test configuration and scripts. Tests that exercise optional services, real transports, or devices may require the corresponding extension, native library, running service, adapter, or connected hardware.
-
 ## Contributing
 
-Keep framework changes focused, add or update tests, and verify examples against the current public API. Device-specific setup belongs in the relevant driver package rather than in this README.
-
-Issues and source code are available at [github.com/ScrapyardIO/framework](https://github.com/ScrapyardIO/framework).
+Issues and source code: [github.com/ScrapyardIO/framework](https://github.com/ScrapyardIO/framework).
 
 ## License
 

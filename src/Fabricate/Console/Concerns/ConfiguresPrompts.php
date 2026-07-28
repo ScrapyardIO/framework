@@ -4,6 +4,8 @@ namespace Fabricate\Console\Concerns;
 
 use Closure;
 use stdClass;
+use Fabricate\Console\Exceptions\PromptValidationException;
+use Fabricate\Console\Prompts\DisabledMultiSelectPrompt;
 use Laravel\Prompts\ConfirmPrompt;
 use Laravel\Prompts\MultiSearchPrompt;
 use Laravel\Prompts\MultiSelectPrompt;
@@ -16,7 +18,6 @@ use Laravel\Prompts\SuggestPrompt;
 use Laravel\Prompts\TextareaPrompt;
 use Laravel\Prompts\TextPrompt;
 use Symfony\Component\Console\Input\InputInterface;
-use Fabricate\Console\Exceptions\PromptValidationException;
 
 trait ConfiguresPrompts
 {
@@ -78,6 +79,35 @@ trait ConfiguresPrompts
 
         MultiSelectPrompt::fallbackUsing(fn (MultiSelectPrompt $prompt) => $this->promptUntilValid(
             fn () => $this->multiselectFallback($prompt->label, $prompt->options, $prompt->default, $prompt->required),
+            $prompt->required,
+            $prompt->validate
+        ));
+
+        DisabledMultiSelectPrompt::fallbackUsing(fn (DisabledMultiSelectPrompt $prompt) => $this->promptUntilValid(
+            function () use ($prompt) {
+                $options = $prompt->options;
+                $disabled = $prompt->disabled;
+
+                if (array_is_list($options)) {
+                    $options = array_values(array_filter(
+                        $options,
+                        fn ($value) => ! in_array($value, $disabled, true),
+                    ));
+                } else {
+                    $options = array_filter(
+                        $options,
+                        fn ($label, $value) => ! in_array($value, $disabled, true),
+                        ARRAY_FILTER_USE_BOTH,
+                    );
+                }
+
+                $default = array_values(array_filter(
+                    $prompt->default,
+                    fn ($value) => ! in_array($value, $disabled, true),
+                ));
+
+                return $this->multiselectFallback($prompt->label, $options, $default, $prompt->required);
+            },
             $prompt->required,
             $prompt->validate
         ));

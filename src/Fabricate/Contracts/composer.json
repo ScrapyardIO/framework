@@ -1,6 +1,6 @@
 {
-    "name": "fabricate/config",
-    "description": "The Fabricate Config package.",
+    "name": "fabricate/contracts",
+    "description": "The Fabricate Contracts package.",
     "license": "MIT",
     "authors": [
         {
