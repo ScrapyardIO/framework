@@ -2,7 +2,8 @@
 
 namespace Fabricate\Console\Concerns;
 
-use Fabricate\Console\PromptValidationException;
+use Closure;
+use stdClass;
 use Laravel\Prompts\ConfirmPrompt;
 use Laravel\Prompts\MultiSearchPrompt;
 use Laravel\Prompts\MultiSelectPrompt;
@@ -14,18 +15,18 @@ use Laravel\Prompts\SelectPrompt;
 use Laravel\Prompts\SuggestPrompt;
 use Laravel\Prompts\TextareaPrompt;
 use Laravel\Prompts\TextPrompt;
-use stdClass;
 use Symfony\Component\Console\Input\InputInterface;
+use Fabricate\Console\Exceptions\PromptValidationException;
 
 trait ConfiguresPrompts
 {
     /**
      * Configure the prompt fallbacks.
      *
-     * @param  \Symfony\Component\Console\Input\InputInterface  $input
+     * @param InputInterface $input
      * @return void
      */
-    protected function configurePrompts(InputInterface $input)
+    protected function configurePrompts(InputInterface $input): void
     {
         Prompt::setOutput($this->output);
 
@@ -117,14 +118,14 @@ trait ConfiguresPrompts
      *
      * @template PResult
      *
-     * @param  \Closure(): PResult  $prompt
-     * @param  bool|string  $required
-     * @param  (\Closure(PResult): mixed)|null  $validate
+     * @param Closure(): PResult $prompt
+     * @param bool|string $required
+     * @param (Closure(PResult): mixed)|null $validate
      * @return PResult
      *
-     * @throws \Fabricate\Console\PromptValidationException
+     * @throws PromptValidationException
      */
-    protected function promptUntilValid($prompt, $required, $validate)
+    protected function promptUntilValid(Closure $prompt, bool|string $required, ?Closure $validate)
     {
         while (true) {
             $result = $prompt();
@@ -162,7 +163,7 @@ trait ConfiguresPrompts
      * @param  mixed  $rules
      * @return ?string
      */
-    protected function validatePrompt($value, $rules)
+    protected function validatePrompt(mixed $value, mixed $rules): ?string
     {
         if ($rules instanceof stdClass) {
             $messages = $rules->messages ?? [];
@@ -171,7 +172,7 @@ trait ConfiguresPrompts
         }
 
         if (! $rules) {
-            return;
+            return null;
         }
 
         if (is_callable($rules)) {
@@ -181,7 +182,7 @@ trait ConfiguresPrompts
         }
 
         if (! $this->scrapyard_io->bound('validator')) {
-            return;
+            return null;
         }
 
         $field = 'answer';
@@ -205,7 +206,7 @@ trait ConfiguresPrompts
      * @param  array  $attributes
      * @return mixed
      */
-    protected function getPromptValidatorInstance($field, $value, $rules, array $messages = [], array $attributes = [])
+    protected function getPromptValidatorInstance(mixed $field, mixed $value, mixed $rules, array $messages = [], array $attributes = []): mixed
     {
         return $this->scrapyard_io['validator']->make(
             [$field => $value],
@@ -220,7 +221,7 @@ trait ConfiguresPrompts
      *
      * @return array<string, string>
      */
-    protected function validationMessages()
+    protected function validationMessages(): array
     {
         return [];
     }
@@ -230,7 +231,7 @@ trait ConfiguresPrompts
      *
      * @return array<string, string>
      */
-    protected function validationAttributes()
+    protected function validationAttributes(): array
     {
         return [];
     }
@@ -240,7 +241,7 @@ trait ConfiguresPrompts
      *
      * @return void
      */
-    protected function restorePrompts()
+    protected function restorePrompts(): void
     {
         Prompt::setOutput($this->output);
     }
@@ -248,12 +249,12 @@ trait ConfiguresPrompts
     /**
      * Select fallback.
      *
-     * @param  string  $label
-     * @param  array<array-key, string>  $options
-     * @param  string|int|null  $default
+     * @param string $label
+     * @param array<array-key, string> $options
+     * @param int|string|null $default
      * @return string|int
      */
-    private function selectFallback($label, $options, $default = null)
+    private function selectFallback(string $label, array $options, int|string|null $default = null): int|string
     {
         $answer = $this->choice($label, $options, $default);
 
@@ -267,13 +268,13 @@ trait ConfiguresPrompts
     /**
      * Multi-select fallback.
      *
-     * @param  string  $label
-     * @param  array  $options
-     * @param  array  $default
-     * @param  bool|string  $required
+     * @param string $label
+     * @param array $options
+     * @param array $default
+     * @param bool|string $required
      * @return array
      */
-    private function multiselectFallback($label, $options, $default = [], $required = false)
+    private function multiselectFallback(string $label, array $options, array $default = [], bool|string $required = false): array
     {
         $default = $default !== [] ? implode(',', $default) : null;
 

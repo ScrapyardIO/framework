@@ -2,9 +2,10 @@
 
 namespace Fabricate\Console\View\Components;
 
+use ReflectionClass;
 use Fabricate\Console\OutputStyle;
 use Fabricate\Console\QuestionHelper;
-use ReflectionClass;
+use Fabricate\Contracts\NutsAndBolts\Arrayable;
 use Symfony\Component\Console\Helper\SymfonyQuestionHelper;
 
 use function Termwind\render;
@@ -29,9 +30,9 @@ abstract class Component
     /**
      * Creates a new component instance.
      *
-     * @param  \Fabricate\Console\OutputStyle  $output
+     * @param \Fabricate\Console\OutputStyle $output
      */
-    public function __construct($output)
+    public function __construct(OutputStyle $output)
     {
         $this->output = $output;
     }
@@ -39,12 +40,12 @@ abstract class Component
     /**
      * Renders the given view.
      *
-     * @param  string  $view
-     * @param  \Fabricate\Contracts\Support\Arrayable|array  $data
-     * @param  int  $verbosity
+     * @param string $view
+     * @param Arrayable|array $data
+     * @param int $verbosity
      * @return void
      */
-    protected function renderView($view, $data, $verbosity)
+    protected function renderView(string $view, Arrayable|array $data, int $verbosity): void
     {
         renderUsing($this->output);
 
@@ -54,11 +55,11 @@ abstract class Component
     /**
      * Compile the given view contents.
      *
-     * @param  string  $view
-     * @param  array  $data
+     * @param string $view
+     * @param array $data
      * @return string
      */
-    protected function compile($view, $data)
+    protected function compile(string $view, array $data): string
     {
         extract($data);
 
@@ -74,11 +75,11 @@ abstract class Component
     /**
      * Mutates the given data with the given set of mutators.
      *
-     * @param  array<int, string>|string  $data
-     * @param  array<int, callable(string): string|class-string>  $mutators
+     * @param string|array<int, string> $data
+     * @param array<int, callable(string): string|class-string> $mutators
      * @return array<int, string>|string
      */
-    protected function mutate($data, $mutators)
+    protected function mutate(array|string $data, array $mutators): array|string
     {
         foreach ($mutators as $mutator) {
             $mutator = new $mutator;
@@ -98,12 +99,12 @@ abstract class Component
     /**
      * Eventually performs a question using the component's question helper.
      *
-     * @param  callable  $callable
+     * @param callable $callable
      * @return mixed
      */
-    protected function usingQuestionHelper($callable)
+    protected function usingQuestionHelper(callable $callable): mixed
     {
-        $property = (new ReflectionClass(OutputStyle::class))
+        $property = new ReflectionClass(OutputStyle::class)
             ->getParentClass()
             ->getProperty('questionHelper');
 

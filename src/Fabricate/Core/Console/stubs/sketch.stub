@@ -1,0 +1,39 @@
+<?php
+
+namespace {{ namespace }};
+
+use Fabricate\Contracts\Sketches\SketchLoopResult;
+
+class {{ class }} extends Sketch
+{
+    /**
+     * The sketch description.
+     *
+     * @var string
+     */
+    protected string $description = '';
+
+    /**
+     * Prepare the sketch before the first loop tick.
+     */
+    public function boot(): void
+    {
+        //
+    }
+
+    /**
+     * Execute one cooperative tick of the sketch.
+     */
+    public function loop(): SketchLoopResult
+    {
+        return SketchLoopResult::CONTINUE;
+    }
+
+    /**
+     * Release resources after the loop ends or fails.
+     */
+    public function shutdown(): void
+    {
+        //
+    }
+}

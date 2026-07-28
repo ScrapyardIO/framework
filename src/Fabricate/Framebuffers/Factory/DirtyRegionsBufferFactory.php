@@ -3,7 +3,7 @@
 namespace Fabricate\Framebuffers\Factory;
 
 use Exception;
-use Fabricate\Framebuffers\DirtyRegionsBuffer;
+use Fabricate\Framebuffers\Strategy\DirtyRegionsBuffer;
 
 class DirtyRegionsBufferFactory extends FormatSpecFramebufferFactory
 {

@@ -13,11 +13,11 @@ class NullStore extends TaggableStore implements CanFlushLocks, LockProvider
      * Retrieve an item from the cache by key.
      *
      * @param  string  $key
-     * @return void
+     * @return mixed
      */
-    public function get($key)
+    public function get(string $key): mixed
     {
-        //
+        return null;
     }
 
     /**
@@ -28,7 +28,7 @@ class NullStore extends TaggableStore implements CanFlushLocks, LockProvider
      * @param  int  $seconds
      * @return bool
      */
-    public function put($key, $value, $seconds)
+    public function put(string $key, mixed $value, int $seconds): bool
     {
         return false;
     }
@@ -40,7 +40,7 @@ class NullStore extends TaggableStore implements CanFlushLocks, LockProvider
      * @param  mixed  $value
      * @return false
      */
-    public function increment($key, $value = 1)
+    public function increment(string $key, mixed $value = 1): bool|int
     {
         return false;
     }
@@ -52,7 +52,7 @@ class NullStore extends TaggableStore implements CanFlushLocks, LockProvider
      * @param  mixed  $value
      * @return false
      */
-    public function decrement($key, $value = 1)
+    public function decrement(string $key, mixed $value = 1): bool|int
     {
         return false;
     }
@@ -64,7 +64,7 @@ class NullStore extends TaggableStore implements CanFlushLocks, LockProvider
      * @param  mixed  $value
      * @return bool
      */
-    public function forever($key, $value)
+    public function forever(string $key, mixed $value): bool
     {
         return false;
     }
@@ -117,7 +117,7 @@ class NullStore extends TaggableStore implements CanFlushLocks, LockProvider
      * @param  int  $seconds
      * @return bool
      */
-    public function touch($key, $seconds)
+    public function touch(string $key, int $seconds): bool
     {
         return false;
     }
@@ -128,7 +128,7 @@ class NullStore extends TaggableStore implements CanFlushLocks, LockProvider
      * @param  string  $key
      * @return bool
      */
-    public function forget($key)
+    public function forget(string $key): bool
     {
         return true;
     }
@@ -138,7 +138,7 @@ class NullStore extends TaggableStore implements CanFlushLocks, LockProvider
      *
      * @return bool
      */
-    public function flush()
+    public function flush(): bool
     {
         return true;
     }
@@ -148,7 +148,7 @@ class NullStore extends TaggableStore implements CanFlushLocks, LockProvider
      *
      * @return string
      */
-    public function getPrefix()
+    public function getPrefix(): string
     {
         return '';
     }

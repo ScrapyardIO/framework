@@ -6,7 +6,7 @@ use Attribute;
 use InvalidArgumentException;
 use UnitEnum;
 
-use function Fabricate\NutsAndBolts\enum_value;
+use function Fabricate\NutsAndBolts\Helpers\enum_value;
 
 #[Attribute(Attribute::TARGET_CLASS | Attribute::IS_REPEATABLE)]
 class Bind

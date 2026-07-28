@@ -8,10 +8,18 @@ use Fabricate\Console\Attributes\Help;
 use Fabricate\Console\Attributes\Hidden;
 use Fabricate\Console\Attributes\Signature;
 use Fabricate\Console\Attributes\Usage;
+use Fabricate\Console\Concerns\CallsCommands;
+use Fabricate\Console\Concerns\ConfiguresPrompts;
+use Fabricate\Console\Concerns\HasParameters;
+use Fabricate\Console\Concerns\InteractsWithIO;
+use Fabricate\Console\Concerns\InteractsWithSignals;
+use Fabricate\Console\Concerns\PromptsForMissingInput;
+use Fabricate\Console\Contracts\CommandMutex;
+use Fabricate\Console\Exceptions\ManuallyFailedException;
 use Fabricate\Console\View\Components\Factory as ComponentFactory;
 use Fabricate\Contracts\Chassis\BindingResolutionException;
 use Fabricate\Contracts\Console\Isolatable;
-use Fabricate\Contracts\Core\Machine;
+use Fabricate\Contracts\Core\Program;
 use Fabricate\NutsAndBolts\Concerns\Macroable;
 use ReflectionClass;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -23,18 +31,17 @@ use Throwable;
 
 class Command extends SymfonyCommand
 {
-    use Concerns\CallsCommands,
-        Concerns\ConfiguresPrompts,
-        Concerns\HasParameters,
-        Concerns\InteractsWithIO,
-        Concerns\InteractsWithSignals,
-        Concerns\PromptsForMissingInput,
+    use CallsCommands,
+        ConfiguresPrompts,
+        HasParameters,
+        InteractsWithIO,
+        InteractsWithSignals,
+        PromptsForMissingInput,
         Macroable;
-
     /**
      * The ScrapyardIO application instance.
      */
-    protected Machine $scrapyard_io;
+    protected Program $scrapyard_io;
 
     /**
      * The name and signature of the console command.
@@ -54,17 +61,17 @@ class Command extends SymfonyCommand
     /**
      * The console command help text.
      */
-    protected $help = '';
+    protected string $help = '';
 
     /**
      * Indicates whether the command should be shown in the command list.
      */
-    protected $hidden = false;
+    protected bool $hidden = false;
 
     /**
      * Indicates whether only one instance of the command can run at any given time.
      */
-    protected $isolated = false;
+    protected bool $isolated = false;
 
     /**
      * The default exit code for isolated commands.
@@ -78,7 +85,7 @@ class Command extends SymfonyCommand
      *
      * @var string[]
      */
-    protected $aliases;
+    protected array $aliases;
 
     /**
      * Create a new console command instance.
@@ -309,7 +316,7 @@ class Command extends SymfonyCommand
      * Resolve the console command instance for the given command.
      * @throws BindingResolutionException
      */
-    protected function resolveCommand($command)
+    protected function resolveCommand($command): SymfonyCommand
     {
         if (is_string($command)) {
             if (! class_exists($command)) {
@@ -374,7 +381,7 @@ class Command extends SymfonyCommand
     /**
      * Get the ScrapyardIO application instance.
      */
-    public function getScrapyardIO(): Machine
+    public function getScrapyardIO(): Program
     {
         return $this->scrapyard_io;
     }
@@ -382,7 +389,7 @@ class Command extends SymfonyCommand
     /**
      * Set the ScrapyardIO application instance.
      */
-    public function setScrapyardIO(Machine $scrapyard_io): void
+    public function setScrapyardIO(Program $scrapyard_io): void
     {
         $this->scrapyard_io = $scrapyard_io;
     }

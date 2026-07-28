@@ -2,7 +2,7 @@
 
 namespace Fabricate\Core\Bootstrap;
 
-use Fabricate\Contracts\Core\Machine;
+use Fabricate\Contracts\Core\Program;
 
 class BootProviders
 {
@@ -12,8 +12,8 @@ class BootProviders
      * @param Machine $app
      * @return void
      */
-    public function bootstrap(Machine $app): void
+    public function bootstrap(Program $program): void
     {
-        $app->boot();
+        $program->boot();
     }
 }

@@ -6,9 +6,9 @@ use Fabricate\Cache\Events\CacheFlushed;
 use Fabricate\Cache\Events\CacheFlushing;
 use Fabricate\Contracts\Cache\Store;
 
-use function Fabricate\NutsAndBolts\enum_value;
+use function Fabricate\NutsAndBolts\Helpers\enum_value;
 
-class TaggedCache extends Repository
+class TaggedCache extends CacheRepository
 {
     use RetrievesMultipleKeys {
         putMany as putManyAlias;

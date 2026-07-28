@@ -2,6 +2,9 @@
 
 namespace Fabricate\Contracts\Framebuffers;
 
+use Fabricate\Contracts\Displays\Display;
+use Fabricate\Contracts\Rendering\GFXRenderer;
+
 interface Framebuffer
 {
     public function viewportWidth(): int;
@@ -13,4 +16,12 @@ interface Framebuffer
     public function setSegment(int $x, int $y, int $width, int $height, int $color): static;
     public function blitTo(Framebuffer $target, int $offset_x = 0, int $offset_y = 0): Framebuffer;
     public function blitFrom(Framebuffer $source, int $offset_x = 0, int $offset_y = 0): Framebuffer;
+
+    public function dump(): array;
+
+    public function flush(): array;
+
+    public function supportsDisplay(Display $display): bool;
+
+    public function supportsRenderer(GFXRenderer $renderer): bool;
 }

@@ -2,10 +2,10 @@
 
 namespace Fabricate\Framebuffers\Packers;
 
-use Fabricate\Contracts\Framebuffers\FormatSpec;
 use Fabricate\Contracts\Framebuffers\Enums\BitOrder;
 use Fabricate\Contracts\Framebuffers\Enums\ScanDirection;
 use Fabricate\Contracts\Framebuffers\PixelPacker;
+use Fabricate\Framebuffers\FormatSpec;
 
 /**
  * Packs a row-major logical grid into vertical-page bytes: 8 stacked rows per

@@ -4,13 +4,53 @@ namespace Fabricate\Queue\Failed;
 
 interface FailedJobProviderInterface
 {
-    public function log(string $connection, string $queue, string $payload, \Throwable $exception): mixed;
+    /**
+     * Log a failed job into storage.
+     *
+     * @param  string  $connection
+     * @param  string  $queue
+     * @param  string  $payload
+     * @param  \Throwable  $exception
+     * @return string|int|null
+     */
+    public function log($connection, $queue, $payload, $exception);
 
-    public function all(): array;
+    /**
+     * Get the IDs of all of the failed jobs.
+     *
+     * @param  string|null  $queue
+     * @return array
+     */
+    public function ids($queue = null);
 
-    public function find(mixed $id): mixed;
+    /**
+     * Get a list of all of the failed jobs.
+     *
+     * @return array
+     */
+    public function all();
 
-    public function forget(mixed $id): bool;
+    /**
+     * Get a single failed job.
+     *
+     * @param  mixed  $id
+     * @return object|null
+     */
+    public function find($id);
 
-    public function flush(int|string|null $hours = null): void;
+    /**
+     * Delete a single failed job from storage.
+     *
+     * @param  mixed  $id
+     * @return bool
+     */
+    public function forget($id);
+
+    /**
+     * Flush all of the failed jobs from storage.
+     *
+     * @param  int|null  $hours
+     * @return void
+     */
+    public function flush($hours = null);
 }

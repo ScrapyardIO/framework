@@ -2,7 +2,7 @@
 
 namespace Fabricate\Filesystem\Enums;
 
-enum VISIBILITY: string
+enum Visibility: string
 {
     case PUBLIC = 'public';
     case PRIVATE = 'private';

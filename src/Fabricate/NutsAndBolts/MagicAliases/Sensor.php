@@ -2,12 +2,11 @@
 
 namespace Fabricate\NutsAndBolts\MagicAliases;
 
-use Fabricate\Sensors\SensorFactory;
-
 /**
- * @method static SensorFactory type(string $sensor_type)
- * @method static SensorFactory circuit(string $circuit)
-
+ * @method static \Fabricate\Contracts\Sensors\Sensor type(string $driver)
+ * @method static void addSensor(string $name, string $class_name)
+ *
+ * @see \Fabricate\Sensors\SensorRegistry
  */
 class Sensor extends MagicAlias
 {

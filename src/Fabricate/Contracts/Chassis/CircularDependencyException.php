@@ -2,10 +2,10 @@
 
 namespace Fabricate\Contracts\Chassis;
 
-use Exception;
 use Psr\Container\ContainerExceptionInterface;
+use Fabricate\NutsAndBolts\ScrapyardIOException;
 
-class CircularDependencyException extends Exception implements ContainerExceptionInterface
+class CircularDependencyException extends ScrapyardIOException implements ContainerExceptionInterface
 {
     //
 }

@@ -2,18 +2,18 @@
 
 namespace Fabricate\Filesystem;
 
+use ErrorException;
 use Fabricate\Contracts\Filesystem\FileNotFoundException;
+use Fabricate\NutsAndBolts\Concerns\Conditionable;
+use Fabricate\NutsAndBolts\Concerns\Macroable;
 use Fabricate\NutsAndBolts\LazyCollection;
+use FilesystemIterator;
+use RuntimeException;
 use SplFileInfo;
 use SplFileObject;
-use ErrorException;
-use RuntimeException;
-use FilesystemIterator;
+use Symfony\Component\Filesystem\Filesystem as SymfonyFilesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Mime\MimeTypes;
-use Fabricate\NutsAndBolts\Concerns\Macroable;
-use Fabricate\NutsAndBolts\Concerns\Conditionable;
-use Symfony\Component\Filesystem\Filesystem as SymfonyFilesystem;
 
 class Filesystem
 {
@@ -65,11 +65,11 @@ class Filesystem
      * @param string $path
      * @param int $flags
      * @param bool $lock
-     * @return array
+     * @return array|null
      *
      * @throws FileNotFoundException
      */
-    public function json(string $path, int $flags = 0, bool $lock = false): array
+    public function json(string $path, int $flags = 0, bool $lock = false): ?array
     {
         return json_decode($this->get($path, $lock), true, 512, $flags);
     }
@@ -435,7 +435,7 @@ class Filesystem
     }
 
     /**
-     * Guess the file extension from the MIME type of a given file.
+     * Guess the file extension from the MIME-type of a given file.
      *
      * @param string $path
      * @return string|null

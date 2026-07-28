@@ -1,0 +1,24 @@
+<?php
+
+namespace {{ namespace }};
+
+use Exception;
+
+class {{ class }} extends Exception
+{
+    /**
+     * Report the exception.
+     */
+    public function report(): void
+    {
+        //
+    }
+
+    /**
+     * Render the exception.
+     */
+    public function render(mixed $request): mixed
+    {
+        //
+    }
+}

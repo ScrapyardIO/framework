@@ -6,21 +6,34 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Default Redis Client
+    | Default Redis Connection Client
     |--------------------------------------------------------------------------
     |
-    | Predis is the portable default (pure PHP). Set REDIS_CLIENT=phpredis when
-    | the redis extension is available and you want the native client.
+    | This option controls the default Redis client used by Fabricate. Both
+    | phpredis and predis are supported; prefer phpredis when the extension
+    | is available on the host.
     |
     */
 
-    'client' => env('REDIS_CLIENT', 'predis'),
+    'client' => env('REDIS_CLIENT', 'phpredis'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Redis Options
+    |--------------------------------------------------------------------------
+    */
 
     'options' => [
         'cluster' => env('REDIS_CLUSTER', 'redis'),
-        'prefix' => env('REDIS_PREFIX', Str::slug((string) env('APP_NAME', 'scrapyard-io')).'-database-'),
+        'prefix' => env('REDIS_PREFIX', Str::slug((string) env('APP_NAME', 'scrapyard-io')).'-'),
         'persistent' => env('REDIS_PERSISTENT', false),
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Redis Connections
+    |--------------------------------------------------------------------------
+    */
 
     'default' => [
         'url' => env('REDIS_URL'),

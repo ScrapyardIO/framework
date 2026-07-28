@@ -5,7 +5,7 @@ namespace Fabricate\Core\Console;
 use Fabricate\Console\Command;
 use Symfony\Component\Console\Attribute\AsCommand;
 
-#[AsCommand(name: 'env')]
+#[AsCommand('env')]
 class EnvironmentCommand extends Command
 {
     /**
@@ -22,11 +22,6 @@ class EnvironmentCommand extends Command
      */
     protected string $description = 'Display the current framework environment';
 
-    /**
-     * Execute the console command.
-     *
-     * @return void
-     */
     public function handle(): void
     {
         $this->components->info(sprintf(

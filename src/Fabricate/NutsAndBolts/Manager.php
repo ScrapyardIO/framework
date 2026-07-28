@@ -3,13 +3,13 @@
 namespace Fabricate\NutsAndBolts;
 
 use Closure;
-use Fabricate\Contracts\Chassis\Chassis;
-use Fabricate\NutsAndBolts\Concerns\RebindsCallbacksToSelf;
-use InvalidArgumentException;
-use ReflectionException;
+use Fabricate\Contracts\Config\Repository;
 use RuntimeException;
-
-use function Fabricate\NutsAndBolts\enum_value;
+use ReflectionException;
+use InvalidArgumentException;
+use Fabricate\Contracts\Chassis\WireframeServiceContainer;
+use UnitEnum;
+use function Fabricate\NutsAndBolts\Helpers\enum_value;
 
 abstract class Manager
 {
@@ -18,37 +18,37 @@ abstract class Manager
     /**
      * The container instance.
      *
-     * @var \Fabricate\Contracts\Chassis\Chassis
+     * @var WireframeServiceContainer
      */
-    protected $container;
+    protected WireframeServiceContainer $container;
 
     /**
      * The configuration repository instance.
      *
-     * @var \Fabricate\Contracts\Config\Repository
+     * @var Repository
      */
-    protected $config;
+    protected mixed $config;
 
     /**
      * The registered custom driver creators.
      *
      * @var array<string, \Closure>
      */
-    protected $customCreators = [];
+    protected array $customCreators = [];
 
     /**
      * The array of created "drivers".
      *
      * @var array<string, mixed>
      */
-    protected $drivers = [];
+    protected array $drivers = [];
 
     /**
      * Create a new manager instance.
      *
-     * @param  \Fabricate\Contracts\Chassis\Chassis  $container
+     * @param  WireframeServiceContainer  $container
      */
-    public function __construct(Chassis $container)
+    public function __construct(WireframeServiceContainer $container)
     {
         $this->container = $container;
         $this->config = $container->make('config');
@@ -59,17 +59,17 @@ abstract class Manager
      *
      * @return string|null
      */
-    abstract public function getDefaultDriver();
+    abstract public function getDefaultDriver(): ?string;
 
     /**
      * Get a driver instance.
      *
-     * @param  \UnitEnum|string|null  $driver
+     * @param UnitEnum|string|null $driver
      * @return mixed
      *
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
-    public function driver($driver = null)
+    public function driver(UnitEnum|string|null $driver = null): mixed
     {
         $driver = enum_value($driver) ?: $this->getDefaultDriver();
 
@@ -88,12 +88,12 @@ abstract class Manager
     /**
      * Create a new driver instance.
      *
-     * @param  string  $driver
+     * @param string $driver
      * @return mixed
      *
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
-    protected function createDriver($driver)
+    protected function createDriver(string $driver): mixed
     {
         // First, we will determine if a custom driver creator exists for the given driver and
         // if it does not we will check for a creator method for the driver. Custom creator
@@ -114,10 +114,10 @@ abstract class Manager
     /**
      * Call a custom driver creator.
      *
-     * @param  string  $driver
+     * @param string $driver
      * @return mixed
      */
-    protected function callCustomCreator($driver)
+    protected function callCustomCreator(string $driver): mixed
     {
         return $this->customCreators[$driver]($this->container);
     }
@@ -125,14 +125,14 @@ abstract class Manager
     /**
      * Register a custom driver creator Closure.
      *
-     * @param  string  $driver
-     * @param  \Closure  $callback
+     * @param string $driver
+     * @param  Closure  $callback
      *
      * @param-closure-this  $this  $callback
      *
      * @return $this
      */
-    public function extend($driver, Closure $callback)
+    public function extend(string $driver, Closure $callback): static
     {
         try {
             $callback = $this->bindCallbackToSelf($callback) ?? throw new RuntimeException('Unable to bind custom driver callback');
@@ -146,11 +146,11 @@ abstract class Manager
     }
 
     /**
-     * Get all of the created "drivers".
+     * Get every created "driver".
      *
      * @return array<string, mixed>
      */
-    public function getDrivers()
+    public function getDrivers(): array
     {
         return $this->drivers;
     }
@@ -158,9 +158,9 @@ abstract class Manager
     /**
      * Get the container instance used by the manager.
      *
-     * @return \Fabricate\Contracts\Chassis\Chassis
+     * @return WireframeServiceContainer
      */
-    public function getContainer()
+    public function getContainer(): WireframeServiceContainer
     {
         return $this->container;
     }
@@ -168,10 +168,10 @@ abstract class Manager
     /**
      * Set the container instance used by the manager.
      *
-     * @param  \Fabricate\Contracts\Chassis\Chassis  $container
+     * @param  WireframeServiceContainer  $container
      * @return $this
      */
-    public function setContainer(Chassis $container)
+    public function setContainer(WireframeServiceContainer $container)
     {
         $this->container = $container;
 
@@ -183,7 +183,7 @@ abstract class Manager
      *
      * @return $this
      */
-    public function forgetDrivers()
+    public function forgetDrivers(): static
     {
         $this->drivers = [];
 
@@ -193,11 +193,11 @@ abstract class Manager
     /**
      * Dynamically call the default driver instance.
      *
-     * @param  string  $method
-     * @param  array<string, mixed>  $parameters
+     * @param string $method
+     * @param array<string, mixed> $parameters
      * @return mixed
      */
-    public function __call($method, $parameters)
+    public function __call(string $method, array $parameters)
     {
         return $this->driver()->$method(...$parameters);
     }

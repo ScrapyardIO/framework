@@ -2,20 +2,20 @@
 
 namespace Fabricate\Core\Bootstrap;
 
-use ErrorException;
 use Exception;
-use Fabricate\Contracts\Chassis\BindingResolutionException;
-use Fabricate\Contracts\Debug\ExceptionHandler;
-use Fabricate\Contracts\Core\Machine;
+use Throwable;
+use ErrorException;
+use PHPUnit\Runner\Version;
 use Fabricate\Log\LogManager;
 use Fabricate\NutsAndBolts\Env;
-use Monolog\Handler\NullHandler;
 use PHPUnit\Framework\TestCase;
+use Monolog\Handler\NullHandler;
 use PHPUnit\Runner\ErrorHandler;
-use PHPUnit\Runner\Version;
+use Fabricate\Contracts\Core\Program;
+use Fabricate\Contracts\Debug\ExceptionHandler;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\ErrorHandler\Error\FatalError;
-use Throwable;
+use Fabricate\Contracts\Chassis\BindingResolutionException;
 
 class HandleExceptions
 {
@@ -24,22 +24,22 @@ class HandleExceptions
      *
      * @var string|null
      */
-    public static $reservedMemory;
+    public static ?string $reservedMemory = null;
 
     /**
      * The application instance.
      *
-     * @var Machine
+     * @var ?Program
      */
-    protected static $app;
+    protected static ?Program $app = null;
 
     /**
      * Bootstrap the given application.
      *
-     * @param Machine $app
+     * @param Program $app
      * @return void
      */
-    public function bootstrap(Machine $app): void
+    public function bootstrap(Program $app): void
     {
         static::$reservedMemory = str_repeat('x', 32768);
 

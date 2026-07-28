@@ -2,9 +2,8 @@
 
 namespace Fabricate\Framebuffers\Factory;
 
-use Fabricate\Framebuffers\FullFramebuffer;
 use Fabricate\Contracts\Framebuffers\FramebufferException;
-use Fabricate\Framebuffers\Factory\FormatSpecFramebufferFactory;
+use Fabricate\Framebuffers\Strategy\FullFramebuffer;
 
 class FullFramebufferFactory extends FormatSpecFramebufferFactory
 {

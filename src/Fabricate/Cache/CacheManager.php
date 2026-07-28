@@ -4,20 +4,22 @@ namespace Fabricate\Cache;
 
 use Closure;
 use Fabricate\Contracts\Cache\Factory as FactoryContract;
+use Fabricate\Contracts\Cache\Repository as RepositoryContract;
 use Fabricate\Contracts\Cache\Store;
 use Fabricate\Contracts\Events\Dispatcher as DispatcherContract;
 use Fabricate\NutsAndBolts\Arr;
-use Fabricate\NutsAndBolts\Concerns\RebindsCallbacksToSelf;
+use Fabricate\NutsAndBolts\RebindsCallbacksToSelf;
 use InvalidArgumentException;
 use Mockery;
 use Mockery\LegacyMockInterface;
 use ReflectionException;
 use RuntimeException;
+use UnitEnum;
 
-use function Fabricate\NutsAndBolts\enum_value;
+use function Fabricate\NutsAndBolts\Helpers\enum_value;
 
 /**
- * @mixin \Fabricate\Cache\Repository
+ * @mixin \Fabricate\Cache\CacheRepository
  * @mixin \Fabricate\Contracts\Cache\LockProvider
  */
 class CacheManager implements FactoryContract
@@ -27,7 +29,7 @@ class CacheManager implements FactoryContract
     /**
      * The application instance.
      *
-     * @var \Fabricate\Contracts\Core\Machine
+     * @var \Fabricate\Contracts\Core\Program
      */
     protected $app;
 
@@ -48,7 +50,7 @@ class CacheManager implements FactoryContract
     /**
      * Create a new Cache manager instance.
      *
-     * @param  \Fabricate\Contracts\Core\Machine  $app
+     * @param  \Fabricate\Contracts\Core\Program  $app
      */
     public function __construct($app)
     {
@@ -58,10 +60,10 @@ class CacheManager implements FactoryContract
     /**
      * Get a cache store instance by name, wrapped in a repository.
      *
-     * @param  \UnitEnum|string|null  $name
-     * @return \Fabricate\Contracts\Cache\Repository
+     * @param  UnitEnum|string|null  $name
+     * @return RepositoryContract
      */
-    public function store($name = null)
+    public function store(UnitEnum|string|null $name = null): RepositoryContract
     {
         $name = enum_value($name) ?? $this->getDefaultDriver();
 
@@ -71,10 +73,10 @@ class CacheManager implements FactoryContract
     /**
      * Get a cache driver instance.
      *
-     * @param  \UnitEnum|string|null  $driver
-     * @return \Fabricate\Contracts\Cache\Repository
+     * @param  UnitEnum|string|null  $driver
+     * @return RepositoryContract
      */
-    public function driver($driver = null)
+    public function driver(UnitEnum|string|null $driver = null): RepositoryContract
     {
         return $this->store($driver);
     }
@@ -82,10 +84,10 @@ class CacheManager implements FactoryContract
     /**
      * Get a memoized cache driver instance.
      *
-     * @param  \UnitEnum|string|null  $driver
-     * @return \Fabricate\Contracts\Cache\Repository
+     * @param  UnitEnum|string|null  $driver
+     * @return RepositoryContract
      */
-    public function memo($driver = null)
+    public function memo(UnitEnum|string|null $driver = null): RepositoryContract
     {
         $driver = enum_value($driver) ?? $this->getDefaultDriver();
 
@@ -129,7 +131,7 @@ class CacheManager implements FactoryContract
      * Build a cache repository with the given configuration.
      *
      * @param  array  $config
-     * @return \Fabricate\Cache\Repository
+     * @return \Fabricate\Cache\CacheRepository
      *
      * @throws \InvalidArgumentException
      */
@@ -165,7 +167,7 @@ class CacheManager implements FactoryContract
      * Create an instance of the array cache driver.
      *
      * @param  array  $config
-     * @return \Fabricate\Cache\Repository
+     * @return \Fabricate\Cache\CacheRepository
      */
     protected function createArrayDriver(array $config)
     {
@@ -179,7 +181,7 @@ class CacheManager implements FactoryContract
      * Create an instance of the failover cache driver.
      *
      * @param  array  $config
-     * @return \Fabricate\Cache\Repository
+     * @return \Fabricate\Cache\CacheRepository
      */
     protected function createFailoverDriver(array $config)
     {
@@ -194,7 +196,7 @@ class CacheManager implements FactoryContract
      * Create an instance of the file cache driver.
      *
      * @param  array  $config
-     * @return \Fabricate\Cache\Repository
+     * @return \Fabricate\Cache\CacheRepository
      */
     protected function createFileDriver(array $config)
     {
@@ -214,7 +216,7 @@ class CacheManager implements FactoryContract
      * Create an instance of the storage cache driver.
      *
      * @param  array  $config
-     * @return \Fabricate\Cache\Repository
+     * @return \Fabricate\Cache\CacheRepository
      */
     protected function createStorageDriver(array $config)
     {
@@ -237,7 +239,7 @@ class CacheManager implements FactoryContract
     /**
      * Create an instance of the Null cache driver.
      *
-     * @return \Fabricate\Cache\Repository
+     * @return \Fabricate\Cache\CacheRepository
      */
     protected function createNullDriver()
     {
@@ -248,7 +250,7 @@ class CacheManager implements FactoryContract
      * Create an instance of the Redis cache driver.
      *
      * @param  array  $config
-     * @return \Fabricate\Cache\Repository
+     * @return \Fabricate\Cache\CacheRepository
      */
     protected function createRedisDriver(array $config)
     {
@@ -274,11 +276,11 @@ class CacheManager implements FactoryContract
      *
      * @param  \Fabricate\Contracts\Cache\Store  $store
      * @param  array  $config
-     * @return \Fabricate\Cache\Repository
+     * @return \Fabricate\Cache\CacheRepository
      */
     public function repository(Store $store, array $config = [])
     {
-        return tap(new Repository($store, Arr::only($config, ['store'])), function ($repository) use ($config) {
+        return tap(new CacheRepository($store, Arr::only($config, ['store'])), function ($repository) use ($config) {
             if ($config['events'] ?? true) {
                 $this->setEventDispatcher($repository);
             }
@@ -288,10 +290,10 @@ class CacheManager implements FactoryContract
     /**
      * Set the event dispatcher on the given repository instance.
      *
-     * @param  \Fabricate\Cache\Repository  $repository
+     * @param  \Fabricate\Cache\CacheRepository  $repository
      * @return void
      */
-    protected function setEventDispatcher(Repository $repository)
+    protected function setEventDispatcher(CacheRepository $repository)
     {
         if (! $this->app->bound(DispatcherContract::class)) {
             return;
@@ -428,7 +430,7 @@ class CacheManager implements FactoryContract
     /**
      * Set the application instance used by the manager.
      *
-     * @param  \Fabricate\Contracts\Core\Machine  $app
+     * @param  \Fabricate\Contracts\Core\Program  $app
      * @return $this
      */
     public function setApplication($app)
@@ -446,7 +448,7 @@ class CacheManager implements FactoryContract
      */
     public function handleUnserializableClassUsing(?callable $callback): void
     {
-        Repository::handleUnserializableClassUsing($callback);
+        CacheRepository::handleUnserializableClassUsing($callback);
     }
 
     /**

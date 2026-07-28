@@ -5,6 +5,7 @@ namespace Fabricate\NutsAndBolts\Concerns;
 use Closure;
 use Throwable;
 use ReflectionClass;
+use ReflectionFunction;
 use ReflectionMethod;
 use RuntimeException;
 use ReflectionException;
@@ -94,10 +95,14 @@ trait Macroable
         $macro = static::$macros[$method];
 
         if ($macro instanceof Closure) {
-            try {
-                $macro = $macro->bindTo($this, static::class) ?? throw new RuntimeException;
-            } catch (Throwable) {
+            if ((new ReflectionFunction($macro))->isStatic()) {
                 $macro = $macro->bindTo(null, static::class);
+            } else {
+                try {
+                    $macro = $macro->bindTo($this, static::class) ?? throw new RuntimeException;
+                } catch (Throwable) {
+                    $macro = $macro->bindTo(null, static::class);
+                }
             }
         }
 

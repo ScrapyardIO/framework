@@ -9,7 +9,7 @@ use Fabricate\Redis\Connections\PhpRedisConnection;
 use Fabricate\Redis\Connections\PredisClusterConnection;
 use Fabricate\Redis\Connections\PredisConnection;
 
-use function Fabricate\NutsAndBolts\enum_value;
+use function Fabricate\NutsAndBolts\Helpers\enum_value;
 
 class RedisTaggedCache extends TaggedCache
 {

@@ -1,0 +1,8 @@
+<?php
+
+namespace {{ namespace }};
+
+enum {{ class }}: {{ type }}
+{
+    // Cases must be FULLY UPPERCASE, e.g. case ACTIVE = 'active';
+}

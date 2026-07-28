@@ -1,9 +1,12 @@
 {
     "name": "scrapyard-io/framework",
     "description": "The ScrapyardIO Framework.",
-    "keywords": ["framework", "scrapyard-io"],
+    "keywords": [
+        "framework",
+        "scrapyard-io"
+    ],
     "license": "MIT",
-    "version": "0.5.1",
+    "version": "0.6.0",
     "homepage": "https://scrapyard-io.projectsaturnstudios.com",
     "support": {
         "issues": "https://github.com/scrapyard-io/framework/issues",
@@ -16,81 +19,91 @@
         }
     ],
     "require": {
-        "ext-intl": "*",
-        "ext-ctype": "*",
-        "ext-filter": "*",
         "ext-mbstring": "*",
-        "ramsey/uuid": "^4.7",
         "php": "^8.4|^8.5|^8.6",
+        "ramsey/uuid": "^4.7",
         "nesbot/carbon": "^3.8.4",
         "monolog/monolog": "^3.0",
         "laravel/prompts": "^0.3.0",
         "vlucas/phpdotenv": "^5.6.1",
         "league/commonmark": "^2.8.1",
         "nunomaduro/termwind": "^2.0",
-        "predis/predis": "^2.3|^3.0",
-        "doctrine/inflector": "^2.0.5",
         "voku/portable-ascii": "^2.0.2",
-        "league/flysystem-ftp": "^3.25.1",
         "symfony/uid": "^7.4.0 || ^8.0.0",
+        "league/flysystem-ftp": "^3.25.1",
         "symfony/mime": "^7.4.0 || ^8.0.0",
         "psr/container": "^1.1.1 || ^2.0.1",
         "symfony/finder": "^7.4.0 || ^8.0.0",
-        "league/flysystem-sftp-v3": "^3.25.1",
+        "symfony/process": "^7.4.5 || ^8.0.5",
         "symfony/console": "^7.4.0 || ^8.0.0",
-        "league/flysystem-aws-s3-v3": "^3.25.1",
-        "league/flysystem-read-only": "^3.25.1",
         "symfony/filesystem": "^7.4.0 || ^8.0.0",
         "symfony/var-dumper": "^7.4.0 || ^8.0.0",
+        "laravel/serializable-closure": "^2.0.10",
         "symfony/error-handler": "^7.4.0 || ^8.0.0",
-        "league/flysystem-path-prefixing": "^3.25.1",
         "symfony/event-dispatcher": "^7.4.0 || ^8.0.0"
     },
     "suggest": {
-        "ext-redis": "Required to use the phpredis connector (^4.0 || ^5.0 || ^6.0)."
+        "ext-redis": "Required to use the phpredis connector (^4.0 || ^5.0 || ^6.0).",
+        "predis/predis": "Required to use the predis connector (^2.3 || ^3.0).",
+        "ext-fileinfo": "Required to use the Filesystem class.",
+        "ext-ftp": "Required to use the Flysystem FTP driver.",
+        "league/flysystem": "Required to use the Flysystem local driver (^3.25.1).",
+        "league/flysystem-aws-s3-v3": "Required to use the Flysystem S3 driver (^3.25.1).",
+        "league/flysystem-sftp-v3": "Required to use the Flysystem SFTP driver (^3.25.1).",
+        "psr/http-message": "Required to allow Storage::put to accept a StreamInterface (^1.0).",
+        "league/flysystem-path-prefixing": "Required to use the scoped driver (^3.25.1).",
+        "league/flysystem-read-only": "Required to use read-only disks (^3.25.1).",
+        "phpunit/phpunit": "Required to use Process::fake() assertions (^11.5.50 || ^12.5.8 || ^13.0.3)."
     },
     "replace": {
-        "fabricate/gfx": "self.version",
+        "fabricate/bus": "self.version",
+        "fabricate/cache": "self.version",
         "fabricate/chassis": "self.version",
         "fabricate/circuits": "self.version",
-        "fabricate/actuation": "self.version",
-        "fabricate/displays": "self.version",
-        "fabricate/framebuffers": "self.version",
-        "fabricate/macroable": "self.version",
-        "fabricate/contracts": "self.version",
-        "fabricate/filesystem": "self.version",
-        "fabricate/reflections": "self.version",
         "fabricate/collections": "self.version",
         "fabricate/conditionable": "self.version",
+        "fabricate/config": "self.version",
+        "fabricate/console": "self.version",
+        "fabricate/contracts": "self.version",
+        "fabricate/database": "self.version",
+        "fabricate/displays": "self.version",
+        "fabricate/events": "self.version",
+        "fabricate/filesystem": "self.version",
+        "fabricate/fonts": "self.version",
+        "fabricate/framebuffers": "self.version",
+        "fabricate/log": "self.version",
+        "fabricate/macroable": "self.version",
         "fabricate/nuts-and-bolts": "self.version",
+        "fabricate/pipeline": "self.version",
+        "fabricate/process": "self.version",
+        "fabricate/queue": "self.version",
+        "fabricate/redis": "self.version",
+        "fabricate/reflection": "self.version",
+        "fabricate/rendering": "self.version",
         "fabricate/sensors": "self.version",
-
-        "gpio/common": "self.version",
-        "gpio/contracts": "self.version",
-        "gpio/digital": "self.version",
-        "gpio/i2c": "self.version",
-        "gpio/spi": "self.version",
-        "gpio/pwm": "self.version",
-        "gpio/uart": "self.version"
+        "fabricate/sketches": "self.version"
     },
     "require-dev": {
-        "pestphp/pest": "^4"
+        "mockery/mockery": "^1.6",
+        "pestphp/pest": "^4",
+        "league/flysystem-path-prefixing": "^3.25.1",
+        "league/flysystem-read-only": "^3.25.1",
+        "guzzlehttp/psr7": "^2.0"
     },
     "autoload": {
         "files": [
-            "src/Fabricate/Core/helpers.php",
-            "src/Fabricate/Collections/helpers.php",
-            "src/Fabricate/Collections/functions.php",
-            "src/Fabricate/Filesystem/functions.php",
-            "src/Fabricate/NutsAndBolts/helpers.php",
-            "src/Fabricate/NutsAndBolts/functions.php",
-            "src/Fabricate/Log/functions.php"
+            "src/Fabricate/Collections/Helpers/functions.php",
+            "src/Fabricate/Core/Helpers/helpers.php",
+            "src/Fabricate/Collections/Helpers/helpers.php",
+            "src/Fabricate/Filesystem/Helpers/functions.php",
+            "src/Fabricate/NutsAndBolts/Helpers/functions.php",
+            "src/Fabricate/NutsAndBolts/Helpers/helpers.php",
+            "src/Fabricate/NutsAndBolts/Helpers/bytes.php",
+            "src/Fabricate/NutsAndBolts/Helpers/time.php",
+            "src/Fabricate/Reflection/Helpers/helpers.php"
         ],
         "psr-4": {
             "Fabricate\\": "src/Fabricate/",
-            "GeneralPurposeIO\\": [
-                "src/GeneralPurposeIO/"
-            ],
             "Fabricate\\NutsAndBolts\\": [
                 "src/Fabricate/Macroable/",
                 "src/Fabricate/Collections/",
@@ -106,7 +119,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-master": "0.5-dev"
+            "dev-master": "0.6-dev"
         }
     },
     "config": {

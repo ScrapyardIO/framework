@@ -2,10 +2,10 @@
 
 namespace Fabricate\Contracts\Chassis;
 
-use Exception;
+use Fabricate\NutsAndBolts\ScrapyardIOException;
 use Psr\Container\ContainerExceptionInterface;
 
-class BindingResolutionException extends Exception implements ContainerExceptionInterface
+class BindingResolutionException extends ScrapyardIOException implements ContainerExceptionInterface
 {
     //
 }

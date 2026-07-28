@@ -2,6 +2,8 @@
 
 namespace Fabricate\Contracts\Framebuffers;
 
+use Fabricate\Framebuffers\FormatSpec;
+
 /**
  * Packs a logical pixel grid into the wire layout a FormatSpec describes.
  *

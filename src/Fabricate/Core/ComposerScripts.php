@@ -2,11 +2,14 @@
 
 namespace Fabricate\Core;
 
-use Composer\Installer\PackageEvent;
-use Composer\IO\IOInterface;
 use Composer\Script\Event;
+use Composer\IO\IOInterface;
+use Composer\Installer\PackageEvent;
+use Fabricate\Contracts\Chassis\BindingResolutionException;
+use Fabricate\Contracts\Chassis\CircularDependencyException;
 use Fabricate\Core\Bootstrap\LoadConfiguration;
 use Fabricate\Core\Bootstrap\LoadEnvironmentVariables;
+use ReflectionException;
 use Throwable;
 
 class ComposerScripts
@@ -101,8 +104,9 @@ class ComposerScripts
      * Clear the cached ScrapyardIO bootstrapping files.
      *
      * @return void
+     * @throws ReflectionException|BindingResolutionException|CircularDependencyException
      */
-    protected static function clearCompiled()
+    protected static function clearCompiled(): void
     {
         $machine = new Machine(getcwd());
 

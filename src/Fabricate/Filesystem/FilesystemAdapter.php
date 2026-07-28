@@ -7,8 +7,7 @@ use Closure;
 use Fabricate\Chassis\Chassis;
 use Fabricate\Contracts\Debug\ExceptionHandler;
 use Fabricate\Contracts\Filesystem\Cloud as CloudFilesystemContract;
-use Fabricate\Contracts\Filesystem\Filesystem as FilesystemContract;
-use Fabricate\Filesystem\Enums\VISIBILITY;
+use Fabricate\Filesystem\Enums\Visibility as DiskVisibility;
 use Fabricate\NutsAndBolts\Arr;
 use Fabricate\NutsAndBolts\Concerns\Conditionable;
 use Fabricate\NutsAndBolts\Concerns\Macroable;
@@ -31,7 +30,8 @@ use League\Flysystem\UnableToReadFile;
 use League\Flysystem\UnableToRetrieveMetadata;
 use League\Flysystem\UnableToSetVisibility;
 use League\Flysystem\UnableToWriteFile;
-use League\Flysystem\Visibility;
+use League\Flysystem\Visibility as FlysystemVisibility;
+use PHPUnit\Framework\Assert as PHPUnit;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UriInterface;
 use RuntimeException;
@@ -77,6 +77,95 @@ class FilesystemAdapter implements CloudFilesystemContract
     public function exists($path): bool
     {
         return $this->driver->has($path);
+    }
+
+    /**
+     * Assert that the given file or directory exists.
+     *
+     * @param  string|array  $path
+     * @param  string|null  $content
+     * @return $this
+     */
+    public function assertExists($path, $content = null)
+    {
+        clearstatcache();
+
+        $paths = Arr::wrap($path);
+
+        foreach ($paths as $path) {
+            PHPUnit::assertTrue(
+                $this->exists($path), "Unable to find a file or directory at path [{$path}]."
+            );
+
+            if (! is_null($content)) {
+                $actual = $this->get($path);
+
+                PHPUnit::assertSame(
+                    $content,
+                    $actual,
+                    "File or directory [{$path}] was found, but content [{$actual}] does not match [{$content}]."
+                );
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * Assert that the number of files in path equals the expected count.
+     *
+     * @param  string  $path
+     * @param  int  $count
+     * @param  bool  $recursive
+     * @return $this
+     */
+    public function assertCount($path, $count, $recursive = false)
+    {
+        clearstatcache();
+
+        $actual = count($this->files($path, $recursive));
+
+        PHPUnit::assertEquals(
+            $count, $actual, "Expected [{$count}] files at [{$path}], but found [{$actual}]."
+        );
+
+        return $this;
+    }
+
+    /**
+     * Assert that the given file or directory does not exist.
+     *
+     * @param  string|array  $path
+     * @return $this
+     */
+    public function assertMissing($path)
+    {
+        clearstatcache();
+
+        $paths = Arr::wrap($path);
+
+        foreach ($paths as $path) {
+            PHPUnit::assertFalse(
+                $this->exists($path), "Found unexpected file or directory at path [{$path}]."
+            );
+        }
+
+        return $this;
+    }
+
+    /**
+     * Assert that the given directory is empty.
+     *
+     * @param  string  $path
+     * @return $this
+     */
+    public function assertDirectoryEmpty($path)
+    {
+        PHPUnit::assertEmpty(
+            $this->allFiles($path), "Directory [{$path}] is not empty."
+        );
+
+        return $this;
     }
 
     public function missing($path): bool
@@ -177,7 +266,21 @@ class FilesystemAdapter implements CloudFilesystemContract
             $file = new SplFileInfo($file);
         }
 
-        return $this->putFileAs($path, $file, $file->getBasename(), $options);
+        $name = method_exists($file, 'hashName')
+            ? $file->hashName()
+            : $this->hashName($file);
+
+        return $this->putFileAs($path, $file, $name, $options);
+    }
+
+    /**
+     * Generate a random filename with the original extension.
+     */
+    protected function hashName(SplFileInfo $file): string
+    {
+        $extension = $file->getExtension();
+
+        return Str::random(40).($extension !== '' ? '.'.$extension : '');
     }
 
     /**
@@ -207,15 +310,15 @@ class FilesystemAdapter implements CloudFilesystemContract
 
     public function getVisibility($path): string
     {
-        if ($this->driver->visibility($path) === Visibility::PUBLIC) {
-            return VISIBILITY::PUBLIC->value;
+        if ($this->driver->visibility($path) === FlysystemVisibility::PUBLIC) {
+            return DiskVisibility::PUBLIC->value;
         }
 
-        return VISIBILITY::PRIVATE->value;
+        return DiskVisibility::PRIVATE->value;
     }
 
     /**
-     * @param  string|\Fabricate\Filesystem\Enums\VISIBILITY  $visibility
+     * @param  string|\Fabricate\Filesystem\Enums\Visibility  $visibility
      */
     public function setVisibility($path, $visibility): bool
     {
@@ -557,7 +660,7 @@ class FilesystemAdapter implements CloudFilesystemContract
     }
 
     /**
-     * @param  string|\Fabricate\Filesystem\Enums\VISIBILITY|null  $visibility
+     * @param  string|\Fabricate\Filesystem\Enums\Visibility|null  $visibility
      */
     protected function parseVisibility($visibility): ?string
     {
@@ -565,13 +668,13 @@ class FilesystemAdapter implements CloudFilesystemContract
             return null;
         }
 
-        if ($visibility instanceof VISIBILITY) {
+        if ($visibility instanceof DiskVisibility) {
             $visibility = $visibility->value;
         }
 
         return match ($visibility) {
-            VISIBILITY::PUBLIC->value => Visibility::PUBLIC,
-            VISIBILITY::PRIVATE->value => Visibility::PRIVATE,
+            DiskVisibility::PUBLIC->value => FlysystemVisibility::PUBLIC,
+            DiskVisibility::PRIVATE->value => FlysystemVisibility::PRIVATE,
             default => throw new InvalidArgumentException("Unknown visibility: {$visibility}."),
         };
     }

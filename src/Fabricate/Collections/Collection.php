@@ -2,17 +2,19 @@
 
 namespace Fabricate\NutsAndBolts;
 
+use Fabricate\NutsAndBolts\Exceptions\MultipleItemsFoundException;
 use stdClass;
 use Traversable;
 use ArrayAccess;
 use ArrayIterator;
 use CachingIterator;
 use InvalidArgumentException;
-use Fabricate\Contracts\Support\Arrayable;
 use Fabricate\NutsAndBolts\Concerns\Macroable;
+use Fabricate\Contracts\NutsAndBolts\Arrayable;
 use Fabricate\NutsAndBolts\Contracts\Enumerable;
 use Fabricate\NutsAndBolts\Concerns\EnumeratesValues;
-use Fabricate\Contracts\Support\CanBeEscapedWhenCastToString;
+use Fabricate\NutsAndBolts\Exceptions\ItemNotFoundException;
+use Fabricate\Contracts\NutsAndBolts\CanBeEscapedWhenCastToString;
 use Fabricate\NutsAndBolts\Concerns\TransformsToResourceCollection;
 
 /**
@@ -23,7 +25,6 @@ use Fabricate\NutsAndBolts\Concerns\TransformsToResourceCollection;
  * @implements ArrayAccess<TKey, TValue>
  * @implements Enumerable<TKey, TValue>
  */
-
 class Collection implements ArrayAccess, CanBeEscapedWhenCastToString, Enumerable
 {
     use EnumeratesValues, Macroable, TransformsToResourceCollection;
@@ -1435,8 +1436,8 @@ class Collection implements ArrayAccess, CanBeEscapedWhenCastToString, Enumerabl
      * @param  mixed  $value
      * @return TValue
      *
-     * @throws \Fabricate\NutsAndBolts\ItemNotFoundException
-     * @throws \Fabricate\NutsAndBolts\MultipleItemsFoundException
+     * @throws ItemNotFoundException
+     * @throws MultipleItemsFoundException
      */
     public function sole(callable|string|null $key = null, mixed $operator = null, mixed $value = null)
     {
@@ -1487,7 +1488,7 @@ class Collection implements ArrayAccess, CanBeEscapedWhenCastToString, Enumerabl
      * @param  mixed  $value
      * @return TValue
      *
-     * @throws \Fabricate\NutsAndBolts\ItemNotFoundException
+     * @throws ItemNotFoundException
      */
     public function firstOrFail(callable|string|null $key = null, mixed $operator = null, mixed $value = null)
     {
@@ -1513,7 +1514,7 @@ class Collection implements ArrayAccess, CanBeEscapedWhenCastToString, Enumerabl
      * @param  bool  $preserveKeys
      * @return ($preserveKeys is true ? static<int, static> : static<int, static<int, TValue>>)
      */
-    public function chunk(int $size): static
+    public function chunk(int $size, bool $preserveKeys): static
     {
         if ($size <= 0) {
             return $this->newInstance();

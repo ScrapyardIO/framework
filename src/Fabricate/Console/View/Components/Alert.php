@@ -9,11 +9,11 @@ class Alert extends Component
     /**
      * Renders the component using the given arguments.
      *
-     * @param  string  $string
-     * @param  int  $verbosity
+     * @param string $string
+     * @param int $verbosity
      * @return void
      */
-    public function render($string, $verbosity = OutputInterface::VERBOSITY_NORMAL)
+    public function render(string $string, int $verbosity = OutputInterface::VERBOSITY_NORMAL): void
     {
         $string = $this->mutate($string, [
             Mutators\EnsureDynamicContentIsHighlighted::class,

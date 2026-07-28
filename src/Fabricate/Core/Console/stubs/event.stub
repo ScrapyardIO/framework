@@ -1,0 +1,19 @@
+<?php
+
+namespace {{ namespace }};
+
+use Fabricate\Core\Bus\Dispatchable;
+use Fabricate\Queue\SerializesModels;
+
+class {{ class }}
+{
+    use Dispatchable, SerializesModels;
+
+    /**
+     * Create a new event instance.
+     */
+    public function __construct()
+    {
+        //
+    }
+}

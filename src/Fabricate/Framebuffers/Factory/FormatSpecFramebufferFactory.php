@@ -2,17 +2,17 @@
 
 namespace Fabricate\Framebuffers\Factory;
 
-use Fabricate\Contracts\Framebuffers\FormatSpec;
-use Fabricate\Framebuffers\FormatSpecFramebuffer;
-use Fabricate\Contracts\Framebuffers\ChannelPalette;
-use Fabricate\Contracts\Framebuffers\Enums\PageAxis;
 use Fabricate\Contracts\Framebuffers\Enums\BitDepth;
 use Fabricate\Contracts\Framebuffers\Enums\BitOrder;
 use Fabricate\Contracts\Framebuffers\Enums\Endianness;
+use Fabricate\Contracts\Framebuffers\Enums\PageAxis;
 use Fabricate\Contracts\Framebuffers\Enums\PixelFormat;
 use Fabricate\Contracts\Framebuffers\Enums\ScanDirection;
-use Fabricate\Contracts\Framebuffers\FramebufferException;
 use Fabricate\Contracts\Framebuffers\FormatSpecFramebufferFactory as FormatSpecFramebufferFactoryContract;
+use Fabricate\Contracts\Framebuffers\FramebufferException;
+use Fabricate\Framebuffers\DataObjects\ChannelPalette;
+use Fabricate\Framebuffers\FormatSpec;
+use Fabricate\Framebuffers\Strategy\FormatSpecFramebuffer;
 
 abstract class FormatSpecFramebufferFactory implements FormatSpecFramebufferFactoryContract
 {

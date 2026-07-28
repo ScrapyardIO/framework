@@ -3,35 +3,28 @@
     "description": "The Fabricate Support package.",
     "license": "MIT",
     "require": {
-        "ext-intl": "*",
-        "ext-ctype": "*",
-        "ext-filter": "*",
-        "ext-mbstring": "*",
-        "ramsey/uuid": "^4.7",
         "php": "^8.4|^8.5|^8.6",
+        "ramsey/uuid": "^4.7",
         "nesbot/carbon": "^3.8.4",
+        "vlucas/phpdotenv": "^5.6.1",
         "league/commonmark": "^2.8.1",
-        "doctrine/inflector": "^2.0.5",
-        "fabricate/contracts": "^0.5.0",
-        "fabricate/macroable": "^0.5.0",
         "voku/portable-ascii": "^2.0.2",
-        "fabricate/reflection": "^0.5.0",
-        "fabricate/collections": "^0.5.0",
+        "fabricate/macroable": "^0.6.0",
+        "fabricate/collections": "^0.6.0",
         "symfony/uid": "^7.4.0 || ^8.0.0",
-        "fabricate/conditionable": "^0.5.0",
         "symfony/var-dumper": "^7.4.0 || ^8.0.0"
     },
-    "suggest": {
-        "symfony/var-dumper": "Required to use the dump method (^7.4 || ^8.0)."
-    },
+    "suggest": {},
     "minimum-stability": "dev",
     "autoload": {
         "psr-4": {
             "Fabricate\\NutsAndBolts\\": ""
         },
         "files": [
-            "functions.php",
-            "helpers.php"
+            "Helpers/functions.php",
+            "Helpers/helpers.php",
+            "Helpers/bytes.php",
+            "Helpers/time.php"
         ]
     },
     "config": {

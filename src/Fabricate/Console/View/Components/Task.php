@@ -2,7 +2,7 @@
 
 namespace Fabricate\Console\View\Components;
 
-use Fabricate\Console\View\TASK_RESULT;
+use Fabricate\Console\View\TaskResult;
 use Fabricate\NutsAndBolts\Concerns\InteractsWithTime;
 use Symfony\Component\Console\Output\OutputInterface;
 use Throwable;
@@ -37,10 +37,10 @@ class Task extends Component
 
         $startTime = microtime(true);
 
-        $result = TASK_RESULT::FAILURE->value;
+        $result = TaskResult::FAILURE->value;
 
         try {
-            $result = ($task ?: fn () => TASK_RESULT::SUCCESS->value)();
+            $result = ($task ?: fn () => TaskResult::SUCCESS->value)();
         } catch (Throwable $e) {
             throw $e;
         } finally {
@@ -57,8 +57,8 @@ class Task extends Component
 
             $this->output->writeln(
                 match ($result) {
-                    TASK_RESULT::FAILURE->value => ' <fg=red;options=bold>FAIL</>',
-                    TASK_RESULT::SKIPPED->value => ' <fg=yellow;options=bold>SKIPPED</>',
+                    TaskResult::FAILURE->value => ' <fg=red;options=bold>FAIL</>',
+                    TaskResult::SKIPPED->value => ' <fg=yellow;options=bold>SKIPPED</>',
                     default => ' <fg=green;options=bold>DONE</>'
                 },
                 $verbosity,

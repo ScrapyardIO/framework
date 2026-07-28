@@ -1,0 +1,45 @@
+{
+  "name": "fabricate/console",
+  "description": "The Fabricate Console package.",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Angel Gonzalez",
+      "email": "angel@projectsaturnstudios.com"
+    },
+    {
+      "name": "Taylor Otwell"
+    }
+  ],
+  "homepage": "https://scrapyard-io.projectsaturnstudios.com",
+  "support": {
+    "issues": "https://github.com/ScrapyardIO/framework/issues",
+    "source": "https://github.com/ScrapyardIO/framework"
+  },
+  "require": {
+    "ext-mbstring": "*",
+    "php": "^8.4|^8.5|^8.6",
+    "laravel/prompts": "^0.3.0",
+    "nunomaduro/termwind": "^2.0",
+    "fabricate/macroable": "^0.6.0",
+    "fabricate/contracts": "^0.6.0",
+    "fabricate/collections": "^0.6.0",
+    "fabricate/nuts-and-bolts": "^0.6.0",
+    "symfony/process": "^7.4.5 || ^8.0.5",
+    "symfony/console": "^7.4.0 || ^8.0.0"
+  },
+  "minimum-stability": "dev",
+  "autoload": {
+    "psr-4": {
+      "Fabricate\\Console\\": ""
+    }
+  },
+  "config": {
+    "sort-packages": true
+  },
+  "extra": {
+    "branch-alias": {
+      "dev-master": "0.6.x-dev"
+    }
+  }
+}

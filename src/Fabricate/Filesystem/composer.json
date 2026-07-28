@@ -1,45 +1,58 @@
 {
-    "name": "fabricate/filesystem",
-    "description": "The Fabricate Filesystem package.",
-    "license": "MIT",
-    "require": {
-        "php": "^8.3",
-        "fabricate/contracts": "^0.5.0",
-        "fabricate/collections": "^0.5.0",
-        "fabricate/macroable": "^0.5.0",
-        "fabricate/nuts-and-bolts": "^0.5.0",
-        "symfony/finder": "^7.4.0 || ^8.0.0"
+  "name": "fabricate/filesystem",
+  "description": "The Fabricate Filesystem package.",
+  "license": "MIT",
+  "authors": [
+    {
+        "name": "Angel Gonzalez",
+        "email": "angel@projectsaturnstudios.com"
     },
-    "provide": {
-        "psr/container-implementation": "1.1 || 2.0"
-    },
-    "suggest": {
-        "ext-fileinfo": "Required to use the Filesystem class.",
-        "ext-ftp": "Required to use the Flysystem FTP driver.",
-        "ext-hash": "Required to use the Filesystem class.",
-        "league/flysystem": "Required to use the Flysystem local driver (^3.25.1).",
-        "league/flysystem-aws-s3-v3": "Required to use the Flysystem S3 driver (^3.25.1).",
-        "league/flysystem-ftp": "Required to use the Flysystem FTP driver (^3.25.1).",
-        "league/flysystem-sftp-v3": "Required to use the Flysystem SFTP driver (^3.25.1).",
-        "psr/http-message": "Required to allow Storage::put to accept a StreamInterface (^1.0).",
-        "symfony/filesystem": "Required to enable support for relative symbolic links (^7.4 || ^8.0).",
-        "symfony/mime": "Required to enable support for guessing extensions (^7.4 || ^8.0)."
-    },
-    "minimum-stability": "dev",
-    "autoload": {
-        "psr-4": {
-            "Fabricate\\Filesystem\\": ""
-        },
-        "files": [
-            "functions.php"
-        ]
-    },
-    "config": {
-        "sort-packages": true
-    },
-    "extra": {
-        "branch-alias": {
-            "dev-master": "0.5.x-dev"
-        }
+    {
+        "name": "Taylor Otwell"
     }
+  ],
+  "homepage": "https://scrapyard-io.projectsaturnstudios.com",
+  "support": {
+      "issues": "https://github.com/ScrapyardIO/framework/issues",
+      "source": "https://github.com/ScrapyardIO/framework"
+  },
+  "require": {
+      "php": "^8.4|^8.5|^8.6",
+      "fabricate/contracts": "^0.6.0",
+      "fabricate/macroable": "^0.6.0",
+      "fabricate/collections": "^0.6.0",
+      "fabricate/nuts-and-botls": "^0.6.0",
+      "symfony/mime": "^7.4.0 || ^8.0.0",
+      "symfony/finder": "^7.4.0 || ^8.0.0",
+      "symfony/filesystem": "^7.4.0 || ^8.0.0"
+  },
+  "suggest": {
+    "ext-fileinfo": "Required to use the Filesystem class.",
+    "ext-ftp": "Required to use the Flysystem FTP driver.",
+    "ext-hash": "Required to use the Filesystem class.",
+    "league/flysystem": "Required to use the Flysystem local driver (^3.25.1).",
+    "league/flysystem-aws-s3-v3": "Required to use the Flysystem S3 driver (^3.25.1).",
+    "league/flysystem-ftp": "Required to use the Flysystem FTP driver (^3.25.1).",
+    "league/flysystem-sftp-v3": "Required to use the Flysystem SFTP driver (^3.25.1).",
+    "psr/http-message": "Required to allow Storage::put to accept a StreamInterface (^1.0).",
+    "symfony/filesystem": "Required to enable support for relative symbolic links (^7.4 || ^8.0).",
+    "symfony/mime": "Required to enable support for guessing extensions (^7.4 || ^8.0)."
+  },
+  "minimum-stability": "dev",
+  "autoload": {
+    "psr-4": {
+        "Fabricate\\Filesystem\\": ""
+    },
+    "files": [
+      "Helpers/functions.php"
+    ]
+  },
+  "config": {
+      "sort-packages": true
+  },
+  "extra": {
+    "branch-alias": {
+        "dev-master": "0.6.x-dev"
+    }
+  }
 }

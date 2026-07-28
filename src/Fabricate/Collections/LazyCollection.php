@@ -2,21 +2,21 @@
 
 namespace Fabricate\NutsAndBolts;
 
-use ArrayIterator;
 use Closure;
-use DateInterval;
-use DateTimeImmutable;
-use DateTimeInterface;
-use Generator;
-use InvalidArgumentException;
-use IteratorAggregate;
 use stdClass;
+use Generator;
 use Traversable;
-use Fabricate\Contracts\Support\Arrayable;
-use Fabricate\Contracts\Support\CanBeEscapedWhenCastToString;
-use Fabricate\NutsAndBolts\Concerns\EnumeratesValues;
+use DateInterval;
+use ArrayIterator;
+use DateTimeInterface;
+use IteratorAggregate;
+use DateTimeImmutable;
+use InvalidArgumentException;
 use Fabricate\NutsAndBolts\Concerns\Macroable;
+use Fabricate\Contracts\NutsAndBolts\Arrayable;
 use Fabricate\NutsAndBolts\Contracts\Enumerable;
+use Fabricate\NutsAndBolts\Concerns\EnumeratesValues;
+use Fabricate\Contracts\NutsAndBolts\CanBeEscapedWhenCastToString;
 
 /**
  * @template TKey of array-key
@@ -964,7 +964,7 @@ class LazyCollection implements CanBeEscapedWhenCastToString, Enumerable
     }
 
     #[\Override]
-    public function chunk(int $size): static
+    public function chunk(int $size, bool $preserveKeys): static
     {
         if ($size <= 0) {
             return static::empty();

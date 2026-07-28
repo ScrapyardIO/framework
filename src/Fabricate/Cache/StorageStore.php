@@ -61,7 +61,7 @@ class StorageStore implements Store
      * @param  string  $key
      * @return mixed
      */
-    public function get($key)
+    public function get(string $key): mixed
     {
         return $this->getPayload($key)['data'] ?? null;
     }
@@ -74,7 +74,7 @@ class StorageStore implements Store
      * @param  int  $seconds
      * @return bool
      */
-    public function put($key, $value, $seconds)
+    public function put(string $key, mixed $value, int $seconds): bool
     {
         return $this->disk->put(
             $this->path($key), $this->expiration($seconds).serialize($value)
@@ -105,7 +105,7 @@ class StorageStore implements Store
      * @param  mixed  $value
      * @return int
      */
-    public function increment($key, $value = 1)
+    public function increment(string $key, mixed $value = 1): bool|int
     {
         $raw = $this->getPayload($key);
 
@@ -121,7 +121,7 @@ class StorageStore implements Store
      * @param  mixed  $value
      * @return int
      */
-    public function decrement($key, $value = 1)
+    public function decrement(string $key, mixed $value = 1): bool|int
     {
         return $this->increment($key, $value * -1);
     }
@@ -133,7 +133,7 @@ class StorageStore implements Store
      * @param  mixed  $value
      * @return bool
      */
-    public function forever($key, $value)
+    public function forever(string $key, mixed $value): bool
     {
         return $this->put($key, $value, 0);
     }
@@ -145,7 +145,7 @@ class StorageStore implements Store
      * @param  int  $seconds
      * @return bool
      */
-    public function touch($key, $seconds)
+    public function touch(string $key, int $seconds): bool
     {
         $payload = $this->getPayload($key);
 
@@ -162,12 +162,12 @@ class StorageStore implements Store
      * @param  string  $key
      * @return bool
      */
-    public function forget($key)
+    public function forget(string $key): bool
     {
         $forgotten = $this->disk->delete($this->path($key));
 
         if ($forgotten) {
-            $this->disk->delete($this->path(CACHE_KEY_PREFIX::FLEXIBLE_CREATED->value.$key));
+            $this->disk->delete($this->path(CacheKeyPrefix::FLEXIBLE_CREATED->value.$key));
         }
 
         return $forgotten;
@@ -178,7 +178,7 @@ class StorageStore implements Store
      *
      * @return bool
      */
-    public function flush()
+    public function flush(): bool
     {
         if ($this->directory === '') {
             $files = $this->disk->allFiles();
@@ -304,7 +304,7 @@ class StorageStore implements Store
      *
      * @return string
      */
-    public function getPrefix()
+    public function getPrefix(): string
     {
         return $this->prefix;
     }

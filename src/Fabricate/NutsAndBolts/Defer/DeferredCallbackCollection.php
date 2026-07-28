@@ -1,5 +1,4 @@
 <?php
-
 namespace Fabricate\NutsAndBolts\Defer;
 
 use ArrayAccess;
@@ -12,7 +11,7 @@ class DeferredCallbackCollection implements ArrayAccess, Countable
     /**
      * All of the deferred callbacks.
      *
-     * @var array<int, DeferredCallback>
+     * @var \Fabricate\NutsAndBolts\Defer\DeferredCallback
      */
     protected array $callbacks = [];
 
@@ -66,7 +65,7 @@ class DeferredCallbackCollection implements ArrayAccess, Countable
      */
     protected function forgetDuplicates(): static
     {
-        $this->callbacks = (new Collection($this->callbacks))
+        $this->callbacks = new Collection($this->callbacks)
             ->reverse()
             ->unique(fn ($c) => $c->name)
             ->reverse()

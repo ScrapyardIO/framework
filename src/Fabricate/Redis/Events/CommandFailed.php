@@ -2,6 +2,7 @@
 
 namespace Fabricate\Redis\Events;
 
+use Fabricate\Redis\Connections\Connection;
 use Throwable;
 
 class CommandFailed
@@ -11,45 +12,45 @@ class CommandFailed
      *
      * @var string
      */
-    public $command;
+    public string $command;
 
     /**
      * The array of command parameters.
      *
      * @var array
      */
-    public $parameters;
+    public array $parameters;
 
     /**
      * The exception that was thrown.
      *
      * @var \Throwable
      */
-    public $exception;
+    public Throwable $exception;
 
     /**
      * The Redis connection instance.
      *
-     * @var \Fabricate\Redis\Connections\Connection
+     * @var Connection
      */
-    public $connection;
+    public Connection $connection;
 
     /**
      * The Redis connection name.
      *
      * @var string
      */
-    public $connectionName;
+    public ?string $connectionName;
 
     /**
      * Create a new event instance.
      *
-     * @param  string  $command
-     * @param  array  $parameters
+     * @param string $command
+     * @param array $parameters
      * @param  \Throwable  $exception
-     * @param  \Fabricate\Redis\Connections\Connection  $connection
+     * @param Connection $connection
      */
-    public function __construct($command, $parameters, Throwable $exception, $connection)
+    public function __construct(string $command, array $parameters, Throwable $exception, Connection $connection)
     {
         $this->command = $command;
         $this->parameters = $parameters;

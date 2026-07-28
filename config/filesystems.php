@@ -1,23 +1,48 @@
 <?php
 
 return [
+
+    /*
+    |--------------------------------------------------------------------------
+    | Default Filesystem Disk
+    |--------------------------------------------------------------------------
+    */
+
     'default' => env('FILESYSTEM_DISK', 'local'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Default Cloud Filesystem Disk
+    |--------------------------------------------------------------------------
+    */
 
     'cloud' => env('FILESYSTEM_CLOUD', 's3'),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Filesystem Disks
+    |--------------------------------------------------------------------------
+    |
+    | Supported drivers: "local", "ftp", "sftp", "s3"
+    |
+    */
+
     'disks' => [
+
         'local' => [
             'driver' => 'local',
-            'root' => env('LOCAL_FILESYSTEM_ROOT', storage_path('app/private')),
+            'root' => storage_path('app'),
             'throw' => false,
+            'report' => false,
         ],
 
         'public' => [
             'driver' => 'local',
-            'root' => env('PUBLIC_FILESYSTEM_ROOT', storage_path('app/public')),
-            'url' => env('APP_URL').'/storage',
+            'root' => storage_path('app/public'),
+            'url' => env('APP_URL') ? rtrim((string) env('APP_URL'), '/').'/storage' : null,
             'visibility' => 'public',
             'throw' => false,
+            'report' => false,
         ],
 
         's3' => [
@@ -30,30 +55,9 @@ return [
             'endpoint' => env('AWS_ENDPOINT'),
             'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
             'throw' => false,
+            'report' => false,
         ],
 
-        'ftp' => [
-            'driver' => 'ftp',
-            'host' => env('FTP_HOST'),
-            'username' => env('FTP_USERNAME'),
-            'password' => env('FTP_PASSWORD'),
-            'port' => env('FTP_PORT', 21),
-            'root' => env('FTP_ROOT', ''),
-            'passive' => env('FTP_PASSIVE', true),
-            'ssl' => env('FTP_SSL', false),
-            'timeout' => env('FTP_TIMEOUT', 30),
-            'throw' => false,
-        ],
-
-        'sftp' => [
-            'driver' => 'sftp',
-            'host' => env('SFTP_HOST'),
-            'username' => env('SFTP_USERNAME'),
-            'password' => env('SFTP_PASSWORD'),
-            'port' => env('SFTP_PORT', 22),
-            'root' => env('SFTP_ROOT', ''),
-            'timeout' => env('SFTP_TIMEOUT', 30),
-            'throw' => false,
-        ],
     ],
+
 ];

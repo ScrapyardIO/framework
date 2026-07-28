@@ -1,0 +1,44 @@
+{
+    "name": "fabricate/redis",
+    "description": "The Fabricate Redis package.",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Angel Gonzalez",
+            "email": "angel@projectsaturnstudios.com"
+        },
+        {
+            "name": "Taylor Otwell"
+        }
+    ],
+    "homepage": "https://scrapyard-io.projectsaturnstudios.com",
+    "support": {
+        "issues": "https://github.com/ScrapyardIO/framework/issues",
+        "source": "https://github.com/ScrapyardIO/framework"
+    },
+    "require": {
+        "php": "^8.4|^8.5|^8.6",
+        "fabricate/collections": "^0.6.0",
+        "fabricate/contracts": "^0.6.0",
+        "fabricate/macroable": "^0.6.0",
+        "fabricate/nuts-and-bolts": "^0.6.0"
+    },
+    "suggest": {
+        "ext-redis": "Required to use the phpredis connector (^4.0 || ^5.0 || ^6.0).",
+        "predis/predis": "Required to use the predis connector (^2.3 || ^3.0)."
+    },
+    "minimum-stability": "dev",
+    "autoload": {
+        "psr-4": {
+            "Fabricate\\Redis\\": ""
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "0.6.x-dev"
+        }
+    }
+}

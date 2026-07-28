@@ -28,7 +28,7 @@ class AggregateServiceProvider extends ServiceProvider
         $this->instances = [];
 
         foreach ($this->providers as $provider) {
-            $this->instances[] = $this->machine->register($provider);
+            $this->instances[] = $this->program->register($provider);
         }
     }
 
@@ -42,11 +42,13 @@ class AggregateServiceProvider extends ServiceProvider
         $provides = [];
 
         foreach ($this->providers as $provider) {
-            $instance = $this->machine->resolveProvider($provider);
+            $instance = $this->program->resolveProvider($provider);
 
             $provides = array_merge($provides, $instance->provides());
         }
 
         return $provides;
     }
+
+
 }

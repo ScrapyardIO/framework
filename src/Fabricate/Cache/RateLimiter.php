@@ -3,12 +3,12 @@
 namespace Fabricate\Cache;
 
 use Closure;
-use Fabricate\Contracts\Cache\Repository as Cache;
+use Fabricate\Contracts\Cache\CacheRepository as Cache;
 use Fabricate\Redis\Connections\PhpRedisConnection;
 use Fabricate\NutsAndBolts\Collection;
 use Fabricate\NutsAndBolts\Concerns\InteractsWithTime;
 
-use function Fabricate\NutsAndBolts\enum_value;
+use function Fabricate\NutsAndBolts\Helpers\enum_value;
 
 class RateLimiter
 {
@@ -67,7 +67,7 @@ class RateLimiter
         $limiter = $this->limiters[$resolvedName] ?? null;
 
         if (! is_callable($limiter)) {
-            return;
+            return null;
         }
 
         return function (...$args) use ($limiter) {

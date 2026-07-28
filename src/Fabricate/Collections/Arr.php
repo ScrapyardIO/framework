@@ -3,6 +3,8 @@
 namespace Fabricate\NutsAndBolts;
 
 use Closure;
+use Fabricate\NutsAndBolts\Exceptions\ItemNotFoundException;
+use Fabricate\NutsAndBolts\Exceptions\MultipleItemsFoundException;
 use WeakMap;
 use ArrayAccess;
 use Traversable;
@@ -10,9 +12,9 @@ use JsonSerializable;
 use Random\Randomizer;
 use ArgumentCountError;
 use InvalidArgumentException;
-use Fabricate\Contracts\Support\Jsonable;
-use Fabricate\Contracts\Support\Arrayable;
+use Fabricate\Contracts\NutsAndBolts\Jsonable;
 use Fabricate\NutsAndBolts\Concerns\Macroable;
+use Fabricate\Contracts\NutsAndBolts\Arrayable;
 use Fabricate\NutsAndBolts\Contracts\Enumerable;
 
 class Arr
@@ -1089,7 +1091,9 @@ class Arr
      */
     public static function sort(array $array, callable|array|string|null $callback = null): array
     {
-        return new Collection($array)->sortBy($callback)->all();
+        return is_null($callback)
+            ? new Collection($array)->sort()->all()
+            : new Collection($array)->sortBy($callback)->all();
     }
 
     /**
@@ -1104,7 +1108,9 @@ class Arr
      */
     public static function sortDesc(array $array, callable|array|string|null $callback = null): array
     {
-        return new Collection($array)->sortByDesc($callback)->all();
+        return is_null($callback)
+            ? new Collection($array)->sortDesc()->all()
+            : new Collection($array)->sortByDesc($callback)->all();
     }
 
     /**

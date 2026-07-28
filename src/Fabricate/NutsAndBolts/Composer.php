@@ -3,11 +3,13 @@
 namespace Fabricate\NutsAndBolts;
 
 use Closure;
+use Fabricate\Filesystem\Filesystem;
 use JsonException;
 use RuntimeException;
-use Fabricate\Filesystem\Filesystem;
-use Symfony\Component\Process\Process;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Process\Process;
+
+use function Fabricate\NutsAndBolts\Helpers\php_binary;
 
 class Composer
 {
@@ -28,7 +30,7 @@ class Composer
     /**
      * Create a new Composer manager instance.
      *
-     * @param Filesystem $files
+     * @param  Filesystem  $files
      * @param string|null $workingPath
      */
     public function __construct(Filesystem $files, ?string $workingPath = null)
@@ -68,19 +70,18 @@ class Composer
             ...$this->findComposer($composerBinary),
             'require',
             ...$packages,
-        ])
-            ->when($dev, function ($command) {
-                $command->push('--dev');
-            })->all();
+        ])->when($dev, function ($command) {
+            $command->push('--dev');
+        })->all();
 
         return 0 === $this->getProcess($command, ['COMPOSER_MEMORY_LIMIT' => '-1'])
-                ->run(
-                    $output instanceof OutputInterface
-                        ? function ($type, $line) use ($output) {
-                        $output->write('    '.$line);
-                    } : $output
-                );
-    }
+            ->run(
+                $output instanceof OutputInterface
+                    ? function ($type, $line) use ($output) {
+                    $output->write('    '.$line);
+                } : $output
+            );
+}
 
     /**
      * Remove the given Composer packages from the application.
@@ -97,18 +98,17 @@ class Composer
             ...$this->findComposer($composerBinary),
             'remove',
             ...$packages,
-        ])
-            ->when($dev, function ($command) {
-                $command->push('--dev');
-            })->all();
+        ])->when($dev, function ($command) {
+            $command->push('--dev');
+        })->all();
 
         return 0 === $this->getProcess($command, ['COMPOSER_MEMORY_LIMIT' => '-1'])
-            ->run(
-                $output instanceof OutputInterface
-                    ? function ($type, $line) use ($output) {
-                    $output->write('    '.$line);
-                } : $output
-            );
+                ->run(
+                    $output instanceof OutputInterface
+                        ? function ($type, $line) use ($output) {
+                        $output->write('    '.$line);
+                    } : $output
+                );
     }
 
     /**
@@ -184,7 +184,7 @@ class Composer
      *
      * @return string
      *
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
     protected function findComposerFile(): string
     {

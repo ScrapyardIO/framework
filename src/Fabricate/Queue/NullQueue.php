@@ -2,21 +2,176 @@
 
 namespace Fabricate\Queue;
 
-use Fabricate\Contracts\Queue\Queue;
+use Fabricate\Contracts\Queue\Queue as QueueContract;
+use Fabricate\NutsAndBolts\Collection;
 
-class NullQueue implements Queue
+class NullQueue extends Queue implements QueueContract
 {
-    public function push(mixed $job, mixed $data = '', ?string $queue = null): mixed
+    /**
+     * Get the size of the queue.
+     *
+     * @param  string|null  $queue
+     * @return int
+     */
+    public function size($queue = null)
+    {
+        return 0;
+    }
+
+    /**
+     * Get the number of pending jobs.
+     *
+     * @param  string|null  $queue
+     * @return int
+     */
+    public function pendingSize($queue = null)
+    {
+        return 0;
+    }
+
+    /**
+     * Get the number of delayed jobs.
+     *
+     * @param  string|null  $queue
+     * @return int
+     */
+    public function delayedSize($queue = null)
+    {
+        return 0;
+    }
+
+    /**
+     * Get the number of reserved jobs.
+     *
+     * @param  string|null  $queue
+     * @return int
+     */
+    public function reservedSize($queue = null)
+    {
+        return 0;
+    }
+
+    /**
+     * Get the pending jobs for the given queue.
+     *
+     * @param  string|null  $queue
+     * @return \Fabricate\NutsAndBolts\Collection
+     */
+    public function pendingJobs($queue = null): Collection
+    {
+        return new Collection;
+    }
+
+    /**
+     * Get the delayed jobs for the given queue.
+     *
+     * @param  string|null  $queue
+     * @return \Fabricate\NutsAndBolts\Collection
+     */
+    public function delayedJobs($queue = null): Collection
+    {
+        return new Collection;
+    }
+
+    /**
+     * Get the reserved jobs for the given queue.
+     *
+     * @param  string|null  $queue
+     * @return \Fabricate\NutsAndBolts\Collection
+     */
+    public function reservedJobs($queue = null): Collection
+    {
+        return new Collection;
+    }
+
+    /**
+     * Get all pending jobs across every queue.
+     *
+     * @return \Fabricate\NutsAndBolts\Collection
+     */
+    public function allPendingJobs(): Collection
+    {
+        return new Collection;
+    }
+
+    /**
+     * Get all delayed jobs across every queue.
+     *
+     * @return \Fabricate\NutsAndBolts\Collection
+     */
+    public function allDelayedJobs(): Collection
+    {
+        return new Collection;
+    }
+
+    /**
+     * Get all reserved jobs across every queue.
+     *
+     * @return \Fabricate\NutsAndBolts\Collection
+     */
+    public function allReservedJobs(): Collection
+    {
+        return new Collection;
+    }
+
+    /**
+     * Get the creation timestamp of the oldest pending job, excluding delayed jobs.
+     *
+     * @param  string|null  $queue
+     * @return int|null
+     */
+    public function creationTimeOfOldestPendingJob($queue = null)
     {
         return null;
     }
 
-    public function later(mixed $delay, mixed $job, mixed $data = '', ?string $queue = null): mixed
+    /**
+     * Push a new job onto the queue.
+     *
+     * @param  string  $job
+     * @param  mixed  $data
+     * @param  string|null  $queue
+     * @return mixed
+     */
+    public function push($job, $data = '', $queue = null)
     {
-        return null;
+        //
     }
 
-    public function bulk(array $jobs, mixed $data = '', ?string $queue = null): void
+    /**
+     * Push a raw payload onto the queue.
+     *
+     * @param  string  $payload
+     * @param  string|null  $queue
+     * @param  array  $options
+     * @return mixed
+     */
+    public function pushRaw($payload, $queue = null, array $options = [])
+    {
+        //
+    }
+
+    /**
+     * Push a new job onto the queue after (n) seconds.
+     *
+     * @param  \DateTimeInterface|\DateInterval|int  $delay
+     * @param  string  $job
+     * @param  mixed  $data
+     * @param  string|null  $queue
+     * @return mixed
+     */
+    public function later($delay, $job, $data = '', $queue = null)
+    {
+        //
+    }
+
+    /**
+     * Pop the next job off of the queue.
+     *
+     * @param  string|null  $queue
+     * @return \Fabricate\Contracts\Queue\Job|null
+     */
+    public function pop($queue = null)
     {
         //
     }

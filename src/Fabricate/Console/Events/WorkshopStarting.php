@@ -2,12 +2,12 @@
 
 namespace Fabricate\Console\Events;
 
-use Fabricate\Console\ConsoleMachine;
+use Fabricate\Console\ConsoleProgram;
 
 class WorkshopStarting
 {
     public function __construct(
-        public ConsoleMachine $workshop
+        public ConsoleProgram $workshop
     ){}
 
 }

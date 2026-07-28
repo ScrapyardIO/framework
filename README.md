@@ -48,11 +48,11 @@ ScrapyardIO is a layered monorepo. The `scrapyard-io/framework` package replaces
 │    Displays:  Screen → Display → EmbeddedDisplay (chip driver)   │
 │    Sensors:   Sensor → SensorChip (chip driver)                  │
 ├──────────────────────────────────────────────────────────────────┤
-│  DeptOfScrapyardRobotics  (chip drivers for DOSR hardware)       │
+│  DeptOfScrapyardRobotics  (chip drivers for embedded hardware)   │
 ├──────────────────────────────────────────────────────────────────┤
-│  Waveforms  (SPI · I²C · GPIO · UART)                            │
+│  GeneralPurposeIO  (SPI · I²C · GPIO · UART)                     │
 ├──────────────────────────────────────────────────────────────────┤
-│  BareMetal  (IntegratedCircuit, config repositories)             │
+│  Fabricate  (IntegratedCircuit, config repositories)             │
 ├──────────────────────────────────────────────────────────────────┤
 │  NutsAndBolts  (buffers · FormatSpec · enums · helpers)          │
 └──────────────────────────────────────────────────────────────────┘

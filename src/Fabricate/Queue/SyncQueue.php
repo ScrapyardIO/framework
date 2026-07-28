@@ -2,49 +2,338 @@
 
 namespace Fabricate\Queue;
 
-use Fabricate\Contracts\Core\Machine;
-use Fabricate\Contracts\Queue\Queue;
+use Fabricate\Bus\DebounceLock;
+use Fabricate\Bus\UniqueLock;
+use Fabricate\Contracts\Cache\Repository as Cache;
+use Fabricate\Contracts\Queue\Job;
+use Fabricate\Contracts\Queue\Queue as QueueContract;
+use Fabricate\Contracts\Queue\ShouldBeUnique;
+use Fabricate\Queue\Events\JobAttempted;
+use Fabricate\Queue\Events\JobExceptionOccurred;
+use Fabricate\Queue\Events\JobProcessed;
+use Fabricate\Queue\Events\JobProcessing;
+use Fabricate\Queue\Jobs\SyncJob;
+use Fabricate\NutsAndBolts\Collection;
+use Throwable;
 
-class SyncQueue implements Queue
+class SyncQueue extends Queue implements QueueContract
 {
-    public function __construct(
-        protected Machine $machine
-    ) {
+    /**
+     * Create a new sync queue instance.
+     *
+     * @param  bool  $dispatchAfterCommit
+     */
+    public function __construct($dispatchAfterCommit = false)
+    {
+        $this->dispatchAfterCommit = $dispatchAfterCommit;
     }
 
-    public function push(mixed $job, mixed $data = '', ?string $queue = null): mixed
+    /**
+     * Get the size of the queue.
+     *
+     * @param  string|null  $queue
+     * @return int
+     */
+    public function size($queue = null)
     {
-        return $this->executeJob($job, $data);
+        return 0;
     }
 
-    public function later(mixed $delay, mixed $job, mixed $data = '', ?string $queue = null): mixed
+    /**
+     * Get the number of pending jobs.
+     *
+     * @param  string|null  $queue
+     * @return int
+     */
+    public function pendingSize($queue = null)
     {
-        return $this->executeJob($job, $data);
+        return 0;
     }
 
-    public function bulk(array $jobs, mixed $data = '', ?string $queue = null): void
+    /**
+     * Get the number of delayed jobs.
+     *
+     * @param  string|null  $queue
+     * @return int
+     */
+    public function delayedSize($queue = null)
     {
-        foreach ($jobs as $job) {
-            $this->push($job, $data, $queue);
-        }
+        return 0;
     }
 
-    protected function executeJob(mixed $job, mixed $data = ''): mixed
+    /**
+     * Get the number of reserved jobs.
+     *
+     * @param  string|null  $queue
+     * @return int
+     */
+    public function reservedSize($queue = null)
     {
-        if (is_callable($job)) {
-            return $this->machine->call($job, is_array($data) ? $data : []);
-        }
+        return 0;
+    }
 
-        if (is_object($job)) {
-            if (method_exists($job, 'handle')) {
-                return $this->machine->call([$job, 'handle'], is_array($data) ? $data : []);
-            }
+    /**
+     * Get the pending jobs for the given queue.
+     *
+     * @param  string|null  $queue
+     * @return \Fabricate\NutsAndBolts\Collection
+     */
+    public function pendingJobs($queue = null): Collection
+    {
+        return new Collection;
+    }
 
-            if (method_exists($job, '__invoke')) {
-                return $this->machine->call($job, is_array($data) ? $data : []);
-            }
-        }
+    /**
+     * Get the delayed jobs for the given queue.
+     *
+     * @param  string|null  $queue
+     * @return \Fabricate\NutsAndBolts\Collection
+     */
+    public function delayedJobs($queue = null): Collection
+    {
+        return new Collection;
+    }
 
+    /**
+     * Get the reserved jobs for the given queue.
+     *
+     * @param  string|null  $queue
+     * @return \Fabricate\NutsAndBolts\Collection
+     */
+    public function reservedJobs($queue = null): Collection
+    {
+        return new Collection;
+    }
+
+    /**
+     * Get all pending jobs across every queue.
+     *
+     * @return \Fabricate\NutsAndBolts\Collection
+     */
+    public function allPendingJobs(): Collection
+    {
+        return new Collection;
+    }
+
+    /**
+     * Get all delayed jobs across every queue.
+     *
+     * @return \Fabricate\NutsAndBolts\Collection
+     */
+    public function allDelayedJobs(): Collection
+    {
+        return new Collection;
+    }
+
+    /**
+     * Get all reserved jobs across every queue.
+     *
+     * @return \Fabricate\NutsAndBolts\Collection
+     */
+    public function allReservedJobs(): Collection
+    {
+        return new Collection;
+    }
+
+    /**
+     * Get the creation timestamp of the oldest pending job, excluding delayed jobs.
+     *
+     * @param  string|null  $queue
+     * @return int|null
+     */
+    public function creationTimeOfOldestPendingJob($queue = null)
+    {
         return null;
+    }
+
+    /**
+     * Push a new job onto the queue.
+     *
+     * @param  string  $job
+     * @param  mixed  $data
+     * @param  string|null  $queue
+     * @return mixed
+     *
+     * @throws \Throwable
+     */
+    public function push($job, $data = '', $queue = null)
+    {
+        if ($this->shouldDispatchAfterCommit($job) &&
+            $this->container->bound('db.transactions')) {
+            if ($job instanceof ShouldBeUnique) {
+                $this->container->make('db.transactions')->addCallbackForRollback(
+                    function () use ($job) {
+                        (new UniqueLock($this->container->make(Cache::class)))->release($job);
+                    }
+                );
+            }
+
+            if (! empty($job->debounceOwner ?? '')) {
+                $this->container->make('db.transactions')->addCallbackForRollback(
+                    function () use ($job) {
+                        (new DebounceLock($this->container->make(Cache::class)))->release($job, $job->debounceOwner ?? '');
+                    }
+                );
+            }
+
+            return $this->container->make('db.transactions')->addCallback(
+                fn () => $this->executeJob($job, $data, $queue)
+            );
+        }
+
+        return $this->executeJob($job, $data, $queue);
+    }
+
+    /**
+     * Execute a given job synchronously.
+     *
+     * @param  string  $job
+     * @param  mixed  $data
+     * @param  string|null  $queue
+     * @return int
+     *
+     * @throws \Throwable
+     */
+    protected function executeJob($job, $data = '', $queue = null)
+    {
+        $queueJob = $this->resolveJob($this->createPayload($job, $queue, $data), $queue);
+
+        try {
+            $this->raiseBeforeJobEvent($queueJob);
+
+            $queueJob->fire();
+
+            $this->raiseAfterJobEvent($queueJob);
+        } catch (Throwable $e) {
+            $exceptionOccurred = $e;
+
+            $this->handleException($queueJob, $e);
+        } finally {
+            $this->raiseJobAttemptedEvent($queueJob, $exceptionOccurred ?? null);
+        }
+
+        return 0;
+    }
+
+    /**
+     * Resolve a Sync job instance.
+     *
+     * @param  string  $payload
+     * @param  string  $queue
+     * @return \Fabricate\Queue\Jobs\SyncJob
+     */
+    protected function resolveJob($payload, $queue)
+    {
+        return new SyncJob($this->container, $payload, $this->connectionName, $queue);
+    }
+
+    /**
+     * Raise the before queue job event.
+     *
+     * @param  \Fabricate\Contracts\Queue\Job  $job
+     * @return void
+     */
+    protected function raiseBeforeJobEvent(Job $job)
+    {
+        if ($this->container->bound('events')) {
+            $this->container['events']->dispatch(new JobProcessing($this->connectionName, $job));
+        }
+    }
+
+    /**
+     * Raise the after queue job event.
+     *
+     * @param  \Fabricate\Contracts\Queue\Job  $job
+     * @return void
+     */
+    protected function raiseAfterJobEvent(Job $job)
+    {
+        if ($this->container->bound('events')) {
+            $this->container['events']->dispatch(new JobProcessed($this->connectionName, $job));
+        }
+    }
+
+    /**
+     * Raise the job attempted event.
+     *
+     * @param  \Fabricate\Contracts\Queue\Job  $job
+     * @param  \Throwable|null  $exception
+     * @return void
+     */
+    protected function raiseJobAttemptedEvent(Job $job, ?Throwable $exceptionOccurred = null)
+    {
+        if ($this->container->bound('events')) {
+            $this->container['events']->dispatch(new JobAttempted($this->connectionName, $job, $exceptionOccurred));
+        }
+    }
+
+    /**
+     * Raise the exception occurred queue job event.
+     *
+     * @param  \Fabricate\Contracts\Queue\Job  $job
+     * @param  \Throwable  $e
+     * @return void
+     */
+    protected function raiseExceptionOccurredJobEvent(Job $job, Throwable $e)
+    {
+        if ($this->container->bound('events')) {
+            $this->container['events']->dispatch(new JobExceptionOccurred($this->connectionName, $job, $e));
+        }
+    }
+
+    /**
+     * Handle an exception that occurred while processing a job.
+     *
+     * @param  \Fabricate\Contracts\Queue\Job  $queueJob
+     * @param  \Throwable  $e
+     * @return void
+     *
+     * @throws \Throwable
+     */
+    protected function handleException(Job $queueJob, Throwable $e)
+    {
+        $this->raiseExceptionOccurredJobEvent($queueJob, $e);
+
+        $queueJob->fail($e);
+
+        throw $e;
+    }
+
+    /**
+     * Push a raw payload onto the queue.
+     *
+     * @param  string  $payload
+     * @param  string|null  $queue
+     * @param  array  $options
+     * @return mixed
+     */
+    public function pushRaw($payload, $queue = null, array $options = [])
+    {
+        //
+    }
+
+    /**
+     * Push a new job onto the queue after (n) seconds.
+     *
+     * @param  \DateTimeInterface|\DateInterval|int  $delay
+     * @param  string  $job
+     * @param  mixed  $data
+     * @param  string|null  $queue
+     * @return mixed
+     */
+    public function later($delay, $job, $data = '', $queue = null)
+    {
+        return $this->push($job, $data, $queue);
+    }
+
+    /**
+     * Pop the next job off of the queue.
+     *
+     * @param  string|null  $queue
+     * @return \Fabricate\Contracts\Queue\Job|null
+     */
+    public function pop($queue = null)
+    {
+        //
     }
 }

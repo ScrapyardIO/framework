@@ -7,15 +7,33 @@ use Fabricate\Contracts\Filesystem\LockTimeoutException;
 class LockableFile
 {
     /**
+     * The file resource.
+     *
      * @var resource
      */
     protected $handle;
 
-    protected string $path;
+    /**
+     * The file path.
+     *
+     * @var string
+     */
+    protected $path;
 
-    protected bool $isLocked = false;
+    /**
+     * Indicates if the file is locked.
+     *
+     * @var bool
+     */
+    protected $isLocked = false;
 
-    public function __construct(string $path, string $mode)
+    /**
+     * Create a new File instance.
+     *
+     * @param  string  $path
+     * @param  string  $mode
+     */
+    public function __construct($path, $mode)
     {
         $this->path = $path;
 
@@ -23,7 +41,13 @@ class LockableFile
         $this->createResource($path, $mode);
     }
 
-    protected function ensureDirectoryExists(string $path): void
+    /**
+     * Create the file's directory if necessary.
+     *
+     * @param  string  $path
+     * @return void
+     */
+    protected function ensureDirectoryExists($path)
     {
         if (! file_exists(dirname($path))) {
             @mkdir(dirname($path), 0777, true);
@@ -31,45 +55,80 @@ class LockableFile
     }
 
     /**
+     * Create the file resource.
+     *
+     * @param  string  $path
+     * @param  string  $mode
+     * @return void
+     *
      * @throws \Exception
      */
-    protected function createResource(string $path, string $mode): void
+    protected function createResource($path, $mode)
     {
         $this->handle = fopen($path, $mode);
     }
 
-    public function read(?int $length = null): string
+    /**
+     * Read the file contents.
+     *
+     * @param  int|null  $length
+     * @return string
+     */
+    public function read($length = null)
     {
         clearstatcache(true, $this->path);
 
         return fread($this->handle, $length ?? ($this->size() ?: 1));
     }
 
-    public function size(): int
+    /**
+     * Get the file size.
+     *
+     * @return int
+     */
+    public function size()
     {
         return filesize($this->path);
     }
 
-    public function write(string $contents): static
+    /**
+     * Write to the file.
+     *
+     * @param  string  $contents
+     * @return $this
+     */
+    public function write($contents)
     {
         fwrite($this->handle, $contents);
+
         fflush($this->handle);
 
         return $this;
     }
 
-    public function truncate(): static
+    /**
+     * Truncate the file.
+     *
+     * @return $this
+     */
+    public function truncate()
     {
         rewind($this->handle);
+
         ftruncate($this->handle, 0);
 
         return $this;
     }
 
     /**
-     * @throws LockTimeoutException
+     * Get a shared lock on the file.
+     *
+     * @param  bool  $block
+     * @return $this
+     *
+     * @throws \Fabricate\Contracts\Filesystem\LockTimeoutException
      */
-    public function getSharedLock(bool $block = false): static
+    public function getSharedLock($block = false)
     {
         if (! flock($this->handle, LOCK_SH | ($block ? 0 : LOCK_NB))) {
             throw new LockTimeoutException("Unable to acquire file lock at path [{$this->path}].");
@@ -81,9 +140,14 @@ class LockableFile
     }
 
     /**
-     * @throws LockTimeoutException
+     * Get an exclusive lock on the file.
+     *
+     * @param  bool  $block
+     * @return $this
+     *
+     * @throws \Fabricate\Contracts\Filesystem\LockTimeoutException
      */
-    public function getExclusiveLock(bool $block = false): static
+    public function getExclusiveLock($block = false)
     {
         if (! flock($this->handle, LOCK_EX | ($block ? 0 : LOCK_NB))) {
             throw new LockTimeoutException("Unable to acquire file lock at path [{$this->path}].");
@@ -94,15 +158,26 @@ class LockableFile
         return $this;
     }
 
-    public function releaseLock(): static
+    /**
+     * Release the lock on the file.
+     *
+     * @return $this
+     */
+    public function releaseLock()
     {
         flock($this->handle, LOCK_UN);
+
         $this->isLocked = false;
 
         return $this;
     }
 
-    public function close(): bool
+    /**
+     * Close the file.
+     *
+     * @return bool
+     */
+    public function close()
     {
         if ($this->isLocked) {
             $this->releaseLock();

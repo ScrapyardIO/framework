@@ -5,29 +5,29 @@ namespace Fabricate\Core\Bootstrap;
 use Closure;
 use Exception;
 use Fabricate\Config\Repository;
+use Fabricate\Contracts\Core\Program;
+use Fabricate\Contracts\Config\Repository as RepositoryInterface;
+use Fabricate\NutsAndBolts\Collection;
 use SplFileInfo;
 use Symfony\Component\Finder\Finder;
-use Fabricate\Contracts\Core\Machine;
-use Fabricate\NutsAndBolts\Collection;
-use Fabricate\Contracts\Config\Repository as RepositoryInterface;
 
 class LoadConfiguration
 {
     /**
      * The closure that resolves the permanent, static configuration if applicable.
      *
-     * @var (Closure(Machine): array<array-key, mixed>)|null
+     * @var (Closure(Program): array<array-key, mixed>)|null
      */
     protected static ?Closure $alwaysUseConfig = null;
 
     /**
      * Bootstrap the given application.
      *
-     * @param Machine $app
+     * @param Program $program
      * @return void
      * @throws Exception
      */
-    public function bootstrap(Machine $app): void
+    public function bootstrap(Program $program): void
     {
         $items = [];
 
@@ -37,32 +37,32 @@ class LoadConfiguration
         $loadedFromCache = false;
 
         if (self::$alwaysUseConfig !== null) {
-            $items = $app->call(self::$alwaysUseConfig);
+            $items = $program->call(self::$alwaysUseConfig);
 
             $loadedFromCache = true;
-        } elseif (file_exists($cached = $app->getCachedConfigPath())) {
+        } elseif (file_exists($cached = $program->getCachedConfigPath())) {
             $items = require $cached;
 
             $loadedFromCache = true;
         }
 
-        $app->instance('config_loaded_from_cache', $loadedFromCache);
+        $program->instance('config_loaded_from_cache', $loadedFromCache);
 
         // Next we will spin through every configuration file in the configuration
         // directory and load each one into the repository. This will make all of the
         // options available to the developer for use in various parts of this machine.
-        $app->instance('config', $config = new Repository($items));
+        $program->instance('config', $config = new Repository($items));
 
         if (! $loadedFromCache) {
-            $this->loadConfigurationFiles($app, $config);
+            $this->loadConfigurationFiles($program, $config);
         }
 
         // Finally, we will set the application's environment based on the configuration
         // values that were loaded. We will pass a callback which will be used to get
         // the environment in a web context where an "--env" switch is not present.
-        $app->detectEnvironment(fn () => $config->get('machine.env', 'production'));
+        $program->detectEnvironment(fn () => $config->get('machine.env', 'production'));
 
-        $app->resolveEnvironmentUsing($app->environment(...));
+        $program->resolveEnvironmentUsing($program->environment(...));
 
         date_default_timezone_set($config->get('machine.timezone', 'UTC'));
 
@@ -72,18 +72,18 @@ class LoadConfiguration
     /**
      * Load the configuration items from every file.
      *
-     * @param  Machine  $app
+     * @param  Program  $program
      * @param RepositoryInterface $repository
      * @return void
      *
      * @throws Exception
      */
-    protected function loadConfigurationFiles(Machine $app, RepositoryInterface $repository): void
+    protected function loadConfigurationFiles(Program $program, RepositoryInterface $repository): void
     {
-        $files = $this->getConfigurationFiles($app);
+        $files = $this->getConfigurationFiles($program);
 
-        $shouldMerge = method_exists($app, 'shouldMergeFrameworkConfiguration')
-            ? $app->shouldMergeFrameworkConfiguration()
+        $shouldMerge = method_exists($program, 'shouldMergeFrameworkConfiguration')
+            ? $program->shouldMergeFrameworkConfiguration()
             : true;
 
         $base = $shouldMerge
@@ -147,24 +147,26 @@ class LoadConfiguration
             //'cache' => ['stores'],
             'cache' => ['stores'],
             //'database' => ['connections'],
-            //'filesystems' => ['disks'],
+            'filesystems' => ['disks'],
             'logging' => ['channels'],
             //'mail' => ['mailers'],
             //'queue' => ['connections'],
+            'redis' => ['clusters'],
+            'sketches' => ['load'],
         ][$name] ?? [];
     }
 
     /**
      * Get every configuration file for the application.
      *
-     * @param  Machine  $app
+     * @param  Program  $program
      * @return array
      */
-    protected function getConfigurationFiles(Machine $app): array
+    protected function getConfigurationFiles(Program $program): array
     {
         $files = [];
 
-        $configPath = realpath($app->configPath());
+        $configPath = realpath($program->configPath());
 
         if (! $configPath) {
             return [];
@@ -218,7 +220,7 @@ class LoadConfiguration
     /**
      * Set a callback to return the permanent, static configuration values.
      *
-     * @param  (Closure(Machine): array<array-key, mixed>)|null  $alwaysUseConfig
+     * @param  (Closure(Program): array<array-key, mixed>)|null  $alwaysUseConfig
      * @return void
      */
     public static function alwaysUse(?Closure $alwaysUseConfig): void

@@ -2,7 +2,7 @@
 
 namespace Fabricate\Core\Exceptions;
 
-use Fabricate\Contracts\Chassis\Chassis;
+use Fabricate\Contracts\Chassis\WireframeServiceContainer;
 use Fabricate\Contracts\Debug\ExceptionHandler as ExceptionHandlerContract;
 use Fabricate\NutsAndBolts\Concerns\ReflectsClosures;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -16,12 +16,12 @@ class Handler implements ExceptionHandlerContract
     /**
      * The container implementation.
      */
-    protected Chassis $container;
+    protected WireframeServiceContainer $container;
 
     /**
      * A list of the exception types that are not reported.
      *
-     * @var array<int, class-string<\Throwable>>
+     * @var \class-string
      */
     protected array $dont_report = [];
 
@@ -33,7 +33,7 @@ class Handler implements ExceptionHandlerContract
     /**
      * Create a new exception handler instance.
      */
-    public function __construct(Chassis $container)
+    public function __construct(WireframeServiceContainer $container)
     {
         $this->container = $container;
 

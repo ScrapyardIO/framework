@@ -2,9 +2,9 @@
 
 namespace Fabricate\Framebuffers\Packers;
 
-use Fabricate\Contracts\Framebuffers\FormatSpec;
 use Fabricate\Contracts\Framebuffers\Enums\BitOrder;
 use Fabricate\Contracts\Framebuffers\PixelPacker;
+use Fabricate\Framebuffers\FormatSpec;
 
 /**
  * Packs a row-major logical grid into 1bpp horizontal bytes: 8 adjacent

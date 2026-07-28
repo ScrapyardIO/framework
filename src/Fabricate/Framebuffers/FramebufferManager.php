@@ -2,17 +2,19 @@
 
 namespace Fabricate\Framebuffers;
 
-use Fabricate\Contracts\Framebuffers\Factory as FactoryContract;
-use Fabricate\Contracts\Framebuffers\FormatSpec;
+use Fabricate\Contracts\Framebuffers\BufferFactory as FactoryContract;
 use Fabricate\Contracts\Framebuffers\Framebuffer;
 use Fabricate\Contracts\Framebuffers\FramebufferException;
+use Fabricate\Framebuffers\Strategy\DirtyRegionsBuffer;
+use Fabricate\Framebuffers\Strategy\FullFramebuffer;
+use Fabricate\Framebuffers\Strategy\PageSegmentBuffer;
 
 class FramebufferManager implements FactoryContract
 {
     /**
      * Custom strategy creators registered via {@see extend()}.
      *
-     * @var array<string, callable(int, int, FormatSpec): Framebuffer>
+     * @var array<string, callable(int, int, FormatSpec): \Fabricate\Framebuffers\Deprecated\Framebuffer>
      */
     protected array $customCreators = [];
 
@@ -68,11 +70,28 @@ class FramebufferManager implements FactoryContract
      * Register a custom framebuffer strategy (e.g. sdl3 from microscrap/sdl3-gfx).
      *
      * @param  non-empty-string  $type
-     * @param  callable(int, int, FormatSpec): Framebuffer  $callback
+     * @param  callable(int, int, FormatSpec): \Fabricate\Framebuffers\Deprecated\Framebuffer  $callback
      */
     public function extend(string $type, callable $callback): void
     {
         $this->customCreators[strtolower($type)] = $callback;
+    }
+
+    /**
+     * List every built-in and extended framebuffer strategy.
+     *
+     * @return array<int, string>
+     */
+    public function listFramebuffers(): array
+    {
+        $framebuffers = array_merge(
+            ['full', 'dirty', 'page'],
+            array_keys($this->customCreators),
+        );
+
+        sort($framebuffers);
+
+        return array_values(array_unique($framebuffers));
     }
 
     /**

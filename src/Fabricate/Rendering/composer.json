@@ -1,0 +1,42 @@
+{
+    "name": "fabricate/rendering",
+    "description": "The Fabricate GFX package.",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Angel Gonzalez",
+            "email": "angel@projectsaturnstudios.com"
+        }
+    ],
+    "homepage": "https://scrapyard-io.projectsaturnstudios.com",
+    "support": {
+        "issues": "https://github.com/ScrapyardIO/framework/issues",
+        "source": "https://github.com/ScrapyardIO/framework"
+    },
+    "require": {
+        "php": "^8.4|^8.5|^8.6",
+        "fabricate/contracts": "^0.6.0",
+        "fabricate/framebuffers": "^0.6.0",
+        "fabricate/reflection": "^0.6.0",
+        "fabricate/nuts-and-bolts": "^0.6.0"
+    },
+    "suggest": {
+        "microscrap/sdl3-display": "^0.5.0",
+        "microscrap/glfw-display": "^0.5.0",
+        "micrscrap/phpdafruit-gfx": "^0.5.0"
+    },
+    "minimum-stability": "dev",
+    "autoload": {
+        "psr-4": {
+            "Fabricate\\Rendering\\": ""
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "0.6.x-dev"
+        }
+    }
+}

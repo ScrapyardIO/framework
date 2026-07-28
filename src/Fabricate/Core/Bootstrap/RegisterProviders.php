@@ -4,7 +4,7 @@ namespace Fabricate\Core\Bootstrap;
 
 use Fabricate\Contracts\Chassis\BindingResolutionException;
 use Fabricate\Contracts\Chassis\CircularDependencyException;
-use Fabricate\Contracts\Core\Machine;
+use Fabricate\Contracts\Core\Program;
 use Fabricate\NutsAndBolts\ServiceProvider;
 
 class RegisterProviders
@@ -26,28 +26,28 @@ class RegisterProviders
     /**
      * Bootstrap the given application.
      *
-     * @param Machine $app
+     * @param Program $program
      * @return void
      * @throws BindingResolutionException
      * @throws CircularDependencyException
      */
-    public function bootstrap(Machine $app): void
+    public function bootstrap(Program $program): void
     {
-        if (! $app->bound('config_loaded_from_cache') ||
-            $app->make('config_loaded_from_cache') === false) {
-            $this->mergeAdditionalProviders($app);
+        if (! $program->bound('config_loaded_from_cache') ||
+            $program->make('config_loaded_from_cache') === false) {
+            $this->mergeAdditionalProviders($program);
         }
 
-        $app->registerConfiguredProviders();
+        $program->registerConfiguredProviders();
     }
 
     /**
      * Merge the additional configured providers into the configuration.
      *
-     * @param  \Fabricate\Core\Machine  $app
+     * @param  \Fabricate\Core\Program  $program
      * @throws BindingResolutionException|CircularDependencyException
      */
-    protected function mergeAdditionalProviders(Machine $app): void
+    protected function mergeAdditionalProviders(Program $program): void
     {
         if (static::$bootstrapProviderPath &&
             file_exists(static::$bootstrapProviderPath)) {
@@ -60,10 +60,10 @@ class RegisterProviders
             }
         }
 
-        $app->make('config')->set(
+        $program->make('config')->set(
             'machine.providers',
             array_merge(
-                $app->make('config')->get('machine.providers') ?? ServiceProvider::defaultProviders()->toArray(),
+                $program->make('config')->get('machine.providers') ?? ServiceProvider::defaultProviders()->toArray(),
                 static::$merge,
                 array_values($packageProviders ?? []),
             ),

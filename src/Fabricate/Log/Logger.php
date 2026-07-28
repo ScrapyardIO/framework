@@ -4,8 +4,8 @@ namespace Fabricate\Log;
 
 use Closure;
 use Fabricate\Contracts\Events\Dispatcher;
-use Fabricate\Contracts\Support\Arrayable;
-use Fabricate\Contracts\Support\Jsonable;
+use Fabricate\Contracts\NutsAndBolts\Arrayable;
+use Fabricate\Contracts\NutsAndBolts\Jsonable;
 use Fabricate\Log\Events\MessageLogged;
 use Fabricate\NutsAndBolts\Concerns\Conditionable;
 use Psr\Log\LoggerInterface;
@@ -20,21 +20,21 @@ class Logger implements LoggerInterface
      *
      * @var \Psr\Log\LoggerInterface
      */
-    protected $logger;
+    protected LoggerInterface $logger;
 
     /**
      * The event dispatcher instance.
      *
      * @var \Fabricate\Contracts\Events\Dispatcher|null
      */
-    protected $dispatcher;
+    protected ?Dispatcher $dispatcher;
 
     /**
      * Any context to be added to logs.
      *
      * @var array
      */
-    protected $context = [];
+    protected array $context = [];
 
     /**
      * Create a new log writer instance.
@@ -101,12 +101,12 @@ class Logger implements LoggerInterface
     /**
      * Write a message to the log.
      *
-     * @param  string  $level
+     * @param string $level
      * @param  mixed  $message
-     * @param  array  $context
+     * @param array $context
      * @return void
      */
-    protected function writeLog($level, $message, $context): void
+    protected function writeLog(string $level, mixed $message, array $context): void
     {
         if (method_exists($this->logger, 'isHandling') && ! $this->logger->isHandling($level)) {
             return;
@@ -120,14 +120,14 @@ class Logger implements LoggerInterface
         $this->fireLogEvent($level, $message, $context);
     }
 
-    public function withContext(array $context = [])
+    public function withContext(array $context = []): static
     {
         $this->context = array_merge($this->context, $context);
 
         return $this;
     }
 
-    public function withoutContext(?array $keys = null)
+    public function withoutContext(?array $keys = null): static
     {
         if (is_array($keys)) {
             $this->context = array_diff_key($this->context, array_flip($keys));
@@ -138,7 +138,7 @@ class Logger implements LoggerInterface
         return $this;
     }
 
-    public function listen(Closure $callback)
+    public function listen(Closure $callback): void
     {
         if (! isset($this->dispatcher)) {
             throw new RuntimeException('Events dispatcher has not been set.');
@@ -147,7 +147,7 @@ class Logger implements LoggerInterface
         $this->dispatcher->listen(MessageLogged::class, $callback);
     }
 
-    protected function fireLogEvent($level, $message, array $context = [])
+    protected function fireLogEvent($level, $message, array $context = []): void
     {
         if ($this->logger instanceof LogManager &&
             $this->logger->getEventDispatcher() !== null) {
@@ -167,17 +167,17 @@ class Logger implements LoggerInterface
         };
     }
 
-    public function getLogger()
+    public function getLogger(): LoggerInterface
     {
         return $this->logger;
     }
 
-    public function getEventDispatcher()
+    public function getEventDispatcher(): ?Dispatcher
     {
         return $this->dispatcher;
     }
 
-    public function setEventDispatcher(Dispatcher $dispatcher)
+    public function setEventDispatcher(Dispatcher $dispatcher): void
     {
         $this->dispatcher = $dispatcher;
     }

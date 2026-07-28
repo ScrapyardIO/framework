@@ -2,7 +2,7 @@
 
 namespace Fabricate\Contracts\Filesystem;
 
-use Fabricate\Filesystem\Enums\VISIBILITY;
+use Fabricate\Filesystem\Enums\Visibility;
 
 interface Filesystem
 {
@@ -91,7 +91,7 @@ interface Filesystem
      * Set the visibility for the given path.
      *
      * @param  string  $path
-     * @param  string|\Fabricate\Filesystem\Enums\VISIBILITY  $visibility
+     * @param  string|\Fabricate\Filesystem\Enums\Visibility  $visibility
      * @return bool
      */
     public function setVisibility($path, $visibility);

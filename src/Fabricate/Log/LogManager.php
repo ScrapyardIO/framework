@@ -3,7 +3,9 @@
 namespace Fabricate\Log;
 
 use Closure;
-use Fabricate\Contracts\Core\Machine;
+use Fabricate\Contracts\Chassis\BindingResolutionException;
+use Fabricate\Contracts\Core\Program;
+use Fabricate\Log\Concerns\ParsesLogConfiguration;
 use Fabricate\NutsAndBolts\Collection;
 use Fabricate\NutsAndBolts\Str;
 use InvalidArgumentException;
@@ -24,7 +26,7 @@ use Psr\Log\LoggerInterface;
 use Stringable;
 use Throwable;
 
-use function Fabricate\NutsAndBolts\enum_value;
+use function Fabricate\NutsAndBolts\Helpers\enum_value;
 
 /**
  * @mixin \Fabricate\Log\Logger
@@ -33,10 +35,10 @@ class LogManager implements LoggerInterface
 {
     use ParsesLogConfiguration;
 
-    protected Machine $app;
+    protected Program $app;
 
     /**
-     * @var array<string, \Psr\Log\LoggerInterface>
+     * @var array<string, LoggerInterface>
      */
     protected array $channels = [];
 
@@ -49,7 +51,7 @@ class LogManager implements LoggerInterface
 
     protected string $dateFormat = 'Y-m-d H:i:s';
 
-    public function __construct(Machine $app)
+    public function __construct(Program $app)
     {
         $this->app = $app;
     }
@@ -63,10 +65,10 @@ class LogManager implements LoggerInterface
 
     public function stack(array $channels, $channel = null): LoggerInterface
     {
-        return (new Logger(
+        return new Logger(
             $this->createStackDriver(['channels' => $channels, 'name' => $channel]),
             $this->app->bound('events') ? $this->app['events'] : null
-        ))->withContext($this->sharedContext);
+        )->withContext($this->sharedContext);
     }
 
     public function channel($channel = null): LoggerInterface
@@ -243,6 +245,9 @@ class LogManager implements LoggerInterface
         ], $config['replace_placeholders'] ?? false ? [new PsrLogMessageProcessor()] : []);
     }
 
+    /**
+     * @throws BindingResolutionException
+     */
     protected function createMonologDriver(array $config): LoggerInterface
     {
         if (! is_a($config['handler'], HandlerInterface::class, true)) {
@@ -251,7 +256,7 @@ class LogManager implements LoggerInterface
             );
         }
 
-        (new Collection($config['processors'] ?? []))->each(function ($processor) {
+        new Collection($config['processors'] ?? [])->each(function ($processor) {
             $processor = $processor['processor'] ?? $processor;
 
             if (! is_a($processor, ProcessorInterface::class, true)) {
@@ -271,7 +276,7 @@ class LogManager implements LoggerInterface
             $this->app->make($config['handler'], $with), $config
         );
 
-        $processors = (new Collection($config['processors'] ?? []))
+        $processors = new Collection($config['processors'] ?? [])
             ->map(fn ($processor) => $this->app->make($processor['processor'] ?? $processor, $processor['with'] ?? []))
             ->toArray();
 
@@ -349,6 +354,10 @@ class LogManager implements LoggerInterface
                 $channel->withoutContext($keys);
             }
         }
+
+        $this->sharedContext = is_null($keys)
+            ? []
+            : array_diff_key($this->sharedContext, array_flip($keys));
 
         return $this;
     }
@@ -498,7 +507,7 @@ class LogManager implements LoggerInterface
         $this->driver()->log($level, $message, $context);
     }
 
-    public function setApplication(Machine $app): static
+    public function setApplication(Program $app): static
     {
         $this->app = $app;
 

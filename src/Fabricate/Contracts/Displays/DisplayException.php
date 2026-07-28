@@ -2,9 +2,9 @@
 
 namespace Fabricate\Contracts\Displays;
 
-use Exception;
+use RuntimeException;
 
-class DisplayException extends Exception
+class DisplayException extends RuntimeException
 {
 
 }

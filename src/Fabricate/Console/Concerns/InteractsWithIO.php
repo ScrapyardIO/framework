@@ -3,12 +3,15 @@
 namespace Fabricate\Console\Concerns;
 
 use Closure;
-use Fabricate\Console\CommandInput;
-use Fabricate\Console\OutputStyle;
-use Fabricate\Contracts\Support\Arrayable;
+use Fabricate\Console\View\Components\Factory;
 use Fabricate\NutsAndBolts\Str;
+use Fabricate\Console\OutputStyle;
+use Fabricate\Console\CommandInput;
+use Fabricate\Contracts\NutsAndBolts\Arrayable;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
+use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Helper\Table;
+use Symfony\Component\Console\Helper\TableStyle;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
@@ -19,37 +22,37 @@ trait InteractsWithIO
     /**
      * The console components factory.
      *
-     * @var \Fabricate\Console\View\Components\Factory
+     * @var Factory|null
      */
-    protected $components;
+    protected ?Factory $components = null;
 
     /**
      * The input interface implementation.
      *
-     * @var \Symfony\Component\Console\Input\InputInterface
+     * @var InputInterface|null
      */
-    protected $input;
+    protected ?InputInterface $input  = null;
 
     /**
      * The output interface implementation.
      *
-     * @var \Fabricate\Console\OutputStyle
+     * @var ?OutputStyle
      */
-    protected $output;
+    protected ?OutputStyle $output  = null;
 
     /**
      * The default verbosity of output commands.
      *
-     * @var \Symfony\Component\Console\Output\OutputInterface::VERBOSITY_*
+     * @var OutputInterface::VERBOSITY_*
      */
-    protected $verbosity = OutputInterface::VERBOSITY_NORMAL;
+    protected int $verbosity = OutputInterface::VERBOSITY_NORMAL;
 
     /**
      * The mapping between human-readable verbosity levels and Symfony's OutputInterface.
      *
-     * @var array<string, \Symfony\Component\Console\Output\OutputInterface::VERBOSITY_*>
+     * @var array<string, OutputInterface::VERBOSITY_*>
      */
-    protected $verbosityMap = [
+    protected array $verbosityMap = [
         'v' => OutputInterface::VERBOSITY_VERBOSE,
         'vv' => OutputInterface::VERBOSITY_VERY_VERBOSE,
         'vvv' => OutputInterface::VERBOSITY_DEBUG,
@@ -60,11 +63,11 @@ trait InteractsWithIO
     /**
      * Retrieve the command's input as a CommandInput instance or retrieve an input item.
      *
-     * @param  string|null  $key
-     * @param  mixed  $default
-     * @return ($key is null ? \Fabricate\Console\CommandInput : mixed)
+     * @param string|null $key
+     * @param mixed|null $default
+     * @return ($key is null ? CommandInput : mixed)
      */
-    public function input($key = null, $default = null)
+    public function input(?string $key = null, mixed $default = null): mixed
     {
         $input = new CommandInput($this->arguments(), $this->options());
 
@@ -74,10 +77,10 @@ trait InteractsWithIO
     /**
      * Determine if the given argument is present.
      *
-     * @param  string|int  $name
+     * @param int|string $name
      * @return bool
      */
-    public function hasArgument($name)
+    public function hasArgument(int|string $name): bool
     {
         return $this->input->hasArgument($name);
     }
@@ -85,10 +88,10 @@ trait InteractsWithIO
     /**
      * Get the value of a command argument.
      *
-     * @param  string|null  $key
+     * @param string|null $key
      * @return ($key is null ? array<array|string|float|int|bool|null> : array|string|float|int|bool|null)
      */
-    public function argument($key = null)
+    public function argument(?string $key = null): array|float|bool|int|string|null
     {
         if (is_null($key)) {
             return $this->input->getArguments();
@@ -98,11 +101,11 @@ trait InteractsWithIO
     }
 
     /**
-     * Get all of the arguments passed to the command.
+     * Get every argument passed to the command.
      *
      * @return array<array|string|float|int|bool|null>
      */
-    public function arguments()
+    public function arguments(): array
     {
         return $this->argument();
     }
@@ -110,10 +113,10 @@ trait InteractsWithIO
     /**
      * Determine whether the option is defined in the command signature.
      *
-     * @param  string  $name
+     * @param string $name
      * @return bool
      */
-    public function hasOption($name)
+    public function hasOption(string $name): bool
     {
         return $this->input->hasOption($name);
     }
@@ -121,10 +124,10 @@ trait InteractsWithIO
     /**
      * Get the value of a command option.
      *
-     * @param  string|null  $key
+     * @param string|null $key
      * @return ($key is null ? array<array|string|float|int|bool|null> : array|string|float|int|bool|null)
      */
-    public function option($key = null)
+    public function option(?string $key = null): array|float|bool|int|string|null
     {
         if (is_null($key)) {
             return $this->input->getOptions();
@@ -134,11 +137,11 @@ trait InteractsWithIO
     }
 
     /**
-     * Get all of the options passed to the command.
+     * Get every option passed to the command.
      *
      * @return array<array|string|float|int|bool|null>
      */
-    public function options()
+    public function options(): array
     {
         return $this->option();
     }
@@ -146,11 +149,11 @@ trait InteractsWithIO
     /**
      * Confirm a question with the user.
      *
-     * @param  string  $question
-     * @param  bool  $default
+     * @param string $question
+     * @param bool $default
      * @return bool
      */
-    public function confirm($question, $default = false)
+    public function confirm(string $question, bool $default = false): bool
     {
         return $this->output->confirm($question, $default);
     }
@@ -158,37 +161,37 @@ trait InteractsWithIO
     /**
      * Prompt the user for input.
      *
-     * @param  string  $question
-     * @param  string|null  $default
+     * @param string $question
+     * @param string|null $default
      * @return mixed
      */
-    public function ask($question, $default = null)
+    public function ask(string $question, ?string $default = null): mixed
     {
         return $this->output->ask($question, $default);
     }
 
     /**
-     * Prompt the user for input with auto completion.
+     * Prompt the user for input with autocompletion.
      *
-     * @param  string  $question
-     * @param  array|callable  $choices
-     * @param  string|null  $default
+     * @param string $question
+     * @param callable|array $choices
+     * @param string|null $default
      * @return mixed
      */
-    public function anticipate($question, $choices, $default = null)
+    public function anticipate(string $question, callable|array $choices, ?string $default = null): mixed
     {
         return $this->askWithCompletion($question, $choices, $default);
     }
 
     /**
-     * Prompt the user for input with auto completion.
+     * Prompt the user for input with autocompletion.
      *
-     * @param  string  $question
-     * @param  iterable|(callable(string): string[])  $choices
-     * @param  string|null  $default
+     * @param string $question
+     * @param iterable|(callable(string): string[]) $choices
+     * @param string|null $default
      * @return mixed
      */
-    public function askWithCompletion($question, $choices, $default = null)
+    public function askWithCompletion(string $question, iterable $choices, ?string $default = null): mixed
     {
         $question = new Question($question, $default);
 
@@ -202,11 +205,11 @@ trait InteractsWithIO
     /**
      * Prompt the user for input but hide the answer from the console.
      *
-     * @param  string  $question
-     * @param  bool  $fallback
+     * @param string $question
+     * @param bool $fallback
      * @return mixed
      */
-    public function secret($question, $fallback = true)
+    public function secret(string $question, bool $fallback = true): mixed
     {
         $question = new Question($question);
 
@@ -218,14 +221,14 @@ trait InteractsWithIO
     /**
      * Give the user a single choice from an array of answers.
      *
-     * @param  string  $question
+     * @param string $question
      * @param  array<\Stringable|string|float|int|bool>  $choices
-     * @param  string|int|null  $default
-     * @param  ?positive-int  $attempts
-     * @param  bool  $multiple
+     * @param int|string|null $default
+     * @param  ?positive-int $attempts
+     * @param bool $multiple
      * @return string|array
      */
-    public function choice($question, array $choices, $default = null, $attempts = null, $multiple = false)
+    public function choice(string $question, array $choices, int|string|null $default = null, ?int $attempts = null, bool $multiple = false): array|string
     {
         $question = new ChoiceQuestion($question, $choices, $default);
 
@@ -237,13 +240,13 @@ trait InteractsWithIO
     /**
      * Format input to textual table.
      *
-     * @param  array  $headers
-     * @param  \Fabricate\Contracts\Support\Arrayable|array  $rows
-     * @param  \Symfony\Component\Console\Helper\TableStyle|string  $tableStyle
-     * @param  array<int, \Symfony\Component\Console\Helper\TableStyle|string>  $columnStyles
+     * @param array $headers
+     * @param array|Arrayable $rows
+     * @param string|TableStyle $tableStyle
+     * @param  array<int, TableStyle|string>  $columnStyles
      * @return void
      */
-    public function table($headers, $rows, $tableStyle = 'default', array $columnStyles = [])
+    public function table(array $headers, Arrayable|array $rows, TableStyle|string $tableStyle = 'default', array $columnStyles = []): void
     {
         $table = new Table($this->output);
 
@@ -267,11 +270,11 @@ trait InteractsWithIO
      * @template TValue
      * @template TIterable of iterable<TKey, TValue>
      *
-     * @param  TIterable|int  $totalSteps
-     * @param  \Closure(\Symfony\Component\Console\Helper\ProgressBar): mixed|\Closure(TValue, \Symfony\Component\Console\Helper\ProgressBar, TKey): mixed  $callback
+     * @param int|TIterable $totalSteps
+     * @param  Closure(ProgressBar): mixed|Closure(TValue, ProgressBar, TKey): mixed  $callback
      * @return ($totalSteps is iterable ? TIterable : void)
      */
-    public function withProgressBar($totalSteps, Closure $callback)
+    public function withProgressBar(array|int $totalSteps, Closure $callback)
     {
         $bar = $this->output->createProgressBar(
             is_iterable($totalSteps) ? count($totalSteps) : $totalSteps
@@ -299,11 +302,11 @@ trait InteractsWithIO
     /**
      * Write a string as information output.
      *
-     * @param  string  $string
-     * @param  'v'|'vv'|'vvv'|'quiet'|'normal'|\Symfony\Component\Console\Output\OutputInterface::VERBOSITY_*|null  $verbosity
+     * @param string $string
+     * @param 'v'|'vv'|'vvv'|'quiet'|'normal'|null $verbosity
      * @return void
      */
-    public function info($string, $verbosity = null)
+    public function info(string $string, ?string $verbosity = null): void
     {
         $this->line($string, 'info', $verbosity);
     }
@@ -311,12 +314,12 @@ trait InteractsWithIO
     /**
      * Write a string as standard output.
      *
-     * @param  string  $string
-     * @param  'info'|'comment'|'question'|'error'|'warn'|'alert'|null  $style
-     * @param  'v'|'vv'|'vvv'|'quiet'|'normal'|\Symfony\Component\Console\Output\OutputInterface::VERBOSITY_*|null  $verbosity
+     * @param string $string
+     * @param 'info'|'comment'|'question'|'error'|'warn'|'alert'|null $style
+     * @param 'v'|'vv'|'vvv'|'quiet'|'normal'|null $verbosity
      * @return void
      */
-    public function line($string, $style = null, $verbosity = null)
+    public function line(string $string, ?string $style = null, ?string $verbosity = null): void
     {
         $styled = $style ? "<$style>$string</$style>" : $string;
 
@@ -326,11 +329,11 @@ trait InteractsWithIO
     /**
      * Write a string as comment output.
      *
-     * @param  string  $string
-     * @param  'v'|'vv'|'vvv'|'quiet'|'normal'|\Symfony\Component\Console\Output\OutputInterface::VERBOSITY_*|null  $verbosity
+     * @param string $string
+     * @param 'v'|'vv'|'vvv'|'quiet'|'normal'|null $verbosity
      * @return void
      */
-    public function comment($string, $verbosity = null)
+    public function comment(string $string, ?string $verbosity = null): void
     {
         $this->line($string, 'comment', $verbosity);
     }
@@ -338,11 +341,11 @@ trait InteractsWithIO
     /**
      * Write a string as question output.
      *
-     * @param  string  $string
-     * @param  'v'|'vv'|'vvv'|'quiet'|'normal'|\Symfony\Component\Console\Output\OutputInterface::VERBOSITY_*|null  $verbosity
+     * @param string $string
+     * @param 'v'|'vv'|'vvv'|'quiet'|'normal'|null $verbosity
      * @return void
      */
-    public function question($string, $verbosity = null)
+    public function question(string $string, ?string $verbosity = null): void
     {
         $this->line($string, 'question', $verbosity);
     }
@@ -350,11 +353,11 @@ trait InteractsWithIO
     /**
      * Write a string as error output.
      *
-     * @param  string  $string
-     * @param  'v'|'vv'|'vvv'|'quiet'|'normal'|\Symfony\Component\Console\Output\OutputInterface::VERBOSITY_*|null  $verbosity
+     * @param string $string
+     * @param 'v'|'vv'|'vvv'|'quiet'|'normal'|null $verbosity
      * @return void
      */
-    public function error($string, $verbosity = null)
+    public function error(string $string, ?string $verbosity = null): void
     {
         $this->line($string, 'error', $verbosity);
     }
@@ -362,11 +365,11 @@ trait InteractsWithIO
     /**
      * Write a string as warning output.
      *
-     * @param  string  $string
-     * @param  'v'|'vv'|'vvv'|'quiet'|'normal'|\Symfony\Component\Console\Output\OutputInterface::VERBOSITY_*|null  $verbosity
+     * @param string $string
+     * @param 'v'|'vv'|'vvv'|'quiet'|'normal'|null $verbosity
      * @return void
      */
-    public function warn($string, $verbosity = null)
+    public function warn(string $string, ?string $verbosity = null): void
     {
         if (! $this->output->getFormatter()->hasStyle('warning')) {
             $style = new OutputFormatterStyle('yellow');
@@ -380,11 +383,11 @@ trait InteractsWithIO
     /**
      * Write a string in an alert box.
      *
-     * @param  string  $string
-     * @param  'v'|'vv'|'vvv'|'quiet'|'normal'|\Symfony\Component\Console\Output\OutputInterface::VERBOSITY_*|null  $verbosity
+     * @param string $string
+     * @param 'v'|'vv'|'vvv'|'quiet'|'normal'|null $verbosity
      * @return void
      */
-    public function alert($string, $verbosity = null)
+    public function alert(string $string, ?string $verbosity = null): void
     {
         $length = Str::length(strip_tags($string)) + 12;
 
@@ -398,10 +401,10 @@ trait InteractsWithIO
     /**
      * Write a blank line.
      *
-     * @param  int  $count
+     * @param int $count
      * @return $this
      */
-    public function newLine($count = 1)
+    public function newLine(int $count = 1): static
     {
         $this->output->newLine($count);
 
@@ -411,10 +414,10 @@ trait InteractsWithIO
     /**
      * Set the input interface implementation.
      *
-     * @param  \Symfony\Component\Console\Input\InputInterface  $input
+     * @param InputInterface $input
      * @return void
      */
-    public function setInput(InputInterface $input)
+    public function setInput(InputInterface $input): void
     {
         $this->input = $input;
     }
@@ -422,10 +425,10 @@ trait InteractsWithIO
     /**
      * Set the output interface implementation.
      *
-     * @param  \Fabricate\Console\OutputStyle  $output
+     * @param OutputStyle $output
      * @return void
      */
-    public function setOutput(OutputStyle $output)
+    public function setOutput(OutputStyle $output): void
     {
         $this->output = $output;
     }
@@ -433,10 +436,10 @@ trait InteractsWithIO
     /**
      * Set the verbosity level.
      *
-     * @param  'v'|'vv'|'vvv'|'quiet'|'normal'|\Symfony\Component\Console\Output\OutputInterface::VERBOSITY_*  $level
+     * @param 'v'|'vv'|'vvv'|'quiet'|'normal' $level
      * @return void
      */
-    protected function setVerbosity($level)
+    protected function setVerbosity(string $level): void
     {
         $this->verbosity = $this->parseVerbosity($level);
     }
@@ -444,10 +447,10 @@ trait InteractsWithIO
     /**
      * Get the verbosity level in terms of Symfony's OutputInterface level.
      *
-     * @param  'v'|'vv'|'vvv'|'quiet'|'normal'|\Symfony\Component\Console\Output\OutputInterface::VERBOSITY_*|null  $level
+     * @param 'v'|'vv'|'vvv'|'quiet'|'normal'|null $level
      * @return int
      */
-    protected function parseVerbosity($level = null)
+    protected function parseVerbosity(?string $level = null): int
     {
         $level ??= '';
 
@@ -463,9 +466,9 @@ trait InteractsWithIO
     /**
      * Get the output implementation.
      *
-     * @return \Fabricate\Console\OutputStyle
+     * @return OutputStyle
      */
-    public function getOutput()
+    public function getOutput(): OutputStyle
     {
         return $this->output;
     }

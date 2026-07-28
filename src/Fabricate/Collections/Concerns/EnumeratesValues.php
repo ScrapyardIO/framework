@@ -3,7 +3,6 @@
 namespace Fabricate\NutsAndBolts\Concerns;
 
 use Closure;
-use Fabricate\NutsAndBolts\Stringable;
 use UnitEnum;
 use Exception;
 use BackedEnum;
@@ -12,11 +11,12 @@ use JsonSerializable;
 use UnexpectedValueException;
 use Fabricate\NutsAndBolts\Arr;
 use Fabricate\NutsAndBolts\Collection;
-use Fabricate\Contracts\Support\Jsonable;
-use Fabricate\Contracts\Support\Arrayable;
+use Fabricate\Contracts\NutsAndBolts\Jsonable;
+use Fabricate\Contracts\NutsAndBolts\Arrayable;
 use Fabricate\NutsAndBolts\Contracts\Enumerable;
 use Fabricate\NutsAndBolts\HigherOrderCollectionProxy;
-use function Fabricate\NutsAndBolts\enum_value;
+
+use function Fabricate\NutsAndBolts\Helpers\enum_value;
 
 /**
  * @template TKey of array-key

@@ -4,7 +4,7 @@ namespace Fabricate\Bus;
 
 use Closure;
 use Fabricate\Contracts\Bus\QueueingDispatcher;
-use Fabricate\Contracts\Chassis\Chassis;
+use Fabricate\Contracts\Chassis\WireframeServiceContainer;
 use Fabricate\Contracts\Queue\Factory as QueueFactory;
 use Fabricate\Contracts\Queue\Queue as QueueContract;
 use Fabricate\NutsAndBolts\Collection;
@@ -12,7 +12,7 @@ use RuntimeException;
 
 class Dispatcher implements QueueingDispatcher
 {
-    protected Chassis $container;
+    protected WireframeServiceContainer $container;
 
     protected ?Closure $queueResolver;
 
@@ -28,7 +28,7 @@ class Dispatcher implements QueueingDispatcher
 
     protected bool $allowsDispatchingAfterResponses = true;
 
-    public function __construct(Chassis $container, ?Closure $queueResolver = null)
+    public function __construct(WireframeServiceContainer $container, ?Closure $queueResolver = null)
     {
         $this->container = $container;
         $this->queueResolver = $queueResolver;

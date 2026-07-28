@@ -6,7 +6,6 @@ use Fabricate\NutsAndBolts\ServiceProvider;
 
 class FilesystemServiceProvider extends ServiceProvider
 {
-
     /**
      * Register the service provider.
      *
@@ -25,7 +24,7 @@ class FilesystemServiceProvider extends ServiceProvider
      */
     protected function registerNativeFilesystem(): void
     {
-        $this->machine->singleton('files', function () {
+        $this->program->singleton('files', function () {
             return new Filesystem;
         });
     }
@@ -39,11 +38,11 @@ class FilesystemServiceProvider extends ServiceProvider
     {
         $this->registerManager();
 
-        $this->machine->singleton('filesystem.disk', function ($app) {
+        $this->program->singleton('filesystem.disk', function ($app) {
             return $app['filesystem']->disk($this->getDefaultDriver());
         });
 
-        $this->machine->singleton('filesystem.cloud', function ($app) {
+        $this->program->singleton('filesystem.cloud', function ($app) {
             return $app['filesystem']->disk($this->getCloudDriver());
         });
     }
@@ -55,7 +54,7 @@ class FilesystemServiceProvider extends ServiceProvider
      */
     protected function registerManager(): void
     {
-        $this->machine->singleton('filesystem', function ($app) {
+        $this->program->singleton('filesystem', function ($app) {
             return new FilesystemManager($app);
         });
     }
@@ -67,7 +66,7 @@ class FilesystemServiceProvider extends ServiceProvider
      */
     protected function getDefaultDriver(): string
     {
-        return $this->machine['config']['filesystems.default'];
+        return $this->program['config']['filesystems.default'];
     }
 
     /**
@@ -77,7 +76,6 @@ class FilesystemServiceProvider extends ServiceProvider
      */
     protected function getCloudDriver(): string
     {
-        return $this->machine['config']['filesystems.cloud'];
+        return $this->program['config']['filesystems.cloud'];
     }
-
 }

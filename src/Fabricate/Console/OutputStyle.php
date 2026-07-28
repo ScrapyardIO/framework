@@ -3,10 +3,10 @@
 namespace Fabricate\Console;
 
 use Fabricate\Console\Contracts\NewLineAware;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 
 class OutputStyle extends SymfonyStyle implements NewLineAware
 {
@@ -15,7 +15,7 @@ class OutputStyle extends SymfonyStyle implements NewLineAware
      *
      * @var \Symfony\Component\Console\Output\OutputInterface
      */
-    private $output;
+    private OutputInterface $output;
 
     /**
      * The number of trailing new lines written by the last output.
@@ -24,7 +24,7 @@ class OutputStyle extends SymfonyStyle implements NewLineAware
      *
      * @var int
      */
-    protected $newLinesWritten = 1;
+    protected int $newLinesWritten = 1;
 
     /**
      * If the last output written wrote a new line.
@@ -33,7 +33,7 @@ class OutputStyle extends SymfonyStyle implements NewLineAware
      *
      * @deprecated use $newLinesWritten
      */
-    protected $newLineWritten = false;
+    protected bool $newLineWritten = false;
 
     /**
      * Create a new Console OutputStyle instance.
@@ -116,7 +116,7 @@ class OutputStyle extends SymfonyStyle implements NewLineAware
      *
      * @deprecated use newLinesWritten
      */
-    public function newLineWritten()
+    public function newLineWritten(): bool
     {
         if ($this->output instanceof static && $this->output->newLineWritten()) {
             return true;
@@ -128,10 +128,10 @@ class OutputStyle extends SymfonyStyle implements NewLineAware
     /**
      * Count the number of trailing new lines in a string.
      *
-     * @param  string|iterable<string>  $messages
+     * @param string|iterable<string> $messages
      * @return int
      */
-    protected function trailingNewLineCount($messages)
+    protected function trailingNewLineCount(array|string $messages): int
     {
         if (is_iterable($messages)) {
             $string = '';
@@ -191,7 +191,7 @@ class OutputStyle extends SymfonyStyle implements NewLineAware
      *
      * @return \Symfony\Component\Console\Output\OutputInterface
      */
-    public function getOutput()
+    public function getOutput(): OutputInterface
     {
         return $this->output;
     }

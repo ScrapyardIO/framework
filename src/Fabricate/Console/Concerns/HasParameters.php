@@ -15,7 +15,7 @@ trait HasParameters
      *
      * @return void
      */
-    protected function specifyParameters()
+    protected function specifyParameters(): void
     {
         // We will loop through all of the arguments and options for the command and
         // set them all on the base command instance. This specifies what can get
@@ -48,7 +48,7 @@ trait HasParameters
      *    4?: list<string|Suggestion>|\Closure(CompletionInput, CompletionSuggestions): list<string|Suggestion>
      * })[]
      */
-    protected function getArguments()
+    protected function getArguments(): array
     {
         return [];
     }
@@ -65,7 +65,7 @@ trait HasParameters
      *    5?: list<string|Suggestion>|\Closure(CompletionInput, CompletionSuggestions): list<string|Suggestion>
      * })[]
      */
-    protected function getOptions()
+    protected function getOptions(): array
     {
         return [];
     }

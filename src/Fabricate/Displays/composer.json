@@ -2,22 +2,28 @@
     "name": "fabricate/displays",
     "description": "The Fabricate Displays package.",
     "license": "MIT",
-    "require": {
-        "php": "^8.3",
-        "fabricate/contracts": "^0.5.0",
-        "fabricate/reflection": "^0.5.0",
-        "psr/container": "^1.1.1 || ^2.0.1"
+    "authors": [
+        {
+            "name": "Angel Gonzalez",
+            "email": "angel@projectsaturnstudios.com"
+        }
+    ],
+    "homepage": "https://scrapyard-io.projectsaturnstudios.com",
+    "support": {
+        "issues": "https://github.com/ScrapyardIO/framework/issues",
+        "source": "https://github.com/ScrapyardIO/framework"
     },
-    "provide": {
-        "psr/container-implementation": "1.1 || 2.0"
+    "require": {
+        "php": "^8.4|^8.5|^8.6",
+        "fabricate/collections": "^0.6.0",
+        "fabricate/contracts": "^0.6.0",
+        "fabricate/pipeline": "^0.6.0",
+        "fabricate/framebuffer": "^0.6.0",
+        "fabricate/rendering": "^0.6.0",
+        "fabricate/nuts-and-bolts": "^0.6.0"
     },
     "suggest": {
-        "fabricate/auth": "Required to use the Auth attribute",
-        "fabricate/cache": "Required to use the Cache attribute",
-        "fabricate/config": "Required to use the Config attribute",
-        "fabricate/database": "Required to use the DB attribute",
-        "fabricate/filesystem": "Required to use the Storage attribute",
-        "fabricate/log": "Required to use the Log or Context attributes"
+        "fabricate/queue": "Required to use closures when chaining jobs (^0.6.0)."
     },
     "minimum-stability": "dev",
     "autoload": {
@@ -30,7 +36,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-master": "0.5.x-dev"
+            "dev-master": "0.6.x-dev"
         }
     }
 }

@@ -2,73 +2,232 @@
 
 namespace Fabricate\Queue;
 
-use Fabricate\Contracts\Queue\Queue;
+use Fabricate\Contracts\Events\Dispatcher as EventDispatcher;
+use Fabricate\Contracts\Queue\Queue as QueueContract;
+use Fabricate\Queue\Events\QueueFailedOver;
+use Fabricate\NutsAndBolts\Collection;
 use RuntimeException;
 use Throwable;
 
-class FailoverQueue implements Queue
+class FailoverQueue extends Queue implements QueueContract
 {
     /**
-     * @param  list<Queue>  $connections
+     * The queues which failed on the last action.
+     *
+     * @var list<string>
+     */
+    protected array $failingQueues = [];
+
+    /**
+     * Create a new failover queue instance.
      */
     public function __construct(
-        protected array $connections
+        public QueueManager $manager,
+        public EventDispatcher $events,
+        public array $connections
     ) {
     }
 
-    public function push(mixed $job, mixed $data = '', ?string $queue = null): mixed
+    /**
+     * Get the size of the queue.
+     *
+     * @param  string|null  $queue
+     * @return int
+     */
+    public function size($queue = null)
     {
-        $lastException = null;
-
-        foreach ($this->connections as $connection) {
-            try {
-                return $connection->push($job, $data, $queue);
-            } catch (Throwable $e) {
-                $lastException = $e;
-            }
-        }
-
-        if (! is_null($lastException)) {
-            throw $lastException;
-        }
-
-        throw new RuntimeException('Failover queue has no available connections.');
+        return $this->manager->connection($this->connections[0])->size($queue);
     }
 
-    public function later(mixed $delay, mixed $job, mixed $data = '', ?string $queue = null): mixed
+    /**
+     * Get the number of pending jobs.
+     *
+     * @param  string|null  $queue
+     * @return int
+     */
+    public function pendingSize($queue = null)
     {
-        $lastException = null;
-
-        foreach ($this->connections as $connection) {
-            try {
-                return $connection->later($delay, $job, $data, $queue);
-            } catch (Throwable $e) {
-                $lastException = $e;
-            }
-        }
-
-        if (! is_null($lastException)) {
-            throw $lastException;
-        }
-
-        throw new RuntimeException('Failover queue has no available connections.');
+        return $this->manager->connection($this->connections[0])->pendingSize($queue);
     }
 
-    public function bulk(array $jobs, mixed $data = '', ?string $queue = null): void
+    /**
+     * Get the number of delayed jobs.
+     *
+     * @param  string|null  $queue
+     * @return int
+     */
+    public function delayedSize($queue = null)
     {
-        $lastException = null;
+        return $this->manager->connection($this->connections[0])->delayedSize($queue);
+    }
 
-        foreach ($this->connections as $connection) {
-            try {
-                $connection->bulk($jobs, $data, $queue);
-                return;
-            } catch (Throwable $e) {
-                $lastException = $e;
+    /**
+     * Get the number of reserved jobs.
+     *
+     * @param  string|null  $queue
+     * @return int
+     */
+    public function reservedSize($queue = null)
+    {
+        return $this->manager->connection($this->connections[0])->reservedSize($queue);
+    }
+
+    /**
+     * Get the pending jobs for the given queue.
+     *
+     * @param  string|null  $queue
+     * @return \Fabricate\NutsAndBolts\Collection
+     */
+    public function pendingJobs($queue = null): Collection
+    {
+        return $this->manager->connection($this->connections[0])->pendingJobs($queue);
+    }
+
+    /**
+     * Get the delayed jobs for the given queue.
+     *
+     * @param  string|null  $queue
+     * @return \Fabricate\NutsAndBolts\Collection
+     */
+    public function delayedJobs($queue = null): Collection
+    {
+        return $this->manager->connection($this->connections[0])->delayedJobs($queue);
+    }
+
+    /**
+     * Get the reserved jobs for the given queue.
+     *
+     * @param  string|null  $queue
+     * @return \Fabricate\NutsAndBolts\Collection
+     */
+    public function reservedJobs($queue = null): Collection
+    {
+        return $this->manager->connection($this->connections[0])->reservedJobs($queue);
+    }
+
+    /**
+     * Get all pending jobs across every queue.
+     *
+     * @return \Fabricate\NutsAndBolts\Collection
+     */
+    public function allPendingJobs(): Collection
+    {
+        return $this->manager->connection($this->connections[0])->allPendingJobs();
+    }
+
+    /**
+     * Get all delayed jobs across every queue.
+     *
+     * @return \Fabricate\NutsAndBolts\Collection
+     */
+    public function allDelayedJobs(): Collection
+    {
+        return $this->manager->connection($this->connections[0])->allDelayedJobs();
+    }
+
+    /**
+     * Get all reserved jobs across every queue.
+     *
+     * @return \Fabricate\NutsAndBolts\Collection
+     */
+    public function allReservedJobs(): Collection
+    {
+        return $this->manager->connection($this->connections[0])->allReservedJobs();
+    }
+
+    /**
+     * Get the creation timestamp of the oldest pending job, excluding delayed jobs.
+     *
+     * @param  string|null  $queue
+     * @return int|null
+     */
+    public function creationTimeOfOldestPendingJob($queue = null)
+    {
+        return $this->manager
+            ->connection($this->connections[0])
+            ->creationTimeOfOldestPendingJob($queue);
+    }
+
+    /**
+     * Push a new job onto the queue.
+     *
+     * @param  object|string  $job
+     * @param  mixed  $data
+     * @param  string|null  $queue
+     * @return mixed
+     */
+    public function push($job, $data = '', $queue = null)
+    {
+        return $this->attemptOnAllConnections(__FUNCTION__, func_get_args(), $job);
+    }
+
+    /**
+     * Push a raw payload onto the queue.
+     *
+     * @param  string  $payload
+     * @param  string|null  $queue
+     * @return mixed
+     */
+    public function pushRaw($payload, $queue = null, array $options = [])
+    {
+        return $this->attemptOnAllConnections(__FUNCTION__, func_get_args());
+    }
+
+    /**
+     * Push a new job onto the queue after (n) seconds.
+     *
+     * @param  \DateTimeInterface|\DateInterval|int  $delay
+     * @param  string  $job
+     * @param  mixed  $data
+     * @param  string|null  $queue
+     * @return mixed
+     */
+    public function later($delay, $job, $data = '', $queue = null)
+    {
+        return $this->attemptOnAllConnections(__FUNCTION__, func_get_args(), $job);
+    }
+
+    /**
+     * Pop the next job off of the queue.
+     *
+     * @param  string|null  $queue
+     * @return \Fabricate\Contracts\Queue\Job|null
+     */
+    public function pop($queue = null)
+    {
+        return $this->manager->connection($this->connections[0])->pop($queue);
+    }
+
+    /**
+     * Attempt the given method on all connections.
+     *
+     * @param  mixed  $job
+     * @return mixed
+     *
+     * @throws \Throwable
+     */
+    protected function attemptOnAllConnections(string $method, array $arguments, $job = null)
+    {
+        [$lastException, $failedQueues] = [null, []];
+
+        try {
+            foreach ($this->connections as $connection) {
+                try {
+                    return $this->manager->connection($connection)->{$method}(...$arguments);
+                } catch (Throwable $e) {
+                    $lastException = $e;
+
+                    $failedQueues[] = $connection;
+
+                    if ($job !== null && ! in_array($connection, $this->failingQueues)) {
+                        $this->events->dispatch(new QueueFailedOver($connection, $job, $e));
+                    }
+                }
             }
+        } finally {
+            $this->failingQueues = $failedQueues;
         }
 
-        if (! is_null($lastException)) {
-            throw $lastException;
-        }
+        throw $lastException ?? new RuntimeException('All failover queue connections failed.');
     }
 }

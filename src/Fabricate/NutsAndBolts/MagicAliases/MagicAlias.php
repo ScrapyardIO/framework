@@ -3,12 +3,13 @@
 namespace Fabricate\NutsAndBolts\MagicAliases;
 
 use Closure;
-use Fabricate\Contracts\Core\Machine;
+use Fabricate\Contracts\Core\Program;
 use Fabricate\NutsAndBolts\Arr;
 use Fabricate\NutsAndBolts\Collection;
 use Fabricate\NutsAndBolts\Str;
+use Fabricate\NutsAndBolts\Testing\Fakes\Fake;
 use Mockery;
-use Mockery\LegacyMockInterface;
+use Mockery\MockInterface;
 use RuntimeException;
 
 abstract class MagicAlias
@@ -16,9 +17,9 @@ abstract class MagicAlias
     /**
      * The application instance behind the magic alias.
      *
-     * @var \Fabricate\Contracts\Core\Machine|null
+     * @var Program|null
      */
-    protected static ?Machine $app;
+    protected static ?Program $program = null;
 
     /**
      * The resolved object instances.
@@ -37,19 +38,19 @@ abstract class MagicAlias
     /**
      * Run a Closure when the magic alias has been resolved.
      *
-     * @param  \Closure  $callback
+     * @param  Closure  $callback
      * @return void
      */
     public static function resolved(Closure $callback): void
     {
         $accessor = static::getMagicAliasAccessor();
 
-        if (static::$app->resolved($accessor) === true) {
-            $callback(static::getMagicAliasRoot(), static::$app);
+        if (static::$program->resolved($accessor) === true) {
+            $callback(static::getMagicAliasRoot(), static::$program);
         }
 
-        static::$app->afterResolving($accessor, function ($service, $app) use ($callback) {
-            $callback($service, $app);
+        static::$program->afterResolving($accessor, function ($service, $program) use ($callback) {
+            $callback($service, $program);
         });
     }
 
@@ -58,7 +59,7 @@ abstract class MagicAlias
      *
      * @return \Mockery\MockInterface
      */
-    public static function spy(): Mockery\MockInterface
+    public static function spy(): ?MockInterface
     {
         if (! static::isMock()) {
             $class = static::getMockableClass();
@@ -67,6 +68,8 @@ abstract class MagicAlias
                 static::swap($spy);
             });
         }
+
+        return null;
     }
 
     /**
@@ -131,6 +134,7 @@ abstract class MagicAlias
         });
     }
 
+
     /**
      * Create a fresh mock instance for the given class.
      *
@@ -153,7 +157,7 @@ abstract class MagicAlias
         $name = static::getMagicAliasAccessor();
 
         return isset(static::$resolvedInstance[$name]) &&
-               static::$resolvedInstance[$name] instanceof LegacyMockInterface;
+            static::$resolvedInstance[$name] instanceof Mockery\LegacyMockInterface;
     }
 
     /**
@@ -180,8 +184,8 @@ abstract class MagicAlias
     {
         static::$resolvedInstance[static::getMagicAliasAccessor()] = $instance;
 
-        if (isset(static::$app)) {
-            static::$app->instance(static::getMagicAliasAccessor(), $instance);
+        if (isset(static::$program)) {
+            static::$program->instance(static::getMagicAliasAccessor(), $instance);
         }
     }
 
@@ -195,7 +199,7 @@ abstract class MagicAlias
         $name = static::getMagicAliasAccessor();
 
         return isset(static::$resolvedInstance[$name]) &&
-               static::$resolvedInstance[$name] instanceof Fake;
+            static::$resolvedInstance[$name] instanceof Fake;
     }
 
     /**
@@ -232,12 +236,12 @@ abstract class MagicAlias
             return static::$resolvedInstance[$name];
         }
 
-        if (static::$app) {
+        if (static::$program) {
             if (static::$cached) {
-                return static::$resolvedInstance[$name] = static::$app[$name];
+                return static::$resolvedInstance[$name] = static::$program[$name];
             }
 
-            return static::$app[$name];
+            return static::$program[$name];
         }
 
         return null;
@@ -277,78 +281,69 @@ abstract class MagicAlias
             'Workshop' => Workshop::class,
             //'Auth' => Auth::class,
             //'Benchmark' => Benchmark::class,
-            //'Blade' => Blade::class,
             //'Broadcast' => Broadcast::class,
             'Bus' => Bus::class,
             'Cache' => Cache::class,
+            'Circuit' => Circuit::class,
             //'Concurrency' => Concurrency::class,
             'Config' => Config::class,
             //'Context' => Context::class,
-            //'Cookie' => Cookie::class,
             //'Crypt' => Crypt::class,
             'Date' => Date::class,
             'Display' => Display::class,
             //'DB' => DB::class,
             //'Eloquent' => Model::class,
             'Event' => Event::class,
-            'Framebuffer' => Framebuffer::class,
+            'Font' => Font::class,
             //'File' => File::class,
             //'Gate' => Gate::class,
-            'GPIO' => GPIO::class,
             //'Hash' => Hash::class,
             //'Http' => Http::class,
-            'Circuit' => IntegratedCircuit::class,
-            //'Js' => Js::class,
-            //'Lang' => Lang::class,
             'Log' => Log::class,
             //'Mail' => Mail::class,
             //'Notification' => Notification::class,
             //'Number' => Number::class,
             //'Password' => Password::class,
-            //'Process' => Process::class,
+            'Process' => Process::class,
             'Queue' => Queue::class,
-            //'RateLimiter' => RateLimiter::class,
-            //'Redirect' => Redirect::class,
             'Redis' => Redis::class,
-            'Rendering' => Rendering::class,
-            //'Request' => Request::class,
-            //'Response' => Response::class,
+            //'Rendering' => Rendering::class,
             //'Route' => Route::class,
             //'Schedule' => Schedule::class,
             //'Schema' => Schema::class,
-            'Actuator' => Actuator::class,
-            'Sensor' => Sensor::class,
+            //'Actuator' => Actuator::class,
+            //'Sensor' => Sensor::class,
             //'Session' => Session::class,
-            //'Storage' => Storage::class,
+            'Sensor' => Sensor::class,
+            'Storage' => Storage::class,
             'Str' => Str::class,
+            'Visual' => Visual::class,
             //'Uri' => Uri::class,
             //'URL' => URL::class,
             //'Validator' => Validator::class,
-            //'View' => View::class,
-            //'Vite' => Vite::class,
-            'Window' => Window::class,
+            //'Window' => Window::class,
         ]);
     }
 
     /**
      * Get the application instance behind the magic alias.
      *
-     * @return \Fabricate\Contracts\Core\Machine|null
+     * @return Program|null
      */
-    public static function getMagicAliasApplication(): ?Machine
+    public static function getMagicAliasApplication(): ?Program
     {
-        return static::$app;
+        return static::$program;
     }
 
     /**
      * Set the application instance.
      *
-     * @param \Fabricate\Contracts\Core\Machine|null $app
+     * @param Program|null $program
      * @return void
      */
-    public static function setMagicAliasApplication(?Machine $app): void
+    public static function setMagicAliasApplication(?Program $program): void
     {
-        static::$app = $app;
+        static::$program = $program;
     }
 
     /**
@@ -358,7 +353,7 @@ abstract class MagicAlias
      * @param array $args
      * @return mixed
      *
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
     public static function __callStatic(string $method, array $args)
     {

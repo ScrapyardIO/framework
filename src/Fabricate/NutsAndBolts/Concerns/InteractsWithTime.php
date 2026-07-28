@@ -2,10 +2,10 @@
 
 namespace Fabricate\NutsAndBolts\Concerns;
 
-use Carbon\CarbonInterval;
+use Exception;
 use DateInterval;
 use DateTimeInterface;
-use Exception;
+use Carbon\CarbonInterval;
 use Fabricate\NutsAndBolts\Carbon;
 
 trait InteractsWithTime

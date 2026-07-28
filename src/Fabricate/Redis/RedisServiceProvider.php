@@ -2,7 +2,7 @@
 
 namespace Fabricate\Redis;
 
-use Fabricate\Contracts\Support\DeferrableProvider;
+use Fabricate\Contracts\NutsAndBolts\DeferrableProvider;
 use Fabricate\NutsAndBolts\Arr;
 use Fabricate\NutsAndBolts\ServiceProvider;
 
@@ -15,19 +15,19 @@ class RedisServiceProvider extends ServiceProvider implements DeferrableProvider
      */
     public function register(): void
     {
-        $this->machine->singleton('redis', function ($app) {
+        $this->program->singleton('redis', function ($app) {
             $config = $app->bound('config')
                 ? $app->make('config')->get('redis', [])
                 : [];
 
             return new RedisManager(
                 $app,
-                Arr::pull($config, 'client', 'predis'),
+                Arr::pull($config, 'client', 'phpredis'),
                 $config
             );
         });
 
-        $this->machine->bind('redis.connection', function ($app) {
+        $this->program->bind('redis.connection', function ($app) {
             return $app['redis']->connection();
         });
     }

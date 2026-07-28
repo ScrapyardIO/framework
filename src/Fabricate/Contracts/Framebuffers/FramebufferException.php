@@ -2,9 +2,9 @@
 
 namespace Fabricate\Contracts\Framebuffers;
 
-use Exception;
+use RuntimeException;
 
-class FramebufferException extends Exception
+class FramebufferException extends RuntimeException
 {
 
 }

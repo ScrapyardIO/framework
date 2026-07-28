@@ -1,1 +1,39 @@
-{}
+{
+  "name": "fabricate/reflection",
+  "description": "The Fabricate Reflection package.",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Angel Gonzalez",
+      "email": "angel@projectsaturnstudios.com"
+    },
+    {
+      "name": "Taylor Otwell"
+    }
+  ],
+  "homepage": "https://scrapyard-io.projectsaturnstudios.com",
+  "support": {
+    "issues": "https://github.com/ScrapyardIO/framework/issues",
+    "source": "https://github.com/ScrapyardIO/framework"
+  },
+  "require": {
+    "php": "^8.4|^8.5|^8.6"
+  },
+  "minimum-stability": "dev",
+  "autoload": {
+    "psr-4": {
+      "Fabricate\\NutsAndBolts\\": ""
+    },
+    "files": [
+      "Helpers/helpers.php"
+    ]
+  },
+  "config": {
+    "sort-packages": true
+  },
+  "extra": {
+    "branch-alias": {
+      "dev-master": "0.6.x-dev"
+    }
+  }
+}

@@ -35,7 +35,7 @@ class MemoizedStore implements CanFlushLocks, LockProvider, Store
      * @param  string  $key
      * @return mixed
      */
-    public function get($key)
+    public function get(string $key): mixed
     {
         $prefixedKey = $this->prefix($key);
 
@@ -53,7 +53,7 @@ class MemoizedStore implements CanFlushLocks, LockProvider, Store
      *
      * @return array
      */
-    public function many(array $keys)
+    public function many(array $keys): array
     {
         [$memoized, $retrieved, $missing] = [[], [], []];
 
@@ -96,7 +96,7 @@ class MemoizedStore implements CanFlushLocks, LockProvider, Store
      * @param  int  $seconds
      * @return bool
      */
-    public function put($key, $value, $seconds)
+    public function put(string $key, mixed $value, int $seconds): bool
     {
         unset($this->cache[$this->prefix($key)]);
 
@@ -109,7 +109,7 @@ class MemoizedStore implements CanFlushLocks, LockProvider, Store
      * @param  int  $seconds
      * @return bool
      */
-    public function putMany(array $values, $seconds)
+    public function putMany(array $values, int $seconds): bool
     {
         foreach ($values as $key => $value) {
             unset($this->cache[$this->prefix($key)]);
@@ -125,7 +125,7 @@ class MemoizedStore implements CanFlushLocks, LockProvider, Store
      * @param  mixed  $value
      * @return int|bool
      */
-    public function increment($key, $value = 1)
+    public function increment(string $key, mixed $value = 1): bool|int
     {
         unset($this->cache[$this->prefix($key)]);
 
@@ -139,7 +139,7 @@ class MemoizedStore implements CanFlushLocks, LockProvider, Store
      * @param  mixed  $value
      * @return int|bool
      */
-    public function decrement($key, $value = 1)
+    public function decrement(string $key, mixed $value = 1): bool|int
     {
         unset($this->cache[$this->prefix($key)]);
 
@@ -153,7 +153,7 @@ class MemoizedStore implements CanFlushLocks, LockProvider, Store
      * @param  mixed  $value
      * @return bool
      */
-    public function forever($key, $value)
+    public function forever(string $key, mixed $value): bool
     {
         unset($this->cache[$this->prefix($key)]);
 
@@ -230,7 +230,7 @@ class MemoizedStore implements CanFlushLocks, LockProvider, Store
      * @param  int  $seconds
      * @return bool
      */
-    public function touch($key, $seconds)
+    public function touch(string $key, int $seconds): bool
     {
         unset($this->cache[$this->prefix($key)]);
 
@@ -243,7 +243,7 @@ class MemoizedStore implements CanFlushLocks, LockProvider, Store
      * @param  string  $key
      * @return bool
      */
-    public function forget($key)
+    public function forget(string $key): bool
     {
         unset($this->cache[$this->prefix($key)]);
 
@@ -255,7 +255,7 @@ class MemoizedStore implements CanFlushLocks, LockProvider, Store
      *
      * @return bool
      */
-    public function flush()
+    public function flush(): bool
     {
         $this->cache = [];
 
@@ -267,7 +267,7 @@ class MemoizedStore implements CanFlushLocks, LockProvider, Store
      *
      * @return string
      */
-    public function getPrefix()
+    public function getPrefix(): string
     {
         return $this->repository->getPrefix();
     }

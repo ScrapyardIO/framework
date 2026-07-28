@@ -4,6 +4,8 @@ namespace Fabricate\Redis\Limiters;
 
 use Fabricate\Contracts\Redis\LimiterTimeoutException;
 use Fabricate\NutsAndBolts\Concerns\InteractsWithTime;
+use Fabricate\Redis\Connections\Connection;
+use Throwable;
 
 class ConcurrencyLimiterBuilder
 {
@@ -12,52 +14,52 @@ class ConcurrencyLimiterBuilder
     /**
      * The Redis connection.
      *
-     * @var \Fabricate\Redis\Connections\Connection
+     * @var Connection
      */
-    public $connection;
+    public Connection $connection;
 
     /**
      * The name of the lock.
      *
      * @var string
      */
-    public $name;
+    public string $name;
 
     /**
      * The maximum number of entities that can hold the lock at the same time.
      *
      * @var int
      */
-    public $maxLocks;
+    public int $maxLocks;
 
     /**
      * The number of seconds to maintain the lock until it is automatically released.
      *
      * @var int
      */
-    public $releaseAfter = 60;
+    public int $releaseAfter = 60;
 
     /**
      * The amount of time to block until a lock is available.
      *
      * @var int
      */
-    public $timeout = 3;
+    public int $timeout = 3;
 
     /**
      * The number of milliseconds to wait between attempts to acquire the lock.
      *
      * @var int
      */
-    public $sleep = 250;
+    public int $sleep = 250;
 
     /**
      * Create a new builder instance.
      *
-     * @param  \Fabricate\Redis\Connections\Connection  $connection
-     * @param  string  $name
+     * @param Connection $connection
+     * @param string $name
      */
-    public function __construct($connection, $name)
+    public function __construct(Connection $connection, string $name)
     {
         $this->name = $name;
         $this->connection = $connection;
@@ -66,10 +68,10 @@ class ConcurrencyLimiterBuilder
     /**
      * Set the maximum number of locks that can be obtained per time window.
      *
-     * @param  int  $maxLocks
+     * @param int $maxLocks
      * @return $this
      */
-    public function limit($maxLocks)
+    public function limit(int $maxLocks): static
     {
         $this->maxLocks = $maxLocks;
 
@@ -79,10 +81,10 @@ class ConcurrencyLimiterBuilder
     /**
      * Set the number of seconds until the lock will be released.
      *
-     * @param  int  $releaseAfter
+     * @param int $releaseAfter
      * @return $this
      */
-    public function releaseAfter($releaseAfter)
+    public function releaseAfter(int $releaseAfter): static
     {
         $this->releaseAfter = $this->secondsUntil($releaseAfter);
 
@@ -92,10 +94,10 @@ class ConcurrencyLimiterBuilder
     /**
      * Set the amount of time to block until a lock is available.
      *
-     * @param  int  $timeout
+     * @param int $timeout
      * @return $this
      */
-    public function block($timeout)
+    public function block(int $timeout): static
     {
         $this->timeout = $timeout;
 
@@ -105,10 +107,10 @@ class ConcurrencyLimiterBuilder
     /**
      * The number of milliseconds to wait between lock acquisition attempts.
      *
-     * @param  int  $sleep
+     * @param int $sleep
      * @return $this
      */
-    public function sleep($sleep)
+    public function sleep(int $sleep): static
     {
         $this->sleep = $sleep;
 
@@ -122,14 +124,14 @@ class ConcurrencyLimiterBuilder
      * @param  callable|null  $failure
      * @return mixed
      *
-     * @throws \Fabricate\Contracts\Redis\LimiterTimeoutException
+     * @throws LimiterTimeoutException|Throwable
      */
-    public function then(callable $callback, ?callable $failure = null)
+    public function then(callable $callback, ?callable $failure = null): mixed
     {
         try {
-            return (new ConcurrencyLimiter(
+            return new ConcurrencyLimiter(
                 $this->connection, $this->name, $this->maxLocks, $this->releaseAfter
-            ))->block($this->timeout, $callback, $this->sleep);
+            )->block($this->timeout, $callback, $this->sleep);
         } catch (LimiterTimeoutException $e) {
             if ($failure) {
                 return $failure($e);

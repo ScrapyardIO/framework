@@ -77,7 +77,7 @@ class RedisStore extends TaggableStore implements CanFlushLocks, LockProvider
      * @param  string  $key
      * @return mixed
      */
-    public function get($key)
+    public function get(string $key): mixed
     {
         $connection = $this->connection();
 
@@ -94,7 +94,7 @@ class RedisStore extends TaggableStore implements CanFlushLocks, LockProvider
      * @param  array  $keys
      * @return array
      */
-    public function many(array $keys)
+    public function many(array $keys): array
     {
         if ($keys === []) {
             return [];
@@ -128,7 +128,7 @@ class RedisStore extends TaggableStore implements CanFlushLocks, LockProvider
      * @param  int  $seconds
      * @return bool
      */
-    public function put($key, $value, $seconds)
+    public function put(string $key, mixed $value, int $seconds): bool
     {
         $connection = $this->connection();
 
@@ -144,7 +144,7 @@ class RedisStore extends TaggableStore implements CanFlushLocks, LockProvider
      * @param  int  $seconds
      * @return bool
      */
-    public function putMany(array $values, $seconds)
+    public function putMany(array $values, int $seconds): bool
     {
         $connection = $this->connection();
 
@@ -201,7 +201,7 @@ class RedisStore extends TaggableStore implements CanFlushLocks, LockProvider
      * @param  mixed  $value
      * @return int
      */
-    public function increment($key, $value = 1)
+    public function increment(string $key, mixed $value = 1): bool|int
     {
         return $this->connection()->incrby($this->prefix.$key, $value);
     }
@@ -213,7 +213,7 @@ class RedisStore extends TaggableStore implements CanFlushLocks, LockProvider
      * @param  mixed  $value
      * @return int
      */
-    public function decrement($key, $value = 1)
+    public function decrement(string $key, mixed $value = 1): bool|int
     {
         return $this->connection()->decrby($this->prefix.$key, $value);
     }
@@ -225,7 +225,7 @@ class RedisStore extends TaggableStore implements CanFlushLocks, LockProvider
      * @param  mixed  $value
      * @return bool
      */
-    public function forever($key, $value)
+    public function forever(string $key, mixed $value): bool
     {
         $connection = $this->connection();
 
@@ -272,7 +272,7 @@ class RedisStore extends TaggableStore implements CanFlushLocks, LockProvider
      * @param  int  $seconds
      * @return bool
      */
-    public function touch($key, $seconds)
+    public function touch(string $key, int $seconds): bool
     {
         return (bool) $this->connection()->expire($this->getPrefix().$key, (int) max(1, $seconds));
     }
@@ -283,7 +283,7 @@ class RedisStore extends TaggableStore implements CanFlushLocks, LockProvider
      * @param  string  $key
      * @return bool
      */
-    public function forget($key)
+    public function forget(string $key): bool
     {
         return (bool) $this->connection()->del($this->prefix.$key);
     }
@@ -293,7 +293,7 @@ class RedisStore extends TaggableStore implements CanFlushLocks, LockProvider
      *
      * @return bool
      */
-    public function flush()
+    public function flush(): bool
     {
         $this->connection()->flushdb();
 
@@ -458,7 +458,7 @@ class RedisStore extends TaggableStore implements CanFlushLocks, LockProvider
      *
      * @return string
      */
-    public function getPrefix()
+    public function getPrefix(): string
     {
         return $this->prefix;
     }

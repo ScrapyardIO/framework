@@ -3,11 +3,11 @@
 namespace Fabricate\Core;
 
 use Exception;
-use Fabricate\Contracts\Chassis\BindingResolutionException;
-use Fabricate\Contracts\Filesystem\FileNotFoundException;
 use Fabricate\Filesystem\Filesystem;
-use Fabricate\Contracts\Core\Machine as MachineInterface;
 use Fabricate\NutsAndBolts\ServiceProvider;
+use Fabricate\Contracts\Filesystem\FileNotFoundException;
+use Fabricate\Contracts\Core\Program as MachineInterface;
+use Fabricate\Contracts\Chassis\BindingResolutionException;
 
 class ProviderRepository
 {

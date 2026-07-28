@@ -2,8 +2,6 @@
 
 namespace Fabricate\NutsAndBolts;
 
-use Fabricate\Gfx\RenderingServiceProvider;
-
 class DefaultProviders
 {
     /**
@@ -27,30 +25,31 @@ class DefaultProviders
             \Fabricate\Cache\CacheServiceProvider::class,
             \Fabricate\Core\Providers\ConsoleSupportServiceProvider::class,
             //\Fabricate\Concurrency\ConcurrencyServiceProvider::class,
-            //\Fabricate\Cookie\CookieServiceProvider::class,
             //\Fabricate\Database\DatabaseServiceProvider::class,
-            \Fabricate\Displays\DisplaysServiceProvider::class,
             //\Fabricate\Encryption\EncryptionServiceProvider::class,
             \Fabricate\Filesystem\FilesystemServiceProvider::class,
-            //\Fabricate\Foundation\Providers\FoundationServiceProvider::class,
-            \Fabricate\Framebuffers\FramebufferServiceProvider::class,
-            \GeneralPurposeIO\Common\GPIOServiceProvider::class,
+            \Fabricate\Core\Providers\CoreServiceProvider::class,
             //\Fabricate\Hashing\HashServiceProvider::class,
             //\Fabricate\Mail\MailServiceProvider::class,
             //\Fabricate\Notifications\NotificationServiceProvider::class,
             //\Fabricate\Pagination\PaginationServiceProvider::class,
             //\Fabricate\Auth\Passwords\PasswordResetServiceProvider::class,
-            //\Fabricate\Pipeline\PipelineServiceProvider::class,
-            //\Fabricate\Queue\QueueServiceProvider::class,
+            \Fabricate\Pipeline\PipelineServiceProvider::class,
+            \Fabricate\Process\ProcessServiceProvider::class,
+            \Fabricate\Queue\QueueServiceProvider::class,
             \Fabricate\Redis\RedisServiceProvider::class,
-            \Fabricate\Gfx\RenderingServiceProvider::class,
             //\Fabricate\Session\SessionServiceProvider::class,
-            \Fabricate\Actuation\ActuationServiceProvider::class,
-            \Fabricate\Sensors\SensorServiceProvider::class,
-            //\Fabricate\Translation\TranslationServiceProvider::class,
             //\Fabricate\Validation\ValidationServiceProvider::class,
-            //\Fabricate\View\ViewServiceProvider::class,
 
+            \Fabricate\Framebuffers\FramebufferServiceProvider::class,
+            \Fabricate\Rendering\RenderingServiceProvider::class,
+            \Fabricate\Fonts\FontsServiceProvider::class,
+            \Fabricate\Core\Providers\VisualServiceProvider::class,
+            \Fabricate\Circuits\CircuitsServiceProvider::class,
+            \Fabricate\Sensors\SensorsServiceProvider::class,
+            //\Fabricate\Actuation\ActuationServiceProvider::class
+            \Fabricate\Displays\DisplaysServiceProvider::class,
+            \Fabricate\Sketches\SketchesServiceProvider::class,
         ];
     }
 
@@ -94,7 +93,7 @@ class DefaultProviders
      */
     public function except(array $providers)
     {
-        return new static((new Collection($this->providers))
+        return new static(new Collection($this->providers)
             ->reject(fn ($p) => in_array($p, $providers))
             ->values()
             ->toArray());
@@ -105,7 +104,7 @@ class DefaultProviders
      *
      * @return array<class-string>
      */
-    public function toArray()
+    public function toArray(): array
     {
         return $this->providers;
     }

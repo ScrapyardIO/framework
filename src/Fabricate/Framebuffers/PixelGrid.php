@@ -2,10 +2,10 @@
 
 namespace Fabricate\Framebuffers;
 
-use SplFixedArray;
-use OutOfBoundsException;
-use InvalidArgumentException;
 use Fabricate\Contracts\Framebuffers\PixelGrid as PixelGridContract;
+use InvalidArgumentException;
+use OutOfBoundsException;
+use SplFixedArray;
 
 class PixelGrid implements PixelGridContract
 {

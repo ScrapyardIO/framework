@@ -9,12 +9,12 @@ class EnsurePunctuation
     /**
      * Ensures the given string ends with punctuation.
      *
-     * @param  string  $string
+     * @param string $string
      * @return string
      */
-    public function __invoke($string)
+    public function __invoke(string $string): string
     {
-        if (! (new Stringable($string))->endsWith(['.', '?', '!', ':'])) {
+        if (! new Stringable($string)->endsWith(['.', '?', '!', ':'])) {
             return "$string.";
         }
 

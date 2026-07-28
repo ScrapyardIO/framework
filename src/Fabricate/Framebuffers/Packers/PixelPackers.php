@@ -2,9 +2,9 @@
 
 namespace Fabricate\Framebuffers\Packers;
 
-use Fabricate\Contracts\Framebuffers\PixelPacker;
 use Fabricate\Contracts\Framebuffers\Enums\PixelFormat;
 use Fabricate\Contracts\Framebuffers\FramebufferException;
+use Fabricate\Contracts\Framebuffers\PixelPacker;
 
 /**
  * Resolves the PixelPacker for a PixelFormat.

@@ -2,18 +2,18 @@
 
 namespace Fabricate\Filesystem;
 
-use Aws\S3\S3Client;
 use Closure;
-use Fabricate\Contracts\Core\Machine;
-use Fabricate\Contracts\Filesystem\Factory as FactoryContract;
-use Fabricate\NutsAndBolts\Arr;
+use Aws\S3\S3Client;
 use InvalidArgumentException;
-use League\Flysystem\AwsS3V3\AwsS3V3Adapter as S3Adapter;
-use League\Flysystem\AwsS3V3\PortableVisibilityConverter as AwsS3PortableVisibilityConverter;
-use League\Flysystem\Filesystem as Flysystem;
-use League\Flysystem\FilesystemAdapter as FlysystemAdapter;
+use Fabricate\NutsAndBolts\Arr;
 use League\Flysystem\Ftp\FtpAdapter;
+use Fabricate\Contracts\Core\Program;
+use League\Flysystem\Filesystem as Flysystem;
 use League\Flysystem\Ftp\FtpConnectionOptions;
+use League\Flysystem\AwsS3V3\AwsS3V3Adapter as S3Adapter;
+use League\Flysystem\FilesystemAdapter as FlysystemAdapter;
+use Fabricate\Contracts\Filesystem\FilesystemFactory as FactoryContract;
+use League\Flysystem\AwsS3V3\PortableVisibilityConverter as AwsS3PortableVisibilityConverter;
 use League\Flysystem\Local\LocalFilesystemAdapter as LocalAdapter;
 use League\Flysystem\PathPrefixing\PathPrefixedAdapter;
 use League\Flysystem\PhpseclibV3\SftpAdapter;
@@ -22,7 +22,7 @@ use League\Flysystem\ReadOnly\ReadOnlyFilesystemAdapter;
 use League\Flysystem\UnixVisibility\PortableVisibilityConverter;
 use League\Flysystem\Visibility;
 
-use function Fabricate\NutsAndBolts\enum_value;
+use function Fabricate\NutsAndBolts\Helpers\enum_value;
 
 /**
  * @mixin \Fabricate\Contracts\Filesystem\Filesystem
@@ -30,7 +30,7 @@ use function Fabricate\NutsAndBolts\enum_value;
  */
 class FilesystemManager implements FactoryContract
 {
-    protected Machine $machine;
+    protected Program $program;
 
     /**
      * The array of resolved filesystem drivers.
@@ -49,11 +49,11 @@ class FilesystemManager implements FactoryContract
     /**
      * Create a new filesystem manager instance.
      *
-     * @param  \Fabricate\Contracts\Core\Machine  $app
+     * @param Program $app
      */
-    public function __construct(Machine $app)
+    public function __construct(Program $app)
     {
-        $this->machine = $app;
+        $this->program = $app;
     }
 
     /**
@@ -161,7 +161,7 @@ class FilesystemManager implements FactoryContract
      */
     protected function callCustomCreator(array $config)
     {
-        return $this->customCreators[$config['driver']]($this->machine, $config);
+        return $this->customCreators[$config['driver']]($this->program, $config);
     }
 
     /**
@@ -371,8 +371,8 @@ class FilesystemManager implements FactoryContract
      */
     protected function getConfig($name)
     {
-        if ($this->machine->bound('config')) {
-            return $this->machine['config']["filesystems.disks.{$name}"] ?: [];
+        if ($this->program->bound('config')) {
+            return $this->program['config']["filesystems.disks.{$name}"] ?: [];
         }
 
         return match ($name) {
@@ -399,11 +399,11 @@ class FilesystemManager implements FactoryContract
      */
     public function getDefaultDriver()
     {
-        if (! $this->machine->bound('config')) {
+        if (! $this->program->bound('config')) {
             return 'local';
         }
 
-        return $this->machine['config']['filesystems.default'];
+        return $this->program['config']['filesystems.default'];
     }
 
     /**
@@ -413,11 +413,11 @@ class FilesystemManager implements FactoryContract
      */
     public function getDefaultCloudDriver()
     {
-        if (! $this->machine->bound('config')) {
+        if (! $this->program->bound('config')) {
             return 's3';
         }
 
-        return $this->machine['config']['filesystems.cloud'] ?? 's3';
+        return $this->program['config']['filesystems.cloud'] ?? 's3';
     }
 
     /**
@@ -468,12 +468,12 @@ class FilesystemManager implements FactoryContract
     /**
      * Set the application instance used by the manager.
      *
-     * @param  \Fabricate\Contracts\Core\Machine  $app
+     * @param Program $app
      * @return $this
      */
-    public function setApplication(Machine $app): static
+    public function setApplication(Program $app): static
     {
-        $this->machine = $app;
+        $this->program = $app;
 
         return $this;
     }

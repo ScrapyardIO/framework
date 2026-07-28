@@ -2,6 +2,7 @@
 
 namespace Fabricate\Console\View\Components;
 
+use Fabricate\Console\OutputStyle;
 use InvalidArgumentException;
 
 /**
@@ -25,16 +26,16 @@ class Factory
     /**
      * The output interface implementation.
      *
-     * @var \Fabricate\Console\OutputStyle
+     * @var OutputStyle
      */
     protected $output;
 
     /**
      * Creates a new factory instance.
      *
-     * @param  \Fabricate\Console\OutputStyle  $output
+     * @param OutputStyle $output
      */
-    public function __construct($output)
+    public function __construct(OutputStyle $output)
     {
         $this->output = $output;
     }

@@ -83,10 +83,10 @@ class ArrayStore extends TaggableStore implements CanFlushLocks, LockProvider
      * @param  string  $key
      * @return mixed
      */
-    public function get($key)
+    public function get(string $key): mixed
     {
         if (! isset($this->storage[$key])) {
-            return;
+            return null;
         }
 
         $item = $this->storage[$key];
@@ -96,7 +96,7 @@ class ArrayStore extends TaggableStore implements CanFlushLocks, LockProvider
         if ($expiresAt !== 0 && (Carbon::now()->getPreciseTimestamp(3) / 1000) >= $expiresAt) {
             $this->forget($key);
 
-            return;
+            return null;
         }
 
         return $this->serializesValues ? $this->unserialize($item['value']) : $item['value'];
@@ -110,7 +110,7 @@ class ArrayStore extends TaggableStore implements CanFlushLocks, LockProvider
      * @param  int  $seconds
      * @return bool
      */
-    public function put($key, $value, $seconds)
+    public function put(string $key, mixed $value, int $seconds): bool
     {
         $this->storage[$key] = [
             'value' => $this->serializesValues ? serialize($value) : $value,
@@ -127,7 +127,7 @@ class ArrayStore extends TaggableStore implements CanFlushLocks, LockProvider
      * @param  mixed  $value
      * @return int
      */
-    public function increment($key, $value = 1)
+    public function increment(string $key, mixed $value = 1): bool|int
     {
         if (! is_null($existing = $this->get($key))) {
             return tap(((int) $existing) + $value, function ($incremented) use ($key) {
@@ -149,7 +149,7 @@ class ArrayStore extends TaggableStore implements CanFlushLocks, LockProvider
      * @param  mixed  $value
      * @return int
      */
-    public function decrement($key, $value = 1)
+    public function decrement(string $key, mixed $value = 1): bool|int
     {
         return $this->increment($key, $value * -1);
     }
@@ -161,7 +161,7 @@ class ArrayStore extends TaggableStore implements CanFlushLocks, LockProvider
      * @param  mixed  $value
      * @return bool
      */
-    public function forever($key, $value)
+    public function forever(string $key, mixed $value): bool
     {
         return $this->put($key, $value, 0);
     }
@@ -173,7 +173,7 @@ class ArrayStore extends TaggableStore implements CanFlushLocks, LockProvider
      * @param  int  $seconds
      * @return bool
      */
-    public function touch($key, $seconds)
+    public function touch(string $key, int $seconds): bool
     {
         $item = Arr::get($this->storage, $key = $this->getPrefix().$key, null);
 
@@ -194,7 +194,7 @@ class ArrayStore extends TaggableStore implements CanFlushLocks, LockProvider
      * @param  string  $key
      * @return bool
      */
-    public function forget($key)
+    public function forget(string $key): bool
     {
         if (array_key_exists($key, $this->storage)) {
             unset($this->storage[$key]);
@@ -210,7 +210,7 @@ class ArrayStore extends TaggableStore implements CanFlushLocks, LockProvider
      *
      * @return bool
      */
-    public function flush()
+    public function flush(): bool
     {
         $this->storage = [];
 
@@ -240,7 +240,7 @@ class ArrayStore extends TaggableStore implements CanFlushLocks, LockProvider
      *
      * @return string
      */
-    public function getPrefix()
+    public function getPrefix(): string
     {
         return '';
     }

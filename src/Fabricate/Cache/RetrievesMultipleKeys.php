@@ -14,7 +14,7 @@ trait RetrievesMultipleKeys
      * @param  array  $keys
      * @return array
      */
-    public function many(array $keys)
+    public function many(array $keys): array
     {
         $return = [];
 
@@ -37,7 +37,7 @@ trait RetrievesMultipleKeys
      * @param  int  $seconds
      * @return bool
      */
-    public function putMany(array $values, $seconds)
+    public function putMany(array $values, int $seconds): bool
     {
         $manyResult = null;
 

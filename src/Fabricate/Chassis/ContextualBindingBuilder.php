@@ -2,7 +2,7 @@
 
 namespace Fabricate\Chassis;
 
-use Fabricate\Contracts\Chassis\Chassis;
+use Fabricate\Contracts\Chassis\WireframeServiceContainer;
 use Fabricate\Contracts\Chassis\ContextualBindingBuilder as ContextualBindingBuilderContract;
 
 class ContextualBindingBuilder implements ContextualBindingBuilderContract
@@ -10,9 +10,9 @@ class ContextualBindingBuilder implements ContextualBindingBuilderContract
     /**
      * The underlying container instance.
      *
-     * @var Chassis
+     * @var WireframeServiceContainer
      */
-    protected Chassis $container;
+    protected WireframeServiceContainer $container;
 
     /**
      * The concrete instance.
@@ -31,10 +31,10 @@ class ContextualBindingBuilder implements ContextualBindingBuilderContract
     /**
      * Create a new contextual binding builder.
      *
-     * @param Chassis $container
+     * @param WireframeServiceContainer $container
      * @param array|string $concrete
      */
-    public function __construct(Chassis $container, array|string $concrete)
+    public function __construct(WireframeServiceContainer $container, array|string $concrete)
     {
         $this->concrete = $concrete;
         $this->container = $container;

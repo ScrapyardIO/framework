@@ -3,20 +3,22 @@
 namespace Fabricate\NutsAndBolts;
 
 use Closure;
-use Fabricate\Contracts\Chassis\BindingResolutionException;
+use Fabricate\Contracts\Chassis\CircularDependencyException;
+use Fabricate\Contracts\Core\Program;
 use Fabricate\Contracts\Core\CachesConfiguration;
-use Fabricate\Contracts\Core\Machine;
-use Fabricate\Console\ConsoleMachine as Workshop;
-use Fabricate\Contracts\Support\DeferrableProvider;
+use Fabricate\Console\ConsoleProgram as Workshop;
+use Fabricate\Contracts\NutsAndBolts\DeferrableProvider;
+use Fabricate\Contracts\Chassis\BindingResolutionException;
+use ReflectionException;
 
 abstract class ServiceProvider
 {
     /**
      * The application instance.
      *
-     * @var Machine
+     * @var Program
      */
-    protected Machine $machine;
+    protected Program $program;
 
     /**
      * Every registered booting callback.
@@ -77,11 +79,11 @@ abstract class ServiceProvider
     /**
      * Create a new service provider instance.
      *
-     * @param Machine $app
+     * @param Program $program
      */
-    public function __construct(Machine $app)
+    public function __construct(Program $program)
     {
-        $this->machine = $app;
+        $this->program = $program;
     }
 
     /**
@@ -126,7 +128,7 @@ abstract class ServiceProvider
         $index = 0;
 
         while ($index < count($this->bootingCallbacks)) {
-            $this->machine->call($this->bootingCallbacks[$index]);
+            $this->program->call($this->bootingCallbacks[$index]);
 
             $index++;
         }
@@ -142,7 +144,7 @@ abstract class ServiceProvider
         $index = 0;
 
         while ($index < count($this->bootedCallbacks)) {
-            $this->machine->call($this->bootedCallbacks[$index]);
+            $this->program->call($this->bootedCallbacks[$index]);
 
             $index++;
         }
@@ -158,8 +160,8 @@ abstract class ServiceProvider
      */
     protected function mergeConfigFrom(string $path, string $key): void
     {
-        if (! ($this->machine instanceof CachesConfiguration && $this->machine->configurationIsCached())) {
-            $config = $this->machine->make('config');
+        if (! ($this->program instanceof CachesConfiguration && $this->program->configurationIsCached())) {
+            $config = $this->program->make('config');
 
             $config->set($key, array_merge(
                 require $path, $config->get($key, [])
@@ -177,8 +179,8 @@ abstract class ServiceProvider
      */
     protected function replaceConfigRecursivelyFrom(string $path, string $key): void
     {
-        if (! ($this->machine instanceof CachesConfiguration && $this->machine->configurationIsCached())) {
-            $config = $this->machine->make('config');
+        if (! ($this->program instanceof CachesConfiguration && $this->program->configurationIsCached())) {
+            $config = $this->program->make('config');
 
             $config->set($key, array_replace_recursive(
                 require $path, $config->get($key, [])
@@ -197,9 +199,9 @@ abstract class ServiceProvider
     protected function loadViewsFrom(array|string $path, string $namespace): void
     {
         $this->callAfterResolving('view', function ($view) use ($path, $namespace) {
-            if (isset($this->machine->config['view']['paths']) &&
-                is_array($this->machine->config['view']['paths'])) {
-                foreach ($this->machine->config['view']['paths'] as $viewPath) {
+            if (isset($this->program->config['view']['paths']) &&
+                is_array($this->program->config['view']['paths'])) {
+                foreach ($this->program->config['view']['paths'] as $viewPath) {
                     if (is_dir($appPath = $viewPath.'/vendor/'.$namespace)) {
                         $view->addNamespace($namespace, $appPath);
                     }
@@ -265,10 +267,10 @@ abstract class ServiceProvider
      */
     protected function callAfterResolving(string $name, callable $callback): void
     {
-        $this->machine->afterResolving($name, $callback);
+        $this->program->afterResolving($name, $callback);
 
-        if ($this->machine->resolved($name)) {
-            $callback($this->machine->make($name), $this->machine);
+        if ($this->program->resolved($name)) {
+            $callback($this->program->make($name), $this->program);
         }
     }
 
@@ -283,7 +285,7 @@ abstract class ServiceProvider
     {
         $this->publishes($paths, $groups);
 
-        if ($this->machine->config->get('database.migrations.update_date_on_publish', false)) {
+        if ($this->program->config->get('database.migrations.update_date_on_publish', false)) {
             static::$publishableMigrationPaths = array_unique(array_merge(static::$publishableMigrationPaths, array_keys($paths)));
         }
     }
@@ -580,6 +582,7 @@ return [
      * @param  string|null  $path
      * @param  bool  $strict
      * @return bool
+     * @throws ReflectionException|CircularDependencyException|BindingResolutionException
      */
     public static function removeProviderFromBootstrapFile(string|array $providersToRemove, ?string $path = null, bool $strict = false): bool
     {

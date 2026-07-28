@@ -1,0 +1,38 @@
+{
+    "name": "fabricate/config",
+    "description": "The Fabricate Config package.",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Angel Gonzalez",
+            "email": "angel@projectsaturnstudios.com"
+        },
+        {
+            "name": "Taylor Otwell"
+        }
+    ],
+    "homepage": "https://scrapyard-io.projectsaturnstudios.com",
+    "support": {
+        "issues": "https://github.com/ScrapyardIO/framework/issues",
+        "source": "https://github.com/ScrapyardIO/framework"
+    },
+    "require": {
+        "php": "^8.4|^8.5|^8.6",
+        "fabricate/collections": "^0.6.0",
+        "fabricate/contracts": "^0.6.0"
+    },
+    "minimum-stability": "dev",
+    "autoload": {
+        "psr-4": {
+            "Fabricate\\Config\\": ""
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "0.6.x-dev"
+        }
+    }
+}

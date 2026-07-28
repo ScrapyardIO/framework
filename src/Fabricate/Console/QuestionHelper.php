@@ -2,14 +2,14 @@
 
 namespace Fabricate\Console;
 
-use Fabricate\Console\View\Components\TwoColumnDetail;
 use Fabricate\NutsAndBolts\Stringable;
+use Symfony\Component\Console\Question\Question;
+use Symfony\Component\Console\Output\OutputInterface;
+use Fabricate\Console\View\Components\TwoColumnDetail;
+use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Formatter\OutputFormatter;
 use Symfony\Component\Console\Helper\SymfonyQuestionHelper;
-use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
-use Symfony\Component\Console\Question\Question;
 
 class QuestionHelper extends SymfonyQuestionHelper
 {
@@ -60,7 +60,7 @@ class QuestionHelper extends SymfonyQuestionHelper
 
         if ($question instanceof ChoiceQuestion) {
             foreach ($question->getChoices() as $key => $value) {
-                (new TwoColumnDetail($output))->render($value, $key);
+                new TwoColumnDetail($output)->render($value, $key);
             }
         }
 

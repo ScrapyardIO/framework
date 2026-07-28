@@ -196,7 +196,7 @@ abstract class GeneratorCommand extends Command implements PromptsForMissingInpu
 
         $this->components->info(sprintf('%s [%s] created successfully.', $info, $path));
 
-        return true;
+        return null;
     }
 
     /**
@@ -501,7 +501,7 @@ abstract class GeneratorCommand extends Command implements PromptsForMissingInpu
      *    4?: list<string|Suggestion>|\Closure(CompletionInput, CompletionSuggestions): list<string|Suggestion>
      * })[]
      */
-    protected function getArguments()
+    protected function getArguments(): array
     {
         return [
             ['name', InputArgument::REQUIRED, 'The name of the '.strtolower($this->type)],
@@ -513,7 +513,7 @@ abstract class GeneratorCommand extends Command implements PromptsForMissingInpu
      *
      * @return array<string, string|array{string, string}|\Closure(): (array<int, string>|string|int|bool)>
      */
-    protected function promptForMissingArgumentsUsing()
+    protected function promptForMissingArgumentsUsing(): array
     {
         return [
             'name' => [

@@ -61,7 +61,7 @@ class DiscoverEvents
      * @param string $basePath
      * @return array
      */
-    protected static function getListenerEvents(array $listeners, string $basePath): array
+    protected static function getListenerEvents(iterable $listeners, string $basePath): array
     {
         $listenerEvents = [];
 
@@ -90,7 +90,7 @@ class DiscoverEvents
                 }
 
                 $listenerEvents[$listener->name.'@'.$method->name] =
-                                Reflector::getParameterClassNames($method->getParameters()[0]);
+                    Reflector::getParameterClassNames($method->getParameters()[0]);
             }
         }
 

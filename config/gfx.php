@@ -2,11 +2,9 @@
 
 return [
     'rendering' => [
-        'default' => 'sdl3',
+        'default' => 'phpdafruit',
         'engines' => [
-            'sdl3' => [],
-            'glfw' => [],
             'phpdafruit' => [],
         ],
-    ],
+    ]
 ];

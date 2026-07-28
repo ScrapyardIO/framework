@@ -4,7 +4,7 @@ namespace Fabricate\Core\Bootstrap;
 
 use Dotenv\Dotenv;
 use Dotenv\Exception\InvalidFileException;
-use Fabricate\Contracts\Core\Machine;
+use Fabricate\Contracts\Core\Program;
 use Fabricate\NutsAndBolts\Env;
 use JetBrains\PhpStorm\NoReturn;
 use Laravel\Prompts\Output\ConsoleOutput;
@@ -12,22 +12,16 @@ use Symfony\Component\Console\Input\ArgvInput;
 
 class LoadEnvironmentVariables
 {
-    /**
-     * Bootstrap the given application.
-     *
-     * @param Machine $app
-     * @return void
-     */
-    public function bootstrap(Machine $app): void
+    public function bootstrap(Program $program): void
     {
-        if ($app->configurationIsCached()) {
+        if ($program->configurationIsCached()) {
             return;
         }
 
-        $this->checkForSpecificEnvironmentFile($app);
+        $this->checkForSpecificEnvironmentFile($program);
 
         try {
-            $this->createDotenv($app)->safeLoad();
+            $this->createDotenv($program)->safeLoad();
         } catch (InvalidFileException $e) {
             $this->writeErrorAndDie($e);
         }
@@ -36,14 +30,14 @@ class LoadEnvironmentVariables
     /**
      * Detect if a custom environment file matching the APP_ENV exists.
      *
-     * @param Machine $app
+     * @param Program $program
      * @return void
      */
-    protected function checkForSpecificEnvironmentFile(Machine $app): void
+    protected function checkForSpecificEnvironmentFile(Program $program): void
     {
-        if ($app->runningInConsole() &&
+        if ($program->runningInConsole() &&
             ($input = new ArgvInput)->hasParameterOption('--env') &&
-            $this->setEnvironmentFilePath($app, $app->environmentFile().'.'.$input->getParameterOption('--env'))) {
+            $this->setEnvironmentFilePath($program, $program->environmentFile().'.'.$input->getParameterOption('--env'))) {
             return;
         }
 
@@ -54,21 +48,21 @@ class LoadEnvironmentVariables
         }
 
         $this->setEnvironmentFilePath(
-            $app, $app->environmentFile().'.'.$environment
+            $program, $program->environmentFile().'.'.$environment
         );
     }
 
     /**
      * Load a custom environment file.
      *
-     * @param Machine $app
+     * @param Program $program
      * @param string $file
      * @return bool
      */
-    protected function setEnvironmentFilePath(Machine $app, string $file): bool
+    protected function setEnvironmentFilePath(Program $program, string $file): bool
     {
-        if (is_file($app->environmentPath().'/'.$file)) {
-            $app->loadEnvironmentFrom($file);
+        if (is_file($program->environmentPath().'/'.$file)) {
+            $program->loadEnvironmentFrom($file);
 
             return true;
         }
@@ -79,22 +73,22 @@ class LoadEnvironmentVariables
     /**
      * Create a Dotenv instance.
      *
-     * @param Machine $app
+     * @param Program $program
      * @return Dotenv
      */
-    protected function createDotenv(Machine $app): Dotenv
+    protected function createDotenv(Program $program): Dotenv
     {
         return Dotenv::create(
             Env::getRepository(),
-            $app->environmentPath(),
-            $app->environmentFile()
+            $program->environmentPath(),
+            $program->environmentFile()
         );
     }
 
     /**
      * Write the error information to the screen and exit.
      *
-     * @param  \Dotenv\Exception\InvalidFileException  $e
+     * @param InvalidFileException $e
      * @return never
      */
     #[NoReturn]

@@ -2,11 +2,10 @@
 
 namespace Fabricate\Core\Setup;
 
-use Fabricate\Contracts\Console\ConsoleKernel;
-use Fabricate\Core\Bootstrap\RegisterProviders;
 use Fabricate\Core\Machine;
 use Fabricate\NutsAndBolts\Collection;
-use ReflectionException;
+use Fabricate\Contracts\Console\ConsoleKernel;
+use Fabricate\Core\Bootstrap\RegisterProviders;
 use Fabricate\Core\Support\Providers\EventServiceProvider as AppEventServiceProvider;
 
 class AssemblyLine
@@ -25,12 +24,6 @@ class AssemblyLine
      */
     protected array $additionalRoutingCallbacks = [];
 
-    /**
-     * The Folio / page middleware that have been defined by the user.
-     *
-     * @var array
-     */
-    protected array $pageMiddleware = [];
 
     /**
      * Create a new application builder instance.
@@ -41,7 +34,6 @@ class AssemblyLine
      * Register the standard kernel classes for the application.
      *
      * @return $this
-     * @throws ReflectionException
      */
     public function withKernels(): static
     {
@@ -86,7 +78,7 @@ class AssemblyLine
      * @param  array  $commands
      * @return $this
      */
-    public function withCommands(array $commands = [])
+    public function withCommands(array $commands = []): static
     {
         if (empty($commands)) {
             $commands = [$this->machine->path('Console/Commands')];
@@ -102,6 +94,25 @@ class AssemblyLine
                 $kernel->addCommandRoutePaths($routes->all());
             });
         });
+
+        return $this;
+    }
+
+    /**
+     * Register additional service providers.
+     *
+     * @param  array  $providers
+     * @param  bool  $withBootstrapProviders
+     * @return $this
+     */
+    public function withProviders(array $providers = [], bool $withBootstrapProviders = true): static
+    {
+        RegisterProviders::merge(
+            $providers,
+            $withBootstrapProviders
+                ? $this->machine->getBootstrapProvidersPath()
+                : null
+        );
 
         return $this;
     }
@@ -128,26 +139,6 @@ class AssemblyLine
 
         return $this;
     }
-
-    /**
-     * Register additional service providers.
-     *
-     * @param  array  $providers
-     * @param  bool  $withBootstrapProviders
-     * @return $this
-     */
-    public function withProviders(array $providers = [], bool $withBootstrapProviders = true)
-    {
-        RegisterProviders::merge(
-            $providers,
-            $withBootstrapProviders
-                ? $this->machine->getBootstrapProvidersPath()
-                : null
-        );
-
-        return $this;
-    }
-
 
     /**
      * Register a callback to be invoked when the application's service providers are registered.

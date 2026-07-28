@@ -2,10 +2,13 @@
 
 namespace Fabricate\Core\Support\Providers;
 
+use Fabricate\Contracts\Chassis\BindingResolutionException;
+use Fabricate\Contracts\Chassis\CircularDependencyException;
 use Fabricate\Core\Events\DiscoverEvents;
 use Fabricate\NutsAndBolts\LazyCollection;
-use Fabricate\NutsAndBolts\ServiceProvider;
 use Fabricate\NutsAndBolts\MagicAliases\Event;
+use Fabricate\NutsAndBolts\ServiceProvider;
+use ReflectionException;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -98,11 +101,12 @@ class EventServiceProvider extends ServiceProvider
      * Get the discovered events and listeners for the application.
      *
      * @return array
+     * @throws BindingResolutionException|CircularDependencyException|ReflectionException
      */
     public function getEvents(): array
     {
-        if ($this->machine->eventsAreCached()) {
-            $cache = require $this->machine->getCachedEventsPath();
+        if ($this->program->eventsAreCached()) {
+            $cache = require $this->program->getCachedEventsPath();
 
             return $cache[get_class($this)] ?? [];
         } else {
@@ -117,7 +121,8 @@ class EventServiceProvider extends ServiceProvider
      * Get the discovered events for the application.
      *
      * @return array
-     */
+     * @throws BindingResolutionException|CircularDependencyException|ReflectionException
+    */
     protected function discoveredEvents(): array
     {
         return $this->shouldDiscoverEvents()
@@ -139,6 +144,7 @@ class EventServiceProvider extends ServiceProvider
      * Discover the events and listeners for the application.
      *
      * @return array
+     * @throws BindingResolutionException|CircularDependencyException|ReflectionException
      */
     public function discoverEvents(): array
     {
@@ -163,7 +169,7 @@ class EventServiceProvider extends ServiceProvider
     protected function discoverEventsWithin(): array
     {
         return static::$eventDiscoveryPaths ?: [
-            $this->machine->path('Listeners'),
+            $this->program->path('Listeners'),
         ];
     }
 
@@ -196,6 +202,7 @@ class EventServiceProvider extends ServiceProvider
      * Get the base path to be used during event discovery.
      *
      * @return string
+     * @throws BindingResolutionException|CircularDependencyException|ReflectionException
      */
     protected function eventDiscoveryBasePath(): string
     {

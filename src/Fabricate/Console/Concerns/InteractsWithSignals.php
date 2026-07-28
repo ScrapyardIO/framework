@@ -10,20 +10,20 @@ trait InteractsWithSignals
     /**
      * The signal registrar instance.
      *
-     * @var \Fabricate\Console\Signals|null
+     * @var Signals|null
      */
-    protected $signals;
+    protected ?Signals $signals = null;
 
     /**
      * Define a callback to be run when the given signal(s) occurs.
      *
      * @template TSignals of iterable<array-key, int>|int
      *
-     * @param  (\Closure():(TSignals))|TSignals  $signals
-     * @param  callable(int $signal): void  $callback
+     * @param (\Closure():(TSignals))|TSignals $signals
+     * @param callable(int $signal): void $callback
      * @return void
      */
-    public function trap($signals, $callback)
+    public function trap(array|int|\Closure $signals, callable $callback)
     {
         Signals::whenAvailable(function () use ($signals, $callback) {
             $this->signals ??= new Signals(
@@ -42,7 +42,7 @@ trait InteractsWithSignals
      *
      * @internal
      */
-    public function untrap()
+    public function untrap(): void
     {
         if (! is_null($this->signals)) {
             $this->signals->unregister();

@@ -1,0 +1,34 @@
+<?php
+
+namespace {{ namespace }};
+
+use Fabricate\Bus\Batchable;
+use Fabricate\Contracts\Queue\ShouldQueue;
+use Fabricate\Core\Queue\Queueable;
+
+class {{ class }} implements ShouldQueue
+{
+    use Batchable, Queueable;
+
+    /**
+     * Create a new job instance.
+     */
+    public function __construct()
+    {
+        //
+    }
+
+    /**
+     * Execute the job.
+     */
+    public function handle(): void
+    {
+        if ($this->batch()->cancelled()) {
+            // The batch has been cancelled...
+
+            return;
+        }
+
+        //
+    }
+}

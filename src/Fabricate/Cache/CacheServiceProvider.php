@@ -2,7 +2,7 @@
 
 namespace Fabricate\Cache;
 
-use Fabricate\Contracts\Support\DeferrableProvider;
+use Fabricate\Contracts\NutsAndBolts\DeferrableProvider;
 use Fabricate\NutsAndBolts\ServiceProvider;
 
 class CacheServiceProvider extends ServiceProvider implements DeferrableProvider
@@ -14,15 +14,19 @@ class CacheServiceProvider extends ServiceProvider implements DeferrableProvider
      */
     public function register(): void
     {
-        $this->machine->singleton('cache', function ($app) {
+        $this->program->singleton('cache', function ($app) {
             return new CacheManager($app);
         });
 
-        $this->machine->singleton('cache.store', function ($app) {
+        $this->program->singleton(CacheManager::class, function ($app) {
+            return $app->make('cache');
+        });
+
+        $this->program->singleton('cache.store', function ($app) {
             return $app['cache']->driver();
         });
 
-        $this->machine->singleton(RateLimiter::class, function ($app) {
+        $this->program->singleton(RateLimiter::class, function ($app) {
             return new RateLimiter($app->make('cache')->driver(
                 $app['config']->get('cache.limiter')
             ));
@@ -37,7 +41,7 @@ class CacheServiceProvider extends ServiceProvider implements DeferrableProvider
     public function provides(): array
     {
         return [
-            'cache', 'cache.store', RateLimiter::class,
+            'cache', 'cache.store', CacheManager::class, RateLimiter::class,
         ];
     }
 }

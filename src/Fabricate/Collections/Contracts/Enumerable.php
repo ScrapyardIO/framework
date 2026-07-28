@@ -10,10 +10,10 @@ use IteratorAggregate;
 use JsonSerializable;
 use InvalidArgumentException;
 use Fabricate\NutsAndBolts\Collection;
-use Fabricate\Contracts\Support\Jsonable;
-use Fabricate\Contracts\Support\Arrayable;
-use Fabricate\NutsAndBolts\ItemNotFoundException;
-use Fabricate\NutsAndBolts\MultipleItemsFoundException;
+use Fabricate\Contracts\NutsAndBolts\Jsonable;
+use Fabricate\Contracts\NutsAndBolts\Arrayable;
+use Fabricate\NutsAndBolts\Exceptions\ItemNotFoundException;
+use Fabricate\NutsAndBolts\Exceptions\MultipleItemsFoundException;
 
 /**
  * @template TKey of array-key
@@ -859,7 +859,7 @@ interface Enumerable extends Arrayable, Countable, IteratorAggregate, Jsonable, 
      * @param int $size
      * @return static<int, static>
      */
-    public function chunk(int $size): static;
+    public function chunk(int $size, bool $preserveKeys): static;
 
     /**
      * Chunk the collection into chunks with a callback.
