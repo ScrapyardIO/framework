@@ -5,6 +5,7 @@ namespace DeptOfScrapyardRobotics\Tests\Core;
 use Fabricate\Config\Repository;
 use Fabricate\Console\ConsoleProgram;
 use Fabricate\Console\Prompts\DisabledMultiSelectPrompt;
+use Fabricate\Core\Console\InstallActuatorsCommand;
 use Fabricate\Core\Console\InstallFontsCommand;
 use Fabricate\Core\Console\InstallGfxCommand;
 use Fabricate\Core\Console\InstallGpioCommand;
@@ -84,6 +85,7 @@ PHP);
         $machine = $this->makeMachine();
         $machine->register(WorkshopServiceProvider::class);
 
+        $this->assertInstanceOf(InstallActuatorsCommand::class, $machine->make(InstallActuatorsCommand::class));
         $this->assertInstanceOf(InstallFontsCommand::class, $machine->make(InstallFontsCommand::class));
         $this->assertInstanceOf(InstallGpioCommand::class, $machine->make(InstallGpioCommand::class));
         $this->assertInstanceOf(InstallSensorsCommand::class, $machine->make(InstallSensorsCommand::class));
@@ -92,6 +94,7 @@ PHP);
         $program = (new ConsoleProgram($machine, $machine->make('events'), '0.6.0'))
             ->setContainerCommandLoader();
 
+        $this->assertTrue($program->has('install:actuators'));
         $this->assertTrue($program->has('install:fonts'));
         $this->assertTrue($program->has('install:gpio'));
         $this->assertTrue($program->has('install:sensors'));
@@ -111,7 +114,7 @@ PHP);
         $this->assertStringContainsString('Autopen font scaffolding installed successfully.', $output);
     }
 
-    public function testInstallGpioAndSensorsPublishExpectedProviders(): void
+    public function testInstallGpioSensorsAndActuatorsPublishExpectedProviders(): void
     {
         [$gpioStatus, $gpio] = $this->runInstallCommand(new FakeInstallGpioCommand([
             'required' => ['scrapyard-io/gpio-framework:^0.6.0'],
@@ -121,11 +124,17 @@ PHP);
             'required' => ['scrapyard-io/waveforms:^0.6.0'],
             'published' => ['ScrapyardIO\\Waveforms\\Core\\Providers\\WaveformsServiceProvider'],
         ]));
+        [$actuatorsStatus, $actuators] = $this->runInstallCommand(new FakeInstallActuatorsCommand([
+            'required' => ['scrapyard-io/waveforms:^0.6.0'],
+            'published' => ['ScrapyardIO\\Waveforms\\Core\\Providers\\WaveformsServiceProvider'],
+        ]));
 
         $this->assertSame(Command::SUCCESS, $gpioStatus);
         $this->assertSame(Command::SUCCESS, $sensorsStatus);
+        $this->assertSame(Command::SUCCESS, $actuatorsStatus);
         $this->assertSame(['scrapyard-io/gpio-framework:^0.6.0'], $gpio->requiredPackages);
         $this->assertSame(['scrapyard-io/waveforms:^0.6.0'], $sensors->requiredPackages);
+        $this->assertSame(['scrapyard-io/waveforms:^0.6.0'], $actuators->requiredPackages);
     }
 
     public function testInstallCommandsFailWhenComposerRequireFails(): void
@@ -355,6 +364,11 @@ class FakeInstallGpioCommand extends InstallGpioCommand implements FakeInstallCo
 }
 
 class FakeInstallSensorsCommand extends InstallSensorsCommand implements FakeInstallCommandContract
+{
+    use FakeInstallCommandHooks;
+}
+
+class FakeInstallActuatorsCommand extends InstallActuatorsCommand implements FakeInstallCommandContract
 {
     use FakeInstallCommandHooks;
 }

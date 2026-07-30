@@ -18,6 +18,7 @@ use Fabricate\Core\Console\EnvironmentCommand;
 use Fabricate\Core\Console\EventMakeCommand;
 use Fabricate\Core\Console\ExceptionMakeCommand;
 use Fabricate\Core\Console\FramebufferMakeCommand;
+use Fabricate\Core\Console\InstallActuatorsCommand;
 use Fabricate\Core\Console\InstallFontsCommand;
 use Fabricate\Core\Console\InstallGfxCommand;
 use Fabricate\Core\Console\InstallGpioCommand;
@@ -91,6 +92,7 @@ class WorkshopServiceProvider extends ServiceProvider implements DeferrableProvi
         'EventMake' => EventMakeCommand::class,
         'ExceptionMake' => ExceptionMakeCommand::class,
         'FramebufferMake' => FramebufferMakeCommand::class,
+        'InstallActuators' => InstallActuatorsCommand::class,
         'InstallFonts' => InstallFontsCommand::class,
         'InstallGfx' => InstallGfxCommand::class,
         'InstallGpio' => InstallGpioCommand::class,

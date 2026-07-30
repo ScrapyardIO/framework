@@ -247,7 +247,7 @@ class Machine extends Chassis implements ProgramContract, CachesConfiguration
             'redis.connection' => [\Fabricate\Redis\Connections\Connection::class, \Fabricate\Contracts\Redis\Connection::class],
             //'session' => [\Fabricate\Session\SessionManager::class],
             //'session.store' => [\Fabricate\Session\Store::class, \Fabricate\Contracts\Session\Session::class],
-            //'actuator' => [\Fabricate\Actuation\ActuatorFactory::class],
+            'actuator' => [\Fabricate\Contracts\Actuation\ActuatorRegistry::class, \Fabricate\Actuation\ActuatorRegistry::class],
             'sensor' => [\Fabricate\Contracts\Sensors\SensorRegistry::class, \Fabricate\Sensors\SensorRegistry::class],
             'sketch' => [\Fabricate\Contracts\Sketches\SketchRegistry::class, \Fabricate\Sketches\SketchRegistry::class],
             'sketch.runner' => [\Fabricate\Sketches\SketchRunner::class],

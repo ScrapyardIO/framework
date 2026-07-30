@@ -47,7 +47,7 @@ class DefaultProviders
             \Fabricate\Core\Providers\VisualServiceProvider::class,
             \Fabricate\Circuits\CircuitsServiceProvider::class,
             \Fabricate\Sensors\SensorsServiceProvider::class,
-            //\Fabricate\Actuation\ActuationServiceProvider::class
+            \Fabricate\Actuation\ActuationServiceProvider::class,
             \Fabricate\Displays\DisplaysServiceProvider::class,
             \Fabricate\Sketches\SketchesServiceProvider::class,
         ];
