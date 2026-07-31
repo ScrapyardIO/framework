@@ -4,6 +4,7 @@ namespace Fabricate\Framebuffers\Strategy;
 
 use Fabricate\Contracts\Framebuffers\Enums\PixelFormat;
 use Fabricate\Contracts\Framebuffers\Enums\RenderType;
+use Fabricate\Framebuffers\DataObjects\DamageGranularity;
 use Fabricate\Framebuffers\DataObjects\DumpedBuffer;
 use Fabricate\Framebuffers\Factory\DirtyRegionsBufferFactory;
 use Fabricate\Framebuffers\Packers\RowMajorPacker;
@@ -89,16 +90,39 @@ class DirtyRegionsBuffer extends FormatSpecFramebuffer
     }
 
     /**
+     * Emit dirty regions and keep the logical grid intact so subsequent draws
+     * can refresh only the regions they touch.
+     *
+     * Clearing the grid here would leave the buffer believing the canvas is
+     * blank while the panel still shows the last transmitted image, with no
+     * recorded damage to reconcile the two — incompatible with the PARTIAL
+     * updates this strategy emits, since partial refresh presupposes a retained
+     * canvas. {@see PageSegmentBuffer::flush()} keeps its grid for the same
+     * reason. Callers wanting a blank surface clear it explicitly, which records
+     * the damage needed to actually transmit the blank.
+     *
      * @return array<int, DumpedBuffer>
      */
     public function flush(): array
     {
-        $data = $this->dump();
+        return $this->dump();
+    }
 
-        $this->grid->clear();
-        $this->dirty_regions = [];
+    /**
+     * Individual pixels are tracked, so damage needs no quantizing.
+     */
+    public function damageGranularity(): DamageGranularity
+    {
+        return DamageGranularity::pixel($this->width, $this->height);
+    }
 
-        return $data;
+    /**
+     * {@see flush()} keeps the grid, which is what lets successive frames
+     * refresh only the regions they touch.
+     */
+    public function preservesContentsOnPresent(): bool
+    {
+        return true;
     }
 
     /**

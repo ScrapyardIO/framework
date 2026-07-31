@@ -3,6 +3,7 @@
 namespace Fabricate\Framebuffers\Strategy;
 
 use Fabricate\Contracts\Framebuffers\Enums\RenderType;
+use Fabricate\Framebuffers\DataObjects\DamageGranularity;
 use Fabricate\Framebuffers\DataObjects\DumpedBuffer;
 use Fabricate\Framebuffers\Factory\PageSegmentBufferFactory;
 
@@ -105,6 +106,24 @@ class PageSegmentBuffer extends FormatSpecFramebuffer
     public function flush(): array
     {
         return $this->dump();
+    }
+
+    /**
+     * A vertical-page byte covers 8 rows across the full width, so damage finer
+     * than one page costs exactly the same transmit as a whole page.
+     */
+    public function damageGranularity(): DamageGranularity
+    {
+        return DamageGranularity::rows($this->page_height, $this->width, $this->height);
+    }
+
+    /**
+     * {@see flush()} keeps the grid, which is what lets successive frames
+     * refresh only the pages they touch.
+     */
+    public function preservesContentsOnPresent(): bool
+    {
+        return true;
     }
 
     /**

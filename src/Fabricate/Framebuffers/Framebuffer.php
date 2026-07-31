@@ -3,6 +3,7 @@
 namespace Fabricate\Framebuffers;
 
 use Fabricate\Contracts\Framebuffers\Framebuffer as FramebufferContract;
+use Fabricate\Framebuffers\DataObjects\DamageGranularity;
 
 abstract class Framebuffer implements FramebufferContract
 {
@@ -102,6 +103,24 @@ abstract class Framebuffer implements FramebufferContract
     public function blitTo(FramebufferContract $target, int $offset_x = 0, int $offset_y = 0): FramebufferContract
     {
         return $target->blitFrom($this, $offset_x, $offset_y);
+    }
+
+    /**
+     * Conservative default: assume any damage costs the whole surface. Buffers
+     * that track damage more finely override this.
+     */
+    public function damageGranularity(): DamageGranularity
+    {
+        return DamageGranularity::wholeSurface($this->width, $this->height);
+    }
+
+    /**
+     * Conservative default: assume the canvas is not retained across a present,
+     * so callers repaint everything rather than trusting stale pixels.
+     */
+    public function preservesContentsOnPresent(): bool
+    {
+        return false;
     }
 
 

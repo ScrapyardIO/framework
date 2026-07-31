@@ -1,0 +1,39 @@
+<?php
+
+namespace {{ namespace }};
+
+use Fabricate\Contracts\Rendering\DrawingSurface;
+use Fabricate\NutsAndBolts\Geometry\Constraints;
+use Fabricate\NutsAndBolts\Geometry\Size;
+use Fabricate\UX\Node;
+
+class {{ class }} extends Node
+{
+    /**
+     * Answer a size inside the range the parent offered.
+     */
+    public function measure(Constraints $constraints): Size
+    {
+        return $constraints->constrain($this->size());
+    }
+
+    /**
+     * Paint in local coordinates, with the origin at this node's top left. The
+     * surface cannot paint outside the node's bounds, so there is nothing to
+     * range check.
+     */
+    public function paint(DrawingSurface $surface): void
+    {
+        //
+    }
+
+    /**
+     * Only true when this node paints every pixel of its own bounds. Saying so
+     * lets a stage repaint from here instead of from the root; saying so untruly
+     * leaves ghosts behind moving children.
+     */
+    public function isOpaque(): bool
+    {
+        return false;
+    }
+}

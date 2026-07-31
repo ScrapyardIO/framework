@@ -6,15 +6,22 @@ use Fabricate\Contracts\Framebuffers\Framebuffer;
 use Fabricate\Contracts\Rendering\DrawingSurface;
 use Fabricate\Framebuffers\DataObjects\DumpedBuffer;
 use Fabricate\Framebuffers\FormatSpec;
+use Fabricate\Rendering\Concerns\ClipsDrawing;
 
 /**
  * The drawing surface every 2D renderer (software GFX, SDL3, …) exposes.
  *
  * Intentionally renderer-agnostic: scalars and plain arrays only, no
  * engine-specific types, so DisplayComponents can proxy to any implementation.
+ *
+ * Clip state is held here for every backend; enforcement belongs in each
+ * driver's own pixel funnel, in logical space before rotation. See
+ * {@see ClipsDrawing}.
  */
 abstract class Renderer2D extends Renderer implements DrawingSurface
 {
+    use ClipsDrawing;
+
     abstract public function drawPixel(int $x, int $y, int $color): static;
 
     /**

@@ -2,9 +2,7 @@
 
 namespace Fabricate\Contracts\Displays\Interfaces;
 
-use Fabricate\Contracts\Displays\EmbeddedDisplay;
-
-interface LEDMatrixDisplay extends PanelIC
-{
-
-}
+/**
+ * A framebuffer-driven matrix of addressable LEDs.
+ */
+interface LEDMatrixDisplay extends PanelIC {}

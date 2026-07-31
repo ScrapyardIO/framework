@@ -1,0 +1,24 @@
+<?php
+
+namespace {{ namespace }};
+
+use Fabricate\Actuation\Actuator;
+use Fabricate\Contracts\Circuits\IntegratedCircuit;
+use Fabricate\NutsAndBolts\MagicAliases\Circuit;
+
+class {{ class }} extends Actuator
+{
+    public function __construct(IntegratedCircuit $circuit)
+    {
+        parent::__construct($circuit);
+    }
+
+    public static function circuit(string $driver): static
+    {
+        $circuit = Circuit::driver($driver);
+
+        // Replace IntegratedCircuit with the required circuit type and validate it here.
+
+        return new static($circuit);
+    }
+}

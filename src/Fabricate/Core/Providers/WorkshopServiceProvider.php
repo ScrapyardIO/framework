@@ -6,6 +6,7 @@ use ReflectionException;
 use Fabricate\Console\Signals;
 use Fabricate\Core\DevCommands;
 use Fabricate\Core\Console\AboutCommand;
+use Fabricate\Core\Console\ActuatorMakeCommand;
 use Fabricate\NutsAndBolts\ServiceProvider;
 use Fabricate\Core\Console\ConfigShowCommand;
 use Fabricate\Core\Console\ConfigCacheCommand;
@@ -27,9 +28,11 @@ use Fabricate\Core\Console\InterfaceMakeCommand;
 use Fabricate\Core\Console\JobMakeCommand;
 use Fabricate\Core\Console\KeyGenerateCommand;
 use Fabricate\Core\Console\ListenerMakeCommand;
+use Fabricate\Core\Console\NodeMakeCommand;
 use Fabricate\Core\Console\ObserverMakeCommand;
 use Fabricate\Core\Console\PackageDiscoverCommand;
 use Fabricate\Core\Console\ProviderMakeCommand;
+use Fabricate\Core\Console\SensorMakeCommand;
 use Fabricate\Core\Console\SketchMakeCommand;
 use Fabricate\Core\Console\TraitMakeCommand;
 use Fabricate\Core\Console\VendorPublishCommand;
@@ -83,6 +86,7 @@ class WorkshopServiceProvider extends ServiceProvider implements DeferrableProvi
 
     protected array $devCommands = [
         //'CacheTable' => CacheTableCommand::class,
+        'ActuatorMake' => ActuatorMakeCommand::class,
         'ClassMake' => ClassMakeCommand::class,
         'ConfigMake' => ConfigMakeCommand::class,
         //'ConfigPublish' => ConfigPublishCommand::class,
@@ -100,11 +104,13 @@ class WorkshopServiceProvider extends ServiceProvider implements DeferrableProvi
         'InterfaceMake' => InterfaceMakeCommand::class,
         'JobMake' => JobMakeCommand::class,
         'ListenerMake' => ListenerMakeCommand::class,
+        'NodeMake' => NodeMakeCommand::class,
         'ObserverMake' => ObserverMakeCommand::class,
         'ProviderMake' => ProviderMakeCommand::class,
         //'QueueFailedTable' => FailedTableCommand::class,
         //'QueueTable' => TableCommand::class,
         //'QueueBatchesTable' => BatchesTableCommand::class,
+        'SensorMake' => SensorMakeCommand::class,
         'SketchMake' => SketchMakeCommand::class,
         //'StubPublish' => StubPublishCommand::class,
         //'TestMake' => TestMakeCommand::class,
