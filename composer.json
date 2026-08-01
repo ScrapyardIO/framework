@@ -82,7 +82,8 @@
         "fabricate/reflection": "self.version",
         "fabricate/rendering": "self.version",
         "fabricate/sensors": "self.version",
-        "fabricate/sketches": "self.version"
+        "fabricate/sketches": "self.version",
+        "fabricate/ux": "self.version"
     },
     "require-dev": {
         "mockery/mockery": "^1.6",
