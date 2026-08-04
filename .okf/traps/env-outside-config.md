@@ -4,7 +4,8 @@ title: env() outside config
 description: Calling env() from sketches/services after config cache yields null — use config() only at runtime.
 tags: [trap, config]
 generated: { by: cursor-agent/grok-4.5, at: 2026-08-04T03:55:00Z }
-status: draft
+verified: { by: human:Angel Gonzalez (projectsaturnstudios), at: 2026-08-04T04:21:00Z }
+status: stable
 sources:
   - id: config-concept
     resource: ../core/configuration.md

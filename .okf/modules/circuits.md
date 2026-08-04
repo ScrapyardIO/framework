@@ -28,9 +28,9 @@ sources:
 - Specific chip drivers (TSL2591, SSD1306, PCA9685, …) — those are `dept-of-scrapyard-robotics/*` and document their own parameters
 - Low-level I²C/SPI/UART handles — `scrapyard-io/gpio-framework` + `microscrap/*`
 
-# Agent rule
+# Integration
 
-When adding a chip: implement/register in the DOSR package provider; reference it from app `config/circuits.php`. Do not dump chip logic into `Fabricate\Circuits`.
+Chip drivers are implemented and registered in `dept-of-scrapyard-robotics/*` packages, then referenced from the application’s `config/circuits.php`. Chip logic does not belong in `Fabricate\Circuits`.
 
 [^dir]: Circuits module (CircuitRegistry, CircuitsServiceProvider, DataRegister)
 [^config]: Default circuits config

@@ -4,15 +4,14 @@ okf_version: "0.2"
 
 # scrapyard-io/framework Knowledge Bundle
 
-Operating knowledge for the ScrapyardIO / Fabricate application framework (v0.6.x).
+Package knowledge for `scrapyard-io/framework` (Fabricate, v0.6.x).
 Read this index first; open only the concepts needed for the task.
 
 **Trust rule:** Prefer `status: stable`. Treat `deprecated` as historical only.
 **Placement:** This bundle lives at the **framework package root** only — not inside `src/Fabricate/*` component folders.
-**Links:** Concept cross-links use paths relative to each file (editor-friendly). OKF also allows bundle-root `/…` links; both mean in-bundle targets.
+**Links:** Concept cross-links use paths relative to each file.
 **Version note:** Identity/version claims track package `0.6.0` / `Machine::VERSION` — revalidate when the package bumps.
-**Sibling .okf:** microscrap, DOSR device packages, gpio-framework, waveforms, tubes, etc. have their own bundles — do not duplicate chip/driver detail here.
-**Neo4j:** Cross-project lessons still live in Neo4j MCP — use both.
+**Scope:** Concepts describe this package’s public surface and composition model with companion packages. Chip drivers, native bindings, and device-specific detail belong in those packages’ own documentation / `.okf` bundles.
 
 # Orientation
 
@@ -44,14 +43,13 @@ Read this index first; open only the concepts needed for the task.
 
 * [Fabricate namespace](conventions/namespace-fabricate.md) - PSR-4 `Fabricate\` under `src/Fabricate/`.
 * [Composer replace](conventions/composer-replace.md) - Single package replaces `fabricate/*` components.
-* [MagicAlias terminology](conventions/magic-alias.md) - MagicAlias ≠ “fluent collaborator facade”.
+* [MagicAlias](conventions/magic-alias.md) - Container-backed static proxies under `NutsAndBolts\MagicAliases`.
 
 # Traps
 
-* [Wrong layer](traps/wrong-layer.md) - Editing framework when the bug is native drivers / DOSR pattern.
 * [env() outside config](traps/env-outside-config.md) - Same config:cache class of bugs as Laravel apps.
 
 # Playbooks
 
 * [First sketch](playbooks/first-sketch.md) - Bootstrap app + make/run a sketch.
-* [Add a service provider](playbooks/add-service-provider.md) - Register app or hardware services the ScrapyardIO way.
+* [Add a service provider](playbooks/add-service-provider.md) - Register app or hardware services.

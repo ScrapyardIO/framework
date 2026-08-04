@@ -29,10 +29,10 @@ Public PHP namespace: `Fabricate\`. Composer name: `scrapyard-io/framework`. Ver
 - Not waveforms/tubes abstractions (`scrapyard-io/waveforms`, `scrapyard-io/tubes`)
 - Not an application skeleton by itself — apps wire `bootstrap/app.php` + `workshop` (see skeleton `ScrapyardIO/scrapyard-io`)
 
-# Agent entry
+# Related concepts
 
-| Need | Concept |
-|------|---------|
+| Topic | Concept |
+|-------|---------|
 | Where code belongs | [Ownership](ownership.md) |
 | Stack diagram | [Hardware stack layers](stack-layers.md) |
 | Boot path | [Machine](../core/machine.md), [Workshop](../core/workshop.md) |

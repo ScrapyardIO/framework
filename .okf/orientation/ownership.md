@@ -1,7 +1,7 @@
 ---
 type: Convention
 title: Ownership boundaries
-description: What scrapyard-io/framework owns versus companion packages — stop invasive scaffolding in the wrong tree.
+description: What scrapyard-io/framework owns versus companion packages in the published composition model.
 tags: [orientation, ownership]
 generated: { by: cursor-agent/grok-4.5, at: 2026-08-04T03:55:00Z }
 status: draft
@@ -27,13 +27,13 @@ sources:
 | `scrapyard-io/gpio-framework` | Transport APIs (digital, I²C, SPI, UART, PWM, analog) |
 | `scrapyard-io/waveforms` | Higher-level sensor abstractions over transports |
 | `scrapyard-io/tubes` | Display-panel abstractions |
-| `dept-of-scrapyard-robotics/*` | Concrete chip/device drivers + package docs/params |
-| App skeleton (`scrapyard-io` root app) | `app/`, `bootstrap/`, `workshop`, env, composed requires |
+| `dept-of-scrapyard-robotics/*` | Concrete chip/device drivers and their documented parameters |
+| Application project | `app/`, `bootstrap/`, `workshop`, env, Composer requires that compose the stack |
 
-# Hard don’ts
+# Boundaries
 
-- Do not clone CarrierDriverManager-style scaffolding into unrelated domains “to make tests pass”.
-- Do not put device-specific OKF under `src/Fabricate/Actuation/...` — device knowledge stays in DOSR package `.okf`.
-- Do not treat unfinished native PWM/sysfs drivers as solved by rewriting generic-servos alone — [Wrong layer](../traps/wrong-layer.md).
+- Protocol adapters and device drivers are **not** this package — compose them from companions.[^readme]
+- Device-specific knowledge belongs with the device package, not under `src/Fabricate/Actuation/...` or other framework module trees.
+- Circuit parameters are documented by each `dept-of-scrapyard-robotics/*` package (see README Configuration section).
 
 [^readme]: Framework vs companion packages

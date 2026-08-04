@@ -1,7 +1,11 @@
 # Directory Update Log
 
+## 2026-08-04
+
+* **Rewrite**: Refocused concepts on the published package surface and companion-package composition model (README + source). Removed out-of-scope trap content; retained [env() outside config](traps/env-outside-config.md). Updated MagicAlias, stack, ownership, actuation, AGENTS.md, and index framing.
+
 ## 2026-08-03
 
-* **Update**: Post-validator fixes — softened [MagicAlias](conventions/magic-alias.md) to migration-state (Facade refs still exist); clarified [stack layers](orientation/stack-layers.md) as typical/conceptual; rewrote concept cross-links from `/…` to relative paths for editor traversal; noted 0.6.0 revalidation in root index.
-* **Initialization**: Created OKF v0.2 bundle for `scrapyard-io/framework` covering orientation, core runtime, domain module catalog, conventions, traps, and playbooks. Seeded from package README, `Machine`/`AssemblyLine`/`Sketch`, Composer replace map, and stack ownership lessons.
-* **Creation**: Added package-root [AGENTS.md](../AGENTS.md) pointing agents at `.okf/index.md` before framework work.
+* **Update**: Post-validator fixes — MagicAlias, stack layers caveat, relative concept links, 0.6.0 revalidation note.
+* **Initialization**: Created OKF v0.2 bundle for `scrapyard-io/framework` covering orientation, core runtime, domain module catalog, conventions, traps, and playbooks.
+* **Creation**: Added package-root [AGENTS.md](../AGENTS.md) pointing at `.okf/index.md`.

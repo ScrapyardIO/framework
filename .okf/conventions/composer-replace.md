@@ -15,12 +15,12 @@ sources:
 
 This package’s `composer.json` `replace` lists many `fabricate/*` components (`actuation`, `cache`, `console`, `sketches`, …) at `self.version`.[^composer]
 
-Applications and agents should:
+Applications should:
 
 ```bash
 composer require scrapyard-io/framework
 ```
 
-Do **not** try to require split `fabricate/console` etc. as separate shipped packages from this monorepo layout — they are replaced by the umbrella.
+Do **not** require split `fabricate/*` component packages separately — they are replaced by this umbrella package at `self.version`.
 
 [^composer]: replace map for fabricate/*

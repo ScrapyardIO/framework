@@ -19,6 +19,6 @@ Use service providers to register hardware and app services — [Providers & dis
 
 # Terminology
 
-Static container proxies are preferably **MagicAlias** classes (Laravel Facade analogue). See [MagicAlias terminology](../conventions/magic-alias.md) for the migration-state caveat (some Facade references remain in source).
+Static container proxies are **MagicAlias** classes under `Fabricate\NutsAndBolts\MagicAliases\`. See [MagicAlias](../conventions/magic-alias.md).
 
 [^readme]: Chassis dependency-injection container

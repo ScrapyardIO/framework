@@ -21,8 +21,8 @@ Builder that wires standard pieces onto a [Machine](machine.md) before `create()
 - `withCommands(...)` — register additional console commands
 - Provider pending registration helpers (see source for full API)[^assembly]
 
-# Agent note
+# Extension point
 
-Prefer extending bootstrap through AssemblyLine / providers over ad-hoc globals. App providers list lives in `bootstrap/providers.php`.
+Extend bootstrap through AssemblyLine and service providers rather than ad-hoc globals. The application provider list lives in `bootstrap/providers.php`.
 
 [^assembly]: AssemblyLine class

@@ -18,17 +18,16 @@ sources:
 # Owns
 
 - `Actuator`, `ActuatorRegistry`, `ActuationServiceProvider`
-- Subnamespaces: `Fans`, `Servos`, `HumanInput` — **framework contracts/bases**, not every generic device package[^dir]
+- Subnamespaces: `Fans`, `Servos`, `HumanInput` — framework contracts and bases, not concrete chip packages[^dir]
 - `config/actuators.php`
 
 # Does not own
 
-- `dept-of-scrapyard-robotics/generic-servos`, `generic-fans`, `generic-buttons`, etc.
-- PWM sysfs / native driver completion — that is gpio-framework + microscrap/native-drivers territory
+- Concrete device packages such as `dept-of-scrapyard-robotics/generic-servos`, `generic-fans`, `generic-buttons`
+- PWM and other transport implementations (`scrapyard-io/gpio-framework`)
+- Native driver bindings (`microscrap/*`)
 
-# Agent rule (hard-won)
-
-If a servo/fan integration fails, verify **transport + native driver** and **DOSR integration pattern** (`::pwm()` / GPIO contracts, BareMetal bases) before rewriting Actuation framework types. See [Wrong layer](../traps/wrong-layer.md) and Neo4j memories on generic-servos / native PWM.
+Applications compose DOSR device packages with GPIO transports and register actuators through this module’s registry APIs. See [Ownership boundaries](../orientation/ownership.md) and [Hardware stack layers](../orientation/stack-layers.md).
 
 [^dir]: Actuator, ActuatorRegistry, Fans, Servos, HumanInput
 [^config]: Default actuators config

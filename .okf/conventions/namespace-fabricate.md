@@ -17,8 +17,8 @@ sources:
 Fabricate\  →  src/Fabricate/
 ```
 
-NutsAndBolts PSR-4 also merges Macroable, Collections, Conditionable, Reflection directories under `Fabricate\NutsAndBolts\`.[^composer]
+Application code uses its own namespace (typically `App\`) and depends on `scrapyard-io/framework`.[^composer]
 
-Legacy names (BareMetal / RealityInterface as *app runtime*) are not the current framework identity. Device packages may still use BareMetal bases — that is DOSR-layer vocabulary, not “the framework is BareMetal”.
+NutsAndBolts PSR-4 also merges Macroable, Collections, Conditionable, and Reflection directories under `Fabricate\NutsAndBolts\`.
 
 [^composer]: psr-4 Fabricate\\ mapping

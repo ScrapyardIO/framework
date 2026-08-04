@@ -1,36 +1,30 @@
 ---
 type: Convention
-title: MagicAlias terminology
-description: Canonical pattern is MagicAlias (container-backed static proxy under NutsAndBolts\\MagicAliases); some code still says Facade — treat as migration state, not a rename mandate.
-tags: [convention, terminology]
+title: MagicAlias
+description: Container-backed static proxies under Fabricate\NutsAndBolts\MagicAliases — the Fabricate analogue of Laravel facades.
+tags: [convention, terminology, di]
 generated: { by: cursor-agent/grok-4.5, at: 2026-08-04T03:55:00Z }
 status: draft
 sources:
   - id: magic-aliases
     resource: src/Fabricate/NutsAndBolts/MagicAliases
-    title: MagicAliases directory (App, Cache, Config, …)
-  - id: neo4j
-    resource: neo4j://Memory/memory-magic-alias-terminology-2026-07-15
-    title: MagicAlias terminology memory
+    title: MagicAliases directory
+  - id: register
+    resource: src/Fabricate/Core/Bootstrap/RegisterMagicAliases.php
+    title: RegisterMagicAliases bootstrap
 ---
 
-# Canonical pattern (current)
+# What it is
 
-Prefer **MagicAlias** for Laravel-Facade-analogue static proxies into the container. Implementations live under `Fabricate\NutsAndBolts\MagicAliases\` and are registered via bootstrap (`RegisterMagicAliases`).[^magic-aliases]
+A **MagicAlias** is an abstract static proxy that resolves a service from the application container (`Program` / Machine). Concrete aliases live under `Fabricate\NutsAndBolts\MagicAliases\` (for example `App`, `Config`, `Cache`, `Log`, `Circuit`, `Sensor`, `Display`).[^magic-aliases]
 
-# Migration state (do not over-enforce)
+They are registered during console/application bootstrap via `Fabricate\Core\Bootstrap\RegisterMagicAliases`.[^register]
 
-Source still contains **Facade**-flavored references in places (e.g. queue uniqueness / background queue imports mentioning `Fabricate\NutsAndBolts\Facades\...`) even when a matching `Facades` namespace may be absent or incomplete in-tree.
+# Usage guidance
 
-Therefore:
+- Prefer MagicAlias classes for static access to container-bound services in application and framework code.
+- Resolve through the container or constructor injection when a static proxy is unnecessary.
+- Do not confuse MagicAlias with fluent builder/collaborator APIs that are sometimes called “facades” in casual conversation — those are unrelated patterns.
 
-- Teach/use **MagicAlias** for new code and docs.
-- Do **not** run broad automated renames assuming every “facade” string is wrong.
-- When you see `Facades\` references, treat them as legacy/mixed terminology to reconcile carefully against the MagicAliases directory.
-
-# Conversational pitfall
-
-In Scrapyard talk, someone may say “facade” meaning a fluent collaborator builder — that is **not** the same as MagicAlias. Confirm which meaning before refactoring.[^neo4j]
-
-[^magic-aliases]: MagicAliases directory (App, Cache, Config, …)
-[^neo4j]: MagicAlias terminology memory
+[^magic-aliases]: MagicAliases directory
+[^register]: RegisterMagicAliases bootstrap
