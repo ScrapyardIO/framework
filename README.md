@@ -8,10 +8,12 @@ ScrapyardIO is a PHP application framework for building programs that interact w
 
 The framework supplies the application runtime: dependency injection, configuration, package discovery, console commands, lifecycle-managed sketches, hardware registries, rendering, and supporting services. Protocol adapters and device drivers are separate packages that applications can compose as needed.
 
+Disclaimer - The framework was built LLM-assisted. It was not "vibe" coded. Any code that was generated was carefully prompted and reviewed by a human professional software engineer.
+This package (when cloned) contains an .okf bundle which is what is used along with the AI-assistant to produce high-quality code when utilized.
+
 ## Requirements
 
 - PHP 8.4, 8.5, or 8.6
-- The `mbstring` PHP extension
 - [Composer](https://getcomposer.org/)
 
 ## Installation
