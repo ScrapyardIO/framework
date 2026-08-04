@@ -3,7 +3,7 @@ type: Concept
 title: Sketch mental model
 description: A sketch is a foreground cooperative workload with boot → loop → shutdown lifecycle, discovered as Workshop commands.
 tags: [orientation, sketches]
-generated: { by: cursor-agent/grok-4.5, at: 2026-08-04T03:55:00Z }
+generated: { by: cursor-agent/grok-4.5, at: "2026-08-04T03:55:00Z" }
 status: draft
 sources:
   - id: sketch

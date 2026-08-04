@@ -3,7 +3,7 @@ type: Catalog
 title: Supporting services
 description: Non-hardware Fabricate modules — cache, queue, Redis, filesystem, log, events, bus, process, collections, console helpers.
 tags: [modules, services]
-generated: { by: cursor-agent/grok-4.5, at: 2026-08-04T03:55:00Z }
+generated: { by: cursor-agent/grok-4.5, at: "2026-08-04T03:55:00Z" }
 status: draft
 sources:
   - id: readme

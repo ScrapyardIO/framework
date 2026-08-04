@@ -4,7 +4,7 @@ title: Rendering
 description: GFX renderers, fonts, framebuffers, and shared visual presentation for windowed and embedded targets.
 resource: src/Fabricate/Rendering
 tags: [modules, rendering, gfx, fonts, framebuffers]
-generated: { by: cursor-agent/grok-4.5, at: 2026-08-04T03:55:00Z }
+generated: { by: cursor-agent/grok-4.5, at: "2026-08-04T03:55:00Z" }
 status: draft
 sources:
   - id: rendering

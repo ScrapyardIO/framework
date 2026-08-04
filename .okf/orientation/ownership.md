@@ -3,7 +3,7 @@ type: Convention
 title: Ownership boundaries
 description: What scrapyard-io/framework owns versus companion packages in the published composition model.
 tags: [orientation, ownership]
-generated: { by: cursor-agent/grok-4.5, at: 2026-08-04T03:55:00Z }
+generated: { by: cursor-agent/grok-4.5, at: "2026-08-04T03:55:00Z" }
 status: draft
 sources:
   - id: readme

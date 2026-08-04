@@ -4,17 +4,24 @@
 [![Total Downloads](https://img.shields.io/packagist/dt/scrapyard-io/framework.svg)](https://packagist.org/packages/scrapyard-io/framework)
 [![License](https://img.shields.io/packagist/l/scrapyard-io/framework.svg)](LICENSE.md)
 
-ScrapyardIO is a PHP application framework for building programs that interact with sensors, displays, integrated circuits, and other physical hardware.
+ScrapyardIO is a PHP application framework for building applications utilizing Windowed GUIs, Human Inputs, and Integrated Circuits, using a Laravel-like expressive syntax and familiar components.
 
-The framework supplies the application runtime: dependency injection, configuration, package discovery, console commands, lifecycle-managed sketches, hardware registries, rendering, and supporting services. Protocol adapters and device drivers are separate packages that applications can compose as needed.
+Like playing with sensors and servos? Saw those tutorials that use CircuitPython or C and just didn't feel like learning a whole new language for the whole ordeal? Well look no further! 
 
-Disclaimer - The framework was built LLM-assisted. It was not "vibe" coded. Any code that was generated was carefully prompted and reviewed by a human professional software engineer.
-This package (when cloned) contains an .okf bundle which is what is used along with the AI-assistant to produce high-quality code when utilized.
+ScrapyardIO is an embedded applications framework that doesn't drift very far from Laravel's expressive, elegant syntax. There's simply no reason that if Python can do it, PHP can't! After all, PHP is way faster than Python, and Python needs to be extended for embedded development. So [we did that, too](https://github.com/orgs/php-io-extensions). 
+
+ScrapyardIO will take the pain out of playing with servos, displays, sensors and other cool gadgets that speak I2C, SPI, UART or plain ol' on/off bit banging across a GPIO — or any bus, really.
+
+Got a Mac or Linux desktop with a USB-to-Serial device? That works. Got a Raspberry Pi, Jetson Orin Nano, or any other Linux SBC with an exposed GPIO bus? Even better. Either way, you can make PHP build desktop experiences or drive integrated circuits for an extremely satisfying experience!
+
+> **Built with AI assistance.** This framework was developed LLM-assisted — not vibe-coded. Generated code was deliberately prompted and reviewed by a professional software engineer. See [AI-assisted development](#ai-assisted-development).
+
 
 ## Requirements
 
 - PHP 8.4, 8.5, or 8.6
 - [Composer](https://getcomposer.org/)
+- A host with hardware access — either a Linux SBC with an exposed GPIO bus (Raspberry Pi, Jetson Orin Nano, and similar), or a macOS/Linux desktop with a USB-to-Serial adapter
 
 ## Installation
 
@@ -348,6 +355,14 @@ From the ScrapyardIO monorepo root:
 ```bash
 vendor/bin/pest scrapyard-io/framework/tests
 ```
+
+## AI-assisted development
+
+ScrapyardIO is developed with LLM assistance. Generated code is deliberately prompted and reviewed by a professional software engineer before it lands — nothing ships unread.
+
+Cloning the source repository also gives you an `.okf` knowledge bundle: a set of markdown concept files describing the framework's architecture, conventions, and boundaries in the [Open Knowledge Format](https://github.com/GoogleCloudPlatform/knowledge-catalog). AI assistants read it to produce code that matches this framework instead of guessing. It is excluded from Composer distributions, so it adds nothing to your `vendor/` directory.
+
+You do not need it to use the framework. It is there if you want your assistant to work the way the maintainers' does.
 
 ## Contributing
 

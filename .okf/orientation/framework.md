@@ -4,7 +4,7 @@ title: Framework package
 description: scrapyard-io/framework — PHP application runtime for hardware-facing programs (Fabricate namespace, v0.6.x).
 resource: .
 tags: [orientation, framework, fabricate]
-generated: { by: cursor-agent/grok-4.5, at: 2026-08-04T03:55:00Z }
+generated: { by: cursor-agent/grok-4.5, at: "2026-08-04T03:55:00Z" }
 status: draft
 sources:
   - id: readme

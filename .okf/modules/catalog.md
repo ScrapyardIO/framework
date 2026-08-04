@@ -3,7 +3,7 @@ type: Catalog
 title: Module catalog
 description: Top-level Fabricate domains inside scrapyard-io/framework — registries and APIs, not chip drivers.
 tags: [modules, catalog]
-generated: { by: cursor-agent/grok-4.5, at: 2026-08-04T03:55:00Z }
+generated: { by: cursor-agent/grok-4.5, at: "2026-08-04T03:55:00Z" }
 status: draft
 sources:
   - id: src

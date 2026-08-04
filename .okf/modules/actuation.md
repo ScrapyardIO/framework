@@ -4,7 +4,7 @@ title: Actuation
 description: Framework actuator registry and base types for fans, servos, human input — concrete devices stay in DOSR packages.
 resource: src/Fabricate/Actuation
 tags: [modules, actuation, fans, servos]
-generated: { by: cursor-agent/grok-4.5, at: 2026-08-04T03:55:00Z }
+generated: { by: cursor-agent/grok-4.5, at: "2026-08-04T03:55:00Z" }
 status: draft
 sources:
   - id: dir

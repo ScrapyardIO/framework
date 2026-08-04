@@ -3,7 +3,7 @@ type: Convention
 title: Composer replace
 description: scrapyard-io/framework replaces individual fabricate/* component packages at self.version — require the framework, not splinter fabricate packages.
 tags: [convention, composer]
-generated: { by: cursor-agent/grok-4.5, at: 2026-08-04T03:55:00Z }
+generated: { by: cursor-agent/grok-4.5, at: "2026-08-04T03:55:00Z" }
 status: draft
 sources:
   - id: composer

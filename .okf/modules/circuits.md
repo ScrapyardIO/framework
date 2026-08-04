@@ -4,7 +4,7 @@ title: Circuits
 description: Integrated-circuit registry/factory surface — config/circuits.php wires drivers; chip implementations live in DOSR packages.
 resource: src/Fabricate/Circuits
 tags: [modules, circuits]
-generated: { by: cursor-agent/grok-4.5, at: 2026-08-04T03:55:00Z }
+generated: { by: cursor-agent/grok-4.5, at: "2026-08-04T03:55:00Z" }
 status: draft
 sources:
   - id: dir

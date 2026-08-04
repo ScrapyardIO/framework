@@ -3,7 +3,7 @@ type: Convention
 title: MagicAlias
 description: Container-backed static proxies under Fabricate\NutsAndBolts\MagicAliases — the Fabricate analogue of Laravel facades.
 tags: [convention, terminology, di]
-generated: { by: cursor-agent/grok-4.5, at: 2026-08-04T03:55:00Z }
+generated: { by: cursor-agent/grok-4.5, at: "2026-08-04T03:55:00Z" }
 status: draft
 sources:
   - id: magic-aliases

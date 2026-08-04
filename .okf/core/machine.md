@@ -4,7 +4,7 @@ title: Machine
 description: Fabricate\\Core\\Machine — application runtime and service container (extends Chassis); created via Machine::configure()->create().
 resource: src/Fabricate/Core/Machine.php
 tags: [core, machine]
-generated: { by: cursor-agent/grok-4.5, at: 2026-08-04T03:55:00Z }
+generated: { by: cursor-agent/grok-4.5, at: "2026-08-04T03:55:00Z" }
 status: draft
 sources:
   - id: machine

@@ -4,7 +4,7 @@ title: Sensors
 description: Sensor abstraction registry backed by circuits — framework API over chip drivers.
 resource: src/Fabricate/Sensors
 tags: [modules, sensors]
-generated: { by: cursor-agent/grok-4.5, at: 2026-08-04T03:55:00Z }
+generated: { by: cursor-agent/grok-4.5, at: "2026-08-04T03:55:00Z" }
 status: draft
 sources:
   - id: dir

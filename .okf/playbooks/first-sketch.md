@@ -3,7 +3,7 @@ type: Playbook
 title: First sketch
 description: Bootstrap a ScrapyardIO app and create/run a lifecycle sketch via Workshop.
 tags: [playbook, sketches]
-generated: { by: cursor-agent/grok-4.5, at: 2026-08-04T03:55:00Z }
+generated: { by: cursor-agent/grok-4.5, at: "2026-08-04T03:55:00Z" }
 status: draft
 sources:
   - id: readme

@@ -3,7 +3,7 @@ type: Architecture
 title: Hardware stack layers
 description: Typical composition from sketch/command down through Fabricate APIs to transports and native bindings.
 tags: [orientation, architecture, stack]
-generated: { by: cursor-agent/grok-4.5, at: 2026-08-04T03:55:00Z }
+generated: { by: cursor-agent/grok-4.5, at: "2026-08-04T03:55:00Z" }
 status: draft
 sources:
   - id: readme-stack

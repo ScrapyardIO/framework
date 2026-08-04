@@ -3,7 +3,7 @@ type: CoreType
 title: Chassis
 description: Fabricate DI container (Chassis) — Machine extends Chassis; bindings, singletons, resolution.
 tags: [core, di, chassis]
-generated: { by: cursor-agent/grok-4.5, at: 2026-08-04T03:55:00Z }
+generated: { by: cursor-agent/grok-4.5, at: "2026-08-04T03:55:00Z" }
 status: draft
 sources:
   - id: readme

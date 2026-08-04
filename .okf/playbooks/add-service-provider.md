@@ -3,7 +3,7 @@ type: Playbook
 title: Add a service provider
 description: Register application or hardware services via Fabricate service providers and discovery.
 tags: [playbook, providers]
-generated: { by: cursor-agent/grok-4.5, at: 2026-08-04T03:55:00Z }
+generated: { by: cursor-agent/grok-4.5, at: "2026-08-04T03:55:00Z" }
 status: draft
 sources:
   - id: readme

@@ -4,7 +4,7 @@ title: AssemblyLine
 description: Fabricate\\Core\\Setup\\AssemblyLine — fluent bootstrap builder attached to Machine::configure() for kernels, events, commands, providers.
 resource: src/Fabricate/Core/Setup/AssemblyLine.php
 tags: [core, bootstrap]
-generated: { by: cursor-agent/grok-4.5, at: 2026-08-04T03:55:00Z }
+generated: { by: cursor-agent/grok-4.5, at: "2026-08-04T03:55:00Z" }
 status: draft
 sources:
   - id: assembly
