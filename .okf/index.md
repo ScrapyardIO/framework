@@ -35,7 +35,7 @@ Read this index first; open only the concepts needed for the task.
 * [events](components/events.md) - Sync Dispatcher + defer/NullDispatcher/EventFake; Core owns Event alias / ESP / event:* / Dispatchable. (`stable`)
 * [log](components/log.md) - LogManager / Logger (Monolog); Core owns Log alias / LogServiceProvider. Context deferred. (`stable`)
 * [cache](components/cache.md) - CacheManager; public stores file+redis; Core owns Cache alias / CacheServiceProvider. (`stable`)
-* [redis](components/redis.md) - RedisManager; phpredis/predis; Core owns Redis alias / RedisServiceProvider. (`stable`)
+* [redis](components/redis.md) - RedisManager; phpredis/predis; Core owns Redis alias / RedisServiceProvider. (`draft`)
 * [encryption](components/encryption.md) - Encrypter encrypt/decrypt; Core owns Crypt + EncryptionServiceProvider. (`stable`)
 * [translation](components/translation.md) - Translator + lang files; Core Lang + TranslationServiceProvider. (`stable`)
 * [validation](components/validation.md) - Validator factory + rules; Core Validator + ValidationServiceProvider. (`stable`)

@@ -16,7 +16,7 @@ Fabricate components live under `src/Fabricate/*` and are documented here. Each 
 * [events](events.md) - Sync Dispatcher. (`stable`)
 * [log](log.md) - LogManager / Monolog. (`stable`)
 * [cache](cache.md) - CacheManager; file+redis public stores. (`stable`)
-* [redis](redis.md) - RedisManager. (`stable`)
+* [redis](redis.md) - RedisManager. (`draft`)
 * [encryption](encryption.md) - Encrypter encrypt/decrypt; Core Crypt + EncryptionServiceProvider. (`stable`)
 * [process](process.md) - Process Factory; Core Process MagicAlias + ProcessServiceProvider. (`stable`)
 * [pipeline](pipeline.md) - Onion pipes + Hub; Core Pipeline MagicAlias + PipelineServiceProvider. (`stable`)

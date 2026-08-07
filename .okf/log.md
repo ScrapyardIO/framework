@@ -2,6 +2,8 @@
 
 ## 2026-08-07
 
+* **Update**: [redis](components/redis.md) — `PredisConnection` now wraps `scan`/`zscan`/`hscan`/`sscan` (null cursor → `0`) for Redis 7.4 + CI parity with `PhpRedisConnection`. Flipped concept back to `draft` until re-verified. Fixes Actions failure (`ERR invalid cursor` in `RedisConnectionTest`).
+* **Verification**: Angel marked all non-deprecated OKF concepts `status: stable` for 0.7.x publish prep (`verified` by `human:Angel Gonzalez (projectsaturnstudios)`). Index + components index markers updated; `deprecated` concepts unchanged. Smoke tests added for Broadcasting / Pagination / Reflection; GHA tests workflow now runs Redis service + `ext-redis` (+ `predis/predis` require-dev).
 * **Update**: [sketches](components/sketches.md) — Nodes/Flows are a general orchestration API (not sketch-only); recommended for sketch workflows + AI assistant step graphs; points at website Guide **Nodes & Flows**.
 * **Creation**: `workshop make:node` / `make:node --async` → `App\Workflows` (`NodeMakeCommand` + stubs). Product wording: **decision-based Logic Orchestration** (Guide drops PocketFlow name).
 

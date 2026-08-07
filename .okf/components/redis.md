@@ -5,8 +5,8 @@ description: fabricate/redis — RedisManager + phpredis/predis connectors; Core
 resource: src/Fabricate/Redis/
 tags: [component, redis]
 generated: { by: cursor-agent/grok-4.5, at: "2026-08-07T05:30:00Z" }
-verified: { by: null, at: null }
-status: stable
+verified: { by: "human:Angel Gonzalez (projectsaturnstudios)", at: "2026-08-07T07:50:00Z" }
+status: draft
 sources:
   - id: manager
     resource: src/Fabricate/Redis/RedisManager.php
@@ -48,7 +48,9 @@ Standalone Redis component (not nested under Cache). Cache’s `redis` store con
 | `phpredis` | Default when `ext-redis` present (`REDIS_CLIENT=phpredis`) |
 | `predis` | Optional Composer package (`REDIS_CLIENT=predis`) |
 
-Neither client is a hard require — both are `suggest` on the umbrella. Typical edge/SBC use: local Redis or none (file cache).
+Neither client is a hard require — both are `suggest` on the umbrella (`predis/predis` is also `require-dev` for CI). Typical edge/SBC use: local Redis or none (file cache).
+
+**Scan parity:** `PhpRedisConnection` and `PredisConnection` both expose `scan` / `zscan` / `hscan` / `sscan`. Predis wrappers coerce a `null` cursor to `0` (Redis 7.4+ rejects null with `ERR invalid cursor`) and return `[cursor, results]` so Illuminate-style loops work for both clients.
 
 ## Related
 

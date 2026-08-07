@@ -53,6 +53,60 @@ class PredisConnection extends Connection implements ConnectionContract
     }
 
     /**
+     * Scans all keys based on options.
+     *
+     * Predis rejects a null cursor (Redis 7.4+ returns ERR invalid cursor).
+     * Coerce null → 0 so the PhpRedis-style scan loop works for both clients.
+     *
+     * @param  mixed  $cursor
+     * @param  array  $options
+     * @return array{0: string|int, 1: array}
+     */
+    public function scan($cursor, $options = [])
+    {
+        return $this->command('scan', [$cursor ?? 0, $options]);
+    }
+
+    /**
+     * Scans the given sorted set for all values based on options.
+     *
+     * @param  string  $key
+     * @param  mixed  $cursor
+     * @param  array  $options
+     * @return array{0: string|int, 1: array}
+     */
+    public function zscan($key, $cursor, $options = [])
+    {
+        return $this->command('zscan', [$key, $cursor ?? 0, $options]);
+    }
+
+    /**
+     * Scans the given hash for all values based on options.
+     *
+     * @param  string  $key
+     * @param  mixed  $cursor
+     * @param  array  $options
+     * @return array{0: string|int, 1: array}
+     */
+    public function hscan($key, $cursor, $options = [])
+    {
+        return $this->command('hscan', [$key, $cursor ?? 0, $options]);
+    }
+
+    /**
+     * Scans the given set for all values based on options.
+     *
+     * @param  string  $key
+     * @param  mixed  $cursor
+     * @param  array  $options
+     * @return array{0: string|int, 1: array}
+     */
+    public function sscan($key, $cursor, $options = [])
+    {
+        return $this->command('sscan', [$key, $cursor ?? 0, $options]);
+    }
+
+    /**
      * Parse the command's parameters for event dispatching.
      *
      * @param  array  $parameters
