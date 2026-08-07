@@ -14,17 +14,13 @@ class RestartCommand extends Command
 
     /**
      * The console command name.
-     *
-     * @var string
      */
-    protected $name = 'queue:restart';
+    protected string $name = 'queue:restart';
 
     /**
      * The console command description.
-     *
-     * @var string
      */
-    protected $description = 'Restart queue worker daemons after their current job';
+    protected string $description = 'Restart queue worker daemons after their current job';
 
     /**
      * The cache store implementation.

@@ -18,13 +18,13 @@
     },
     "require": {
         "php": "^8.4|^8.5|^8.6",
-        "fabricate/collections": "^0.6.0",
-        "fabricate/console": "^0.6.0",
-        "fabricate/chassis": "^0.6.0",
-        "fabricate/contracts": "^0.6.0",
-        "fabricate/filesystem": "^0.6.0",
-        "fabricate/pipeline": "^0.6.0",
-        "fabricate/nuts-and-bolts": "^0.6.0",
+        "fabricate/collections": "^0.7.0",
+        "fabricate/console": "^0.7.0",
+        "fabricate/chassis": "^0.7.0",
+        "fabricate/contracts": "^0.7.0",
+        "fabricate/filesystem": "^0.7.0",
+        "fabricate/pipeline": "^0.7.0",
+        "fabricate/nuts-and-bolts": "^0.7.0",
         "laravel/serializable-closure": "^2.0.10",
         "ramsey/uuid": "^4.7",
         "symfony/process": "^7.4.5 || ^8.0.5"
@@ -36,8 +36,8 @@
         "ext-pdo": "Required to use the database queue worker.",
         "ext-posix": "Required to use all features of the queue worker.",
         "aws/aws-sdk-php": "Required to use the SQS queue driver and DynamoDb failed job storage (^3.322.9).",
-        "fabricate/database": "Required to use the database queue driver and database failed job providers (^0.6).",
-        "fabricate/redis": "Required to use the Redis queue driver (^0.6).",
+        "fabricate/database": "Required to use the database queue driver and database failed job providers (^0.7).",
+        "fabricate/redis": "Required to use the Redis queue driver (^0.7).",
         "pda/pheanstalk": "Required to use the Beanstalk queue driver (^7.0 || ^8.0)."
     },
     "minimum-stability": "dev",
@@ -51,7 +51,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-master": "0.6.x-dev"
+            "dev-master": "0.7.x-dev"
         }
     }
 }

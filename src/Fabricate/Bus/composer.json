@@ -18,13 +18,14 @@
     },
     "require": {
         "php": "^8.4|^8.5|^8.6",
-        "fabricate/collections": "^0.6.0",
-        "fabricate/contracts": "^0.6.0",
-        "fabricate/pipeline": "^0.6.0",
-        "fabricate/nuts-and-bolts": "^0.6.0"
+        "fabricate/chassis": "^0.7.0",
+        "fabricate/collections": "^0.7.0",
+        "fabricate/contracts": "^0.7.0",
+        "fabricate/nuts-and-bolts": "^0.7.0",
+        "fabricate/pipeline": "^0.7.0"
     },
     "suggest": {
-        "fabricate/queue": "Required to use closures when chaining jobs (^0.6.0)."
+        "fabricate/queue": "Required to use closures when chaining jobs (^0.7.0)."
     },
     "minimum-stability": "dev",
     "autoload": {
@@ -37,7 +38,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-master": "0.6.x-dev"
+            "dev-master": "0.7.x-dev"
         }
     }
 }

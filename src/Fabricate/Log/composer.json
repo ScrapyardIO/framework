@@ -18,10 +18,12 @@
     },
     "require": {
         "php": "^8.4|^8.5|^8.6",
-        "fabricate/collections": "^0.6.0",
-        "fabricate/contracts": "^0.6.0",
-        "fabricate/macroable": "^0.6.0",
-        "fabricate/nuts-and-bolts": "^0.6.0"
+        "fabricate/collections": "^0.7.0",
+        "fabricate/contracts": "^0.7.0",
+        "fabricate/macroable": "^0.7.0",
+        "fabricate/conditionable": "^0.7.0",
+        "monolog/monolog": "^3.0",
+        "psr/log": "^3.0"
     },
     "minimum-stability": "dev",
     "autoload": {
@@ -37,7 +39,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-master": "0.6.x-dev"
+            "dev-master": "0.7.x-dev"
         }
     }
 }

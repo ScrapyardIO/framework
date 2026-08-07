@@ -9,7 +9,7 @@ class BootProviders
     /**
      * Bootstrap the given application.
      *
-     * @param Machine $app
+     * @param \Fabricate\Core\Bootstrap\Machine $app
      * @return void
      */
     public function bootstrap(Program $program): void

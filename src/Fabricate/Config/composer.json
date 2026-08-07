@@ -18,8 +18,8 @@
     },
     "require": {
         "php": "^8.4|^8.5|^8.6",
-        "fabricate/collections": "^0.6.0",
-        "fabricate/contracts": "^0.6.0"
+        "fabricate/collections": "^0.7.0",
+        "fabricate/contracts": "^0.7.0"
     },
     "minimum-stability": "dev",
     "autoload": {

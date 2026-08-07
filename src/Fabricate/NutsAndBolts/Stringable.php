@@ -6,7 +6,7 @@ use Closure;
 use ArrayAccess;
 use JsonSerializable;
 use Stringable as BaseStringable;
-use Fabricate\NutsAndBolts\MagicAliases\Date;
+use Fabricate\NutsAndBolts\Carbon;
 use Carbon\Exceptions\InvalidFormatException;
 use Fabricate\NutsAndBolts\Concerns\Dumpable;
 use Fabricate\NutsAndBolts\Concerns\Tappable;
@@ -1534,10 +1534,10 @@ class Stringable implements JsonSerializable, ArrayAccess, BaseStringable
     public function toDate(?string $format = null, ?string $tz = null): Carbon
     {
         if (is_null($format)) {
-            return Date::parse($this->value, $tz);
+            return Carbon::parse($this->value, $tz);
         }
 
-        return Date::createFromFormat($format, $this->value, $tz);
+        return Carbon::createFromFormat($format, $this->value, $tz);
     }
 
     /**

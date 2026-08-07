@@ -12,9 +12,9 @@ use JsonSerializable;
 use Random\Randomizer;
 use ArgumentCountError;
 use InvalidArgumentException;
-use Fabricate\Contracts\NutsAndBolts\Jsonable;
+use Fabricate\NutsAndBolts\Contracts\Jsonable;
 use Fabricate\NutsAndBolts\Concerns\Macroable;
-use Fabricate\Contracts\NutsAndBolts\Arrayable;
+use Fabricate\NutsAndBolts\Contracts\Arrayable;
 use Fabricate\NutsAndBolts\Contracts\Enumerable;
 
 class Arr

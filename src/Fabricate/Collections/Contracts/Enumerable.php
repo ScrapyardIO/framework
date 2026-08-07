@@ -10,8 +10,6 @@ use IteratorAggregate;
 use JsonSerializable;
 use InvalidArgumentException;
 use Fabricate\NutsAndBolts\Collection;
-use Fabricate\Contracts\NutsAndBolts\Jsonable;
-use Fabricate\Contracts\NutsAndBolts\Arrayable;
 use Fabricate\NutsAndBolts\Exceptions\ItemNotFoundException;
 use Fabricate\NutsAndBolts\Exceptions\MultipleItemsFoundException;
 

@@ -8,7 +8,7 @@ use Fabricate\Contracts\Cache\Repository as RepositoryContract;
 use Fabricate\Contracts\Cache\Store;
 use Fabricate\Contracts\Events\Dispatcher as DispatcherContract;
 use Fabricate\NutsAndBolts\Arr;
-use Fabricate\NutsAndBolts\RebindsCallbacksToSelf;
+use Fabricate\Cache\RebindsCallbacksToSelf;
 use InvalidArgumentException;
 use Mockery;
 use Mockery\LegacyMockInterface;

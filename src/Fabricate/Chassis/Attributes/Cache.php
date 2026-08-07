@@ -3,7 +3,7 @@
 namespace Fabricate\Chassis\Attributes;
 
 use Attribute;
-use Fabricate\Contracts\Chassis\Chassis;
+use Fabricate\Chassis\Contracts\WireframeServiceContainer;
 use Fabricate\Contracts\Chassis\ContextualAttribute;
 use UnitEnum;
 
@@ -12,6 +12,9 @@ class Cache implements ContextualAttribute
 {
     /**
      * Create a new class instance.
+     *
+     * @param UnitEnum|string|null $store
+     * @param bool $memo
      */
     public function __construct(
         public UnitEnum|string|null $store = null,
@@ -22,14 +25,14 @@ class Cache implements ContextualAttribute
     /**
      * Resolve the cache store.
      *
-     * @param  self  $attribute
-     * @param  \Fabricate\Contracts\Chassis\Chassis  $box
-     * @return \Fabricate\Contracts\Cache\Repository
+     * @param self $attribute
+     * @param WireframeServiceContainer $container
+     * @return mixed
      */
-    public static function resolve(self $attribute, Box $box)
+    public static function resolve(self $attribute, WireframeServiceContainer $container): mixed
     {
         return $attribute->memo
-            ? $box->make('cache')->memo($attribute->store)
-            : $box->make('cache')->store($attribute->store);
+            ? $container->make('cache')->memo($attribute->store)
+            : $container->make('cache')->store($attribute->store);
     }
 }

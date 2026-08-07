@@ -27,10 +27,8 @@ class WorkCommand extends Command
 
     /**
      * The console command name.
-     *
-     * @var string
      */
-    protected $signature = 'queue:work
+    protected ?string $signature = 'queue:work
                             {connection? : The name of the queue connection to work}
                             {--name=default : The name of the worker}
                             {--queue= : The names of the queues to work}
@@ -52,10 +50,8 @@ class WorkCommand extends Command
 
     /**
      * The console command description.
-     *
-     * @var string
      */
-    protected $description = 'Start processing jobs on the queue as a daemon';
+    protected string $description = 'Start processing jobs on the queue as a daemon';
 
     /**
      * The queue worker instance.

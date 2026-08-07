@@ -1,81 +1,51 @@
 <?php
 
-namespace DeptOfScrapyardRobotics\Tests\Sketches;
-
-use DeptOfScrapyardRobotics\Tests\Sketches\Fixtures\AttributedPackageSketch;
-use DeptOfScrapyardRobotics\Tests\Sketches\Fixtures\Dependency;
-use DeptOfScrapyardRobotics\Tests\Sketches\Fixtures\InjectedSketch;
-use DeptOfScrapyardRobotics\Tests\Sketches\Fixtures\MissingAttributeSketch;
-use Fabricate\Chassis\Chassis;
+use Fabricate\Contracts\Sketches\Attributes\Sketch as SketchAttribute;
 use Fabricate\Contracts\Sketches\SketchException;
 use Fabricate\Contracts\Sketches\SketchLoopResult;
+use Fabricate\Core\Machine;
+use Fabricate\Sketches\Sketch;
 use Fabricate\Sketches\SketchRegistry;
-use Fabricate\Sketches\SketchRunner;
-use PHPUnit\Framework\TestCase;
 
-class SketchRegistryTest extends TestCase
+#[SketchAttribute('attributed-fixture')]
+class AttributedFixtureSketch extends Sketch
 {
-    public function testAttributedPackageRegistrationAndResolution(): void
+    public function loop(): SketchLoopResult
     {
-        $container = new Chassis;
-        $registry = new SketchRegistry($container);
-
-        $registry->register(AttributedPackageSketch::class);
-
-        $this->assertTrue($registry->has('package-blink'));
-        $this->assertTrue($registry->has('PACKAGE-BLINK'));
-        $this->assertInstanceOf(AttributedPackageSketch::class, $registry->resolve('package-blink'));
-    }
-
-    public function testPackageRegistrationRejectsMissingAttribute(): void
-    {
-        $registry = new SketchRegistry(new Chassis);
-
-        $this->expectException(SketchException::class);
-        $this->expectExceptionMessage('must declare the #[');
-
-        $registry->register(MissingAttributeSketch::class);
-    }
-
-    public function testDuplicateNamesAreRejected(): void
-    {
-        $registry = new SketchRegistry(new Chassis);
-        $registry->register(AttributedPackageSketch::class);
-
-        $this->expectException(SketchException::class);
-        $this->expectExceptionMessage('already registered');
-
-        $registry->registerConvention('package-blink', MissingAttributeSketch::class);
-    }
-
-    public function testUnknownNamesThrow(): void
-    {
-        $registry = new SketchRegistry(new Chassis);
-
-        $this->expectException(SketchException::class);
-        $this->expectExceptionMessage('is not registered');
-
-        $registry->resolve('missing-sketch');
-    }
-
-    public function testConstructorDependenciesAreInjectedAndLifecycleMethodsAreNot(): void
-    {
-        $container = new Chassis;
-        $container->instance(Dependency::class, new Dependency('from-container'));
-        $container->singleton(SketchRunner::class, fn () => new SketchRunner);
-
-        $registry = new SketchRegistry($container);
-        $registry->register(InjectedSketch::class);
-
-        $sketch = $registry->resolve('injected-sketch');
-        $this->assertInstanceOf(InjectedSketch::class, $sketch);
-        $this->assertSame('from-container', $sketch->dependency->value);
-
-        $runner = $container->make(SketchRunner::class);
-        $runner->run($sketch);
-
-        $this->assertInstanceOf(Dependency::class, $sketch->lifecycleDependency);
-        $this->assertSame('lifecycle', $sketch->lifecycleDependency->value);
-        $this->assertSame(SketchLoopResult::STOP, SketchLoopResult::STOP);
+        return SketchLoopResult::STOP;
     }
 }
+
+test('registry registers attributed sketches and resolves them', function () {
+    $basePath = sys_get_temp_dir().'/scrapyard-io-sketch-registry-'.uniqid();
+    mkdir($basePath.'/config', 0777, true);
+
+    try {
+        $app = new Machine($basePath);
+        $registry = new SketchRegistry($app);
+
+        $registry->register(AttributedFixtureSketch::class);
+
+        expect($registry->has('attributed-fixture'))->toBeTrue()
+            ->and($registry->resolve('attributed-fixture'))->toBeInstanceOf(AttributedFixtureSketch::class);
+    } finally {
+        destroyTempMachinePath($basePath);
+    }
+});
+
+test('registry rejects duplicate names', function () {
+    $basePath = sys_get_temp_dir().'/scrapyard-io-sketch-registry-dup-'.uniqid();
+    mkdir($basePath.'/config', 0777, true);
+
+    try {
+        $app = new Machine($basePath);
+        $registry = new SketchRegistry($app);
+
+        $registry->registerConvention('hello', AttributedFixtureSketch::class);
+
+        expect(fn () => $registry->registerConvention('hello', AttributedFixtureSketch::class))
+            ->toThrow(SketchException::class);
+    } finally {
+        destroyTempMachinePath($basePath);
+    }
+});

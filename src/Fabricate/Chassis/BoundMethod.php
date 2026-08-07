@@ -9,8 +9,8 @@ use ReflectionException;
 use ReflectionParameter;
 use InvalidArgumentException;
 use ReflectionFunctionAbstract;
-use Fabricate\Contracts\Chassis\BindingResolutionException;
-use Fabricate\Contracts\Chassis\CircularDependencyException;
+use Fabricate\Chassis\Exceptions\BindingResolutionException;
+use Fabricate\Chassis\Exceptions\CircularDependencyException;
 
 class BoundMethod
 {

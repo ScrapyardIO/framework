@@ -1,0 +1,27 @@
+{
+    "name": "fabricate/graph",
+    "description": "Neo4j graph driver and Polisher models for ScrapyardIO (companion to fabricate/database).",
+    "license": "MIT",
+    "authors": [
+        { "name": "Angel Gonzalez", "email": "angel@projectsaturnstudios.com" }
+    ],
+    "homepage": "https://scrapyard-io.projectsaturnstudios.com",
+    "require": {
+        "php": "^8.4|^8.5|^8.6",
+        "fabricate/database": "^0.7.0",
+        "fabricate/contracts": "^0.7.0",
+        "fabricate/nuts-and-bolts": "^0.7.0"
+    },
+    "suggest": {
+        "laudis/neo4j-php-client": "Required to open Neo4j connections via Neo4jConnector (^3.3)."
+    },
+    "minimum-stability": "dev",
+    "autoload": {
+        "psr-4": { "Fabricate\\Graph\\": "" },
+        "files": [ "Helpers/functions.php" ]
+    },
+    "extra": {
+        "branch-alias": { "dev-master": "0.7.x-dev" }
+    },
+    "config": { "sort-packages": true }
+}

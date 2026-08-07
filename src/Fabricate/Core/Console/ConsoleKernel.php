@@ -2,71 +2,49 @@
 
 namespace Fabricate\Core\Console;
 
-
 use Exception;
+use Fabricate\Chassis\Exceptions\BindingResolutionException;
 use Fabricate\Console\Command;
-use Fabricate\Console\ConsoleProgram;
-use Fabricate\Contracts\Chassis\BindingResolutionException;
+use Fabricate\Console\Events\CommandFinished;
+use Fabricate\Console\Scheduling\Schedule;
+use Fabricate\Console\Events\CommandStarting;
+use Fabricate\Console\WorkshopInstance;
+use Fabricate\Contracts\Console\CLIKernel;
+use Fabricate\Contracts\Core\Program;
 use Fabricate\Contracts\Debug\ExceptionHandler;
+use Fabricate\Contracts\Events\Dispatcher;
 use Fabricate\Core\Bootstrap\BootProviders;
+use Fabricate\Core\Bootstrap\HandleExceptions;
+use Fabricate\Core\Bootstrap\LoadConfiguration;
+use Fabricate\Core\Bootstrap\LoadEnvironmentVariables;
+use Fabricate\Core\Bootstrap\RegisterMagicAliases;
+use Fabricate\Core\Bootstrap\RegisterProviders;
 use Fabricate\Core\Events\Terminating;
 use Fabricate\NutsAndBolts\Arr;
 use Fabricate\NutsAndBolts\Carbon;
-use Fabricate\Contracts\Core\Program;
-use Fabricate\Contracts\Events\Dispatcher;
+use Fabricate\NutsAndBolts\Env;
 use Fabricate\NutsAndBolts\Collection;
+use Fabricate\NutsAndBolts\Concerns\InteractsWithTime;
 use Fabricate\NutsAndBolts\Str;
 use ReflectionClass;
 use ReflectionException;
 use SplFileInfo;
-use Symfony\Component\Console\Command\Command as SymfonyCommand;
 use Symfony\Component\Console\ConsoleEvents;
-use Fabricate\Console\Events\CommandFinished;
-use Fabricate\Console\Events\CommandStarting;
-use Fabricate\Console\ConsoleProgram as Workshop;
+use Symfony\Component\Console\Event\ConsoleCommandEvent;
+use Symfony\Component\Console\Event\ConsoleTerminateEvent;
 use Symfony\Component\Console\Exception\CommandNotFoundException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\EventDispatcher\EventDispatcher;
-use Fabricate\NutsAndBolts\Concerns\InteractsWithTime;
-use Symfony\Component\Console\Event\ConsoleCommandEvent;
-use Symfony\Component\Console\Event\ConsoleTerminateEvent;
 use Symfony\Component\Finder\Finder;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
-use Fabricate\Contracts\Console\ConsoleKernel as KernelContract;
 use Throwable;
 use WeakMap;
+use Symfony\Component\Console\Command\Command as SymfonyCommand;
 
-class ConsoleKernel implements KernelContract
+class ConsoleKernel implements CLIKernel
 {
     use InteractsWithTime;
-    /**
-     * The application implementation.
-     *
-     * @var Program
-     */
-    protected Program $program;
-
-    /**
-     * The event dispatcher implementation.
-     *
-     * @var Dispatcher|null
-     */
-    protected ?Dispatcher $events = null;
-
-    /**
-     * The Symfony event dispatcher implementation.
-     *
-     * @var EventDispatcherInterface|null
-     */
-    protected ?EventDispatcherInterface $symfonyDispatcher = null;
-
-    /**
-     * The Workshop application instance.
-     *
-     * @var Workshop|null
-     */
-    protected ?Workshop $workshop = null;
 
     /**
      * The Workshop commands provided by the application.
@@ -81,13 +59,6 @@ class ConsoleKernel implements KernelContract
      * @var array
      */
     protected array $commandPaths = [];
-
-    /**
-     * The paths where Workshop "routes" should be automatically discovered.
-     *
-     * @var array
-     */
-    protected array $commandRoutePaths = [];
 
     /**
      * Indicates if the Closure commands have been loaded.
@@ -117,26 +88,33 @@ class ConsoleKernel implements KernelContract
      */
     protected ?Carbon $commandStartedAt;
 
-    /**
-     * The bootstrap classes for the application.
-     *
-     * @var string[]
-     */
-    protected array $bootstrappers = [
-        \Fabricate\Core\Bootstrap\LoadEnvironmentVariables::class,
-        \Fabricate\Core\Bootstrap\LoadConfiguration::class,
-        \Fabricate\Core\Bootstrap\HandleExceptions::class,
-        \Fabricate\Core\Bootstrap\RegisterMagicAliases::class,
-        \Fabricate\Core\Bootstrap\RegisterProviders::class,
-        \Fabricate\Core\Bootstrap\BootProviders::class,
-    ];
+    protected Program $program;
 
     /**
-     * Create a new console kernel instance.
+     * The Fabricate event dispatcher.
      *
-     * @param Program $program
-     * @param ?Dispatcher $events
+     * @var Dispatcher|null
      */
+    protected ?Dispatcher $events = null;
+
+    /**
+     * The Symfony event dispatcher.
+     *
+     * @var EventDispatcherInterface|null
+     */
+    protected ?EventDispatcherInterface $symfonyDispatcher = null;
+
+    protected ?WorkshopInstance $workshop = null;
+
+    protected array $bootstrappers = [
+        LoadEnvironmentVariables::class,
+        LoadConfiguration::class,
+        HandleExceptions::class,
+        RegisterMagicAliases::class,
+        RegisterProviders::class,
+        BootProviders::class,
+    ];
+
     public function __construct(Program $program, ?Dispatcher $events = null)
     {
         if (! defined('WORKSHOP_BINARY')) {
@@ -144,16 +122,55 @@ class ConsoleKernel implements KernelContract
         }
 
         $this->program = $program;
-        if($events)
-        {
-            $this->events = $events;
-        }
+        $this->events = $events ?? ($program->bound('events') ? $program['events'] : null);
 
         $this->program->booted(function () {
             if (! $this->program->runningUnitTests()) {
                 $this->rerouteSymfonyCommandEvents();
             }
         });
+    }
+
+    /**
+     * Define the application's command schedule.
+     */
+    protected function schedule(Schedule $schedule): void
+    {
+        //
+    }
+
+    /**
+     * Resolve a console schedule instance.
+     */
+    public function resolveConsoleSchedule(): Schedule
+    {
+        $this->program->make('cache');
+
+        return tap(new Schedule($this->scheduleTimezone()), function ($schedule) {
+            $this->schedule($schedule->useCache($this->scheduleCache()));
+        });
+    }
+
+    /**
+     * Get the timezone that should be used by default for scheduled events.
+     *
+     * @return \DateTimeZone|string|null
+     */
+    protected function scheduleTimezone(): \DateTimeZone|string|null
+    {
+        $config = $this->program['config'];
+
+        return $config->get('machine.schedule_timezone', $config->get('machine.timezone'));
+    }
+
+    /**
+     * Get the name of the cache store that should manage scheduling mutexes.
+     */
+    protected function scheduleCache(): ?string
+    {
+        return $this->program['config']->get('cache.schedule_store', Env::get('SCHEDULE_CACHE_DRIVER', function () {
+            return Env::get('SCHEDULE_CACHE_STORE');
+        }));
     }
 
     /**
@@ -192,19 +209,6 @@ class ConsoleKernel implements KernelContract
         return $this;
     }
 
-    /**
-     * Set the paths that should have their Workshop "routes" automatically discovered.
-     *
-     * @param  array  $paths
-     * @return $this
-     */
-    public function addCommandRoutePaths(array $paths): static
-    {
-        $this->commandRoutePaths = array_values(array_unique(array_merge($this->commandRoutePaths, $paths)));
-
-        return $this;
-    }
-
 
     /**
      * Bootstrap the application for workshop commands.
@@ -239,6 +243,16 @@ class ConsoleKernel implements KernelContract
     protected function shouldDiscoverCommands(): bool
     {
         return get_class($this) === __CLASS__;
+    }
+
+    /**
+     * Get the bootstrap classes for the application.
+     *
+     * @return array
+     */
+    protected function bootstrappers(): array
+    {
+        return $this->bootstrappers;
     }
 
     /**
@@ -308,7 +322,7 @@ class ConsoleKernel implements KernelContract
         };
 
         foreach ($this->findCommands($paths)->filter($filterCommands) as $file) {
-            ConsoleProgram::starting(function ($workshop) use ($file, $possibleCommands) {
+            WorkshopInstance::starting(function ($workshop) use ($file, $possibleCommands) {
                 $workshop->resolve($possibleCommands[$file]);
             });
         }
@@ -325,12 +339,133 @@ class ConsoleKernel implements KernelContract
         foreach ($this->commandPaths as $path) {
             $this->load($path);
         }
+    }
 
-        foreach ($this->commandRoutePaths as $path) {
-            if (file_exists($path)) {
-                require $path;
+    /**
+     * Get every command registered with the console.
+     *
+     * @return array
+     * @throws BindingResolutionException|ReflectionException
+     */
+    public function all(): array
+    {
+        $this->bootstrap();
+
+        return $this->getWorkshop()->all();
+    }
+
+    /**
+     * Get the output for the last run command.
+     *
+     * @return string
+     * @throws BindingResolutionException|ReflectionException
+     */
+    public function output(): string
+    {
+        $this->bootstrap();
+
+        return $this->getWorkshop()->output();
+    }
+
+    /**
+     * Terminate the application.
+     *
+     * @param InputInterface $input
+     * @param int $status
+     * @return void
+     */
+    public function terminate(InputInterface $input, int $status): void
+    {
+        $this->events?->dispatch(new Terminating());
+
+        $this->program->terminate();
+
+        if (is_null($this->commandStartedAt)) {
+            return;
+        }
+
+        if ($this->program->bound('config')) {
+            $this->commandStartedAt->setTimezone($this->program['config']->get('machine.timezone') ?? 'UTC');
+        }
+
+        foreach ($this->commandLifecycleDurationHandlers as ['threshold' => $threshold, 'handler' => $handler]) {
+            $end ??= Carbon::now();
+
+            if ($this->commandStartedAt->diffInMilliseconds($end) > $threshold) {
+                $handler($this->commandStartedAt, $input, $status);
             }
         }
+
+        $this->commandStartedAt = null;
+    }
+
+    /**
+     * Run a Workshop console command by name.
+     *
+     * @param SymfonyCommand|string $command
+     * @param array $parameters
+     * @param OutputInterface|null $outputBuffer
+     * @return int
+     *
+     * @throws CommandNotFoundException|BindingResolutionException|ReflectionException
+     * @throws Exception
+     */
+    public function call($command, array $parameters = [], ?OutputInterface $outputBuffer = null): int
+    {
+        if (in_array($command, ['env:encrypt', 'env:decrypt'], true)) {
+            $this->bootstrapWithoutBootingProviders();
+        }
+
+        $this->bootstrap();
+
+        return $this->getWorkshop()->call($command, $parameters, $outputBuffer);
+    }
+
+    /**
+     * Bootstrap the application without booting service providers.
+     *
+     * @return void
+     */
+    public function bootstrapWithoutBootingProviders(): void
+    {
+        $this->program->bootstrapWith(
+            new Collection($this->bootstrappers())
+                ->reject(fn ($bootstrapper) => $bootstrapper === BootProviders::class)
+                ->all()
+        );
+    }
+
+
+    /**
+     * Re-route the Symfony command events to their ScrapyardIO counterparts.
+     *
+     * @internal
+     *
+     * @return $this
+     */
+    public function rerouteSymfonyCommandEvents(): static
+    {
+        if (is_null($this->events)) {
+            return $this;
+        }
+
+        if (is_null($this->symfonyDispatcher)) {
+            $this->symfonyDispatcher = new EventDispatcher();
+
+            $this->symfonyDispatcher->addListener(ConsoleEvents::COMMAND, function (ConsoleCommandEvent $event) {
+                $this->events->dispatch(
+                    new CommandStarting($event->getCommand()?->getName() ?? '', $event->getInput(), $event->getOutput())
+                );
+            });
+
+            $this->symfonyDispatcher->addListener(ConsoleEvents::TERMINATE, function (ConsoleTerminateEvent $event) {
+                $this->events->dispatch(
+                    new CommandFinished($event->getCommand()?->getName() ?? '', $event->getInput(), $event->getOutput(), $event->getExitCode())
+                );
+            });
+        }
+
+        return $this;
     }
 
     /**
@@ -385,149 +520,24 @@ class ConsoleKernel implements KernelContract
     }
 
     /**
-     * Run a Workshop console command by name.
-     *
-     * @param SymfonyCommand|string $command
-     * @param array $parameters
-     * @param OutputInterface|null $outputBuffer
-     * @return int
-     *
-     * @throws CommandNotFoundException|BindingResolutionException|ReflectionException
-     * @throws Exception
-     */
-    public function call($command, array $parameters = [], ?OutputInterface $outputBuffer = null): int
-    {
-        if (in_array($command, ['env:encrypt', 'env:decrypt'], true)) {
-            $this->bootstrapWithoutBootingProviders();
-        }
-
-        $this->bootstrap();
-
-        return $this->getWorkshop()->call($command, $parameters, $outputBuffer);
-    }
-
-    /**
-     * Bootstrap the application without booting service providers.
-     *
-     * @return void
-     */
-    public function bootstrapWithoutBootingProviders(): void
-    {
-        $this->program->bootstrapWith(
-            new Collection($this->bootstrappers())
-                ->reject(fn ($bootstrapper) => $bootstrapper === BootProviders::class)
-                ->all()
-        );
-    }
-
-    /**
-     * Get the bootstrap classes for the application.
-     *
-     * @return array
-     */
-    protected function bootstrappers(): array
-    {
-        return $this->bootstrappers;
-    }
-
-    /**
-     * Get every command registered with the console.
-     *
-     * @return array
-     * @throws BindingResolutionException|ReflectionException
-     */
-    public function all(): array
-    {
-        $this->bootstrap();
-
-        return $this->getWorkshop()->all();
-    }
-
-    /**
-     * Get the output for the last run command.
-     *
-     * @return string
-     * @throws BindingResolutionException|ReflectionException
-     */
-    public function output(): string
-    {
-        $this->bootstrap();
-
-        return $this->getWorkshop()->output();
-    }
-
-    /**
-     * Terminate the application.
-     *
-     * @param InputInterface $input
-     * @param int $status
-     * @return void
-     */
-    public function terminate(InputInterface $input, int $status): void
-    {
-        $this->events?->dispatch(new Terminating());
-
-        $this->program->terminate();
-
-        if ($this->commandStartedAt === null) {
-            return;
-        }
-
-        if ($this->program->bound('config')) {
-            $this->commandStartedAt->setTimezone($this->program['config']->get('machine.timezone') ?? 'UTC');
-        }
-
-        foreach ($this->commandLifecycleDurationHandlers as ['threshold' => $threshold, 'handler' => $handler]) {
-            $end ??= Carbon::now();
-
-            if ($this->commandStartedAt->diffInMilliseconds($end) > $threshold) {
-                $handler($this->commandStartedAt, $input, $status);
-            }
-        }
-
-        $this->commandStartedAt = null;
-    }
-
-    /**
-     * Re-route the Symfony command events to their ScrapyardIO counterparts.
-     *
-     * @internal
-     *
-     * @return $this
-     */
-    public function rerouteSymfonyCommandEvents(): static
-    {
-        if (is_null($this->symfonyDispatcher)) {
-            $this->symfonyDispatcher = new EventDispatcher();
-
-            $this->symfonyDispatcher->addListener(ConsoleEvents::COMMAND, function (ConsoleCommandEvent $event) {
-                $this->events->dispatch(
-                    new CommandStarting($event->getCommand()?->getName() ?? '', $event->getInput(), $event->getOutput())
-                );
-            });
-
-            $this->symfonyDispatcher->addListener(ConsoleEvents::TERMINATE, function (ConsoleTerminateEvent $event) {
-                $this->events->dispatch(
-                    new CommandFinished($event->getCommand()?->getName() ?? '', $event->getInput(), $event->getOutput(), $event->getExitCode())
-                );
-            });
-        }
-
-        return $this;
-    }
-
-    /**
      * Get the Workshop application instance.
      *
-     * @return Workshop
+     * @return WorkshopInstance
      * @throws BindingResolutionException|ReflectionException
      */
-    protected function getWorkshop(): Workshop
+    protected function getWorkshop(): WorkshopInstance
     {
         if (is_null($this->workshop)) {
-            $this->workshop = new Workshop($this->program, $this->events, $this->program->version())
-                ->resolveCommands($this->commands)
-                ->setContainerCommandLoader();
+            if (is_null($this->events)) {
+                $this->events = $this->program['events'];
+            }
+
+            $this->workshop = new WorkshopInstance(
+                $this->program,
+                $this->events,
+                $this->program->version()
+            )->resolveCommands($this->commands)
+            ->setContainerCommandLoader();
 
             if ($this->symfonyDispatcher instanceof EventDispatcher) {
                 $this->workshop->setDispatcher($this->symfonyDispatcher);

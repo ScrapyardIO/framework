@@ -15,7 +15,7 @@ use Fabricate\Contracts\Core\Program;
 use Fabricate\Contracts\Debug\ExceptionHandler;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\ErrorHandler\Error\FatalError;
-use Fabricate\Contracts\Chassis\BindingResolutionException;
+use Fabricate\Chassis\Exceptions\BindingResolutionException;
 
 class HandleExceptions
 {

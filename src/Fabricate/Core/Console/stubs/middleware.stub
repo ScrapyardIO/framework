@@ -1,0 +1,17 @@
+<?php
+
+namespace {{ namespace }};
+
+use Closure;
+use Fabricate\Sketches\SketchRunContext;
+
+class {{ class }}
+{
+    /**
+     * Handle an incoming sketch run.
+     */
+    public function handle(SketchRunContext $context, Closure $next): mixed
+    {
+        return $next($context);
+    }
+}

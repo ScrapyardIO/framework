@@ -3,12 +3,12 @@
 namespace Fabricate\NutsAndBolts;
 
 use Closure;
-use Fabricate\Contracts\Chassis\CircularDependencyException;
-use Fabricate\Contracts\Core\Program;
+use Fabricate\Chassis\Exceptions\BindingResolutionException;
+use Fabricate\Contracts\Chassis\ChassisException;
+use Fabricate\Contracts\Chassis\ServiceContainer as ServiceContainerInterface;
+use Fabricate\Contracts\Console\CLIMachine;
 use Fabricate\Contracts\Core\CachesConfiguration;
-use Fabricate\Console\ConsoleProgram as Workshop;
-use Fabricate\Contracts\NutsAndBolts\DeferrableProvider;
-use Fabricate\Contracts\Chassis\BindingResolutionException;
+use Fabricate\NutsAndBolts\Contracts\DeferrableProvider;
 use ReflectionException;
 
 abstract class ServiceProvider
@@ -16,9 +16,9 @@ abstract class ServiceProvider
     /**
      * The application instance.
      *
-     * @var Program
+     * @var ServiceContainerInterface
      */
-    protected Program $program;
+    protected ServiceContainerInterface $container;
 
     /**
      * Every registered booting callback.
@@ -79,11 +79,11 @@ abstract class ServiceProvider
     /**
      * Create a new service provider instance.
      *
-     * @param Program $program
+     * @param ServiceContainerInterface $container
      */
-    public function __construct(Program $program)
+    public function __construct(ServiceContainerInterface $container)
     {
-        $this->program = $program;
+        $this->container = $container;
     }
 
     /**
@@ -113,7 +113,7 @@ abstract class ServiceProvider
      * @param  Closure  $callback
      * @return void
      */
-    public function booted(Closure $callback)
+    public function booted(Closure $callback): void
     {
         $this->bootedCallbacks[] = $callback;
     }
@@ -128,7 +128,7 @@ abstract class ServiceProvider
         $index = 0;
 
         while ($index < count($this->bootingCallbacks)) {
-            $this->program->call($this->bootingCallbacks[$index]);
+            $this->container->call($this->bootingCallbacks[$index]);
 
             $index++;
         }
@@ -144,7 +144,7 @@ abstract class ServiceProvider
         $index = 0;
 
         while ($index < count($this->bootedCallbacks)) {
-            $this->program->call($this->bootedCallbacks[$index]);
+            $this->container->call($this->bootedCallbacks[$index]);
 
             $index++;
         }
@@ -156,12 +156,12 @@ abstract class ServiceProvider
      * @param string $path
      * @param string $key
      * @return void
-     * @throws BindingResolutionException
+     * @throws BindingResolutionException|ReflectionException
      */
     protected function mergeConfigFrom(string $path, string $key): void
     {
-        if (! ($this->program instanceof CachesConfiguration && $this->program->configurationIsCached())) {
-            $config = $this->program->make('config');
+        if (! ($this->container instanceof CachesConfiguration && $this->container->configurationIsCached())) {
+            $config = $this->container->make('config');
 
             $config->set($key, array_merge(
                 require $path, $config->get($key, [])
@@ -175,70 +175,17 @@ abstract class ServiceProvider
      * @param string $path
      * @param string $key
      * @return void
-     * @throws BindingResolutionException
+     * @throws BindingResolutionException|ReflectionException
      */
     protected function replaceConfigRecursivelyFrom(string $path, string $key): void
     {
-        if (! ($this->program instanceof CachesConfiguration && $this->program->configurationIsCached())) {
-            $config = $this->program->make('config');
+        if (! ($this->container instanceof CachesConfiguration && $this->container->configurationIsCached())) {
+            $config = $this->container->make('config');
 
             $config->set($key, array_replace_recursive(
                 require $path, $config->get($key, [])
             ));
         }
-    }
-
-    /**
-     * Register a view file namespace.
-     *
-     * @param array|string $path
-     * @param string $namespace
-     * @return void
-     * @throws BindingResolutionException
-     */
-    protected function loadViewsFrom(array|string $path, string $namespace): void
-    {
-        $this->callAfterResolving('view', function ($view) use ($path, $namespace) {
-            if (isset($this->program->config['view']['paths']) &&
-                is_array($this->program->config['view']['paths'])) {
-                foreach ($this->program->config['view']['paths'] as $viewPath) {
-                    if (is_dir($appPath = $viewPath.'/vendor/'.$namespace)) {
-                        $view->addNamespace($namespace, $appPath);
-                    }
-                }
-            }
-
-            $view->addNamespace($namespace, $path);
-        });
-    }
-
-    /**
-     * Register a translation file namespace or path.
-     *
-     * @param string $path
-     * @param string|null $namespace
-     * @return void
-     * @throws BindingResolutionException
-     */
-    protected function loadTranslationsFrom(string $path, ?string $namespace = null): void
-    {
-        $this->callAfterResolving('translator', fn ($translator) => is_null($namespace)
-            ? $translator->addPath($path)
-            : $translator->addNamespace($namespace, $path));
-    }
-
-    /**
-     * Register a JSON translation file path.
-     *
-     * @param string $path
-     * @return void
-     * @throws BindingResolutionException
-     */
-    protected function loadJsonTranslationsFrom(string $path): void
-    {
-        $this->callAfterResolving('translator', function ($translator) use ($path) {
-            $translator->addJsonPath($path);
-        });
     }
 
     /**
@@ -267,10 +214,10 @@ abstract class ServiceProvider
      */
     protected function callAfterResolving(string $name, callable $callback): void
     {
-        $this->program->afterResolving($name, $callback);
+        $this->container->afterResolving($name, $callback);
 
-        if ($this->program->resolved($name)) {
-            $callback($this->program->make($name), $this->program);
+        if ($this->container->resolved($name)) {
+            $callback($this->container->make($name), $this->container);
         }
     }
 
@@ -285,7 +232,7 @@ abstract class ServiceProvider
     {
         $this->publishes($paths, $groups);
 
-        if ($this->program->config->get('database.migrations.update_date_on_publish', false)) {
+        if ($this->container->config->get('database.migrations.update_date_on_publish', false)) {
             static::$publishableMigrationPaths = array_unique(array_merge(static::$publishableMigrationPaths, array_keys($paths)));
         }
     }
@@ -435,7 +382,10 @@ abstract class ServiceProvider
     {
         $commands = is_array($commands) ? $commands : func_get_args();
 
-        Workshop::starting(function ($workshop) use ($commands) {
+        /** @var CLIMachine $cli_machine */
+        $cli_machine = $this->container->cliMachine();
+
+        $cli_machine::starting(function ($workshop) use ($commands) {
             $workshop->resolveCommands($commands);
         });
     }
@@ -527,16 +477,7 @@ abstract class ServiceProvider
         return $this instanceof DeferrableProvider;
     }
 
-    /**
-     * Get the default providers for a ScrapyardIO application.
-     *
-     * @return DefaultProviders
-     */
-    public static function defaultProviders(): DefaultProviders
-    {
-        return new DefaultProviders;
-    }
-
+    // @todo - this needs to be moved
     /**
      * Add the given provider to the application's provider bootstrap file.
      *
@@ -582,7 +523,7 @@ return [
      * @param  string|null  $path
      * @param  bool  $strict
      * @return bool
-     * @throws ReflectionException|CircularDependencyException|BindingResolutionException
+     * @throws ReflectionException|ChassisException
      */
     public static function removeProviderFromBootstrapFile(string|array $providersToRemove, ?string $path = null, bool $strict = false): bool
     {

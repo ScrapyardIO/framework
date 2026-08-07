@@ -2,20 +2,20 @@
 
 namespace Fabricate\Core\Providers;
 
+use Fabricate\Chassis\Contracts\WireframeServiceContainer;
+use Fabricate\Chassis\Exceptions\BindingResolutionException;
+use Fabricate\Chassis\Exceptions\CircularDependencyException;
 use Fabricate\Console\Events\CommandFinished;
 use Fabricate\Console\Scheduling\Schedule;
-use Fabricate\Contracts\Chassis\BindingResolutionException;
-use Fabricate\Contracts\Chassis\CircularDependencyException;
-use Fabricate\Contracts\Chassis\WireframeServiceContainer;
-use Fabricate\Contracts\Console\ConsoleKernel;
+use Fabricate\Contracts\Chassis\ChassisException;
+use Fabricate\Contracts\Console\CLIKernel as ConsoleKernel;
 use Fabricate\Contracts\Core\ExceptionRenderer;
+use Fabricate\Contracts\Core\Program;
 use Fabricate\Contracts\Events\Dispatcher;
 use Fabricate\Core\Console\CliDumper;
-use Fabricate\Core\Exceptions\Renderer\Listener;
 use Fabricate\Log\Events\MessageLogged;
 use Fabricate\NutsAndBolts\AggregateServiceProvider;
 use Fabricate\NutsAndBolts\Defer\DeferredCallbackCollection;
-use Fabricate\Queue\Events\JobAttempted;
 use Fabricate\Testing\LoggedExceptionCollection;
 use ReflectionException;
 use Symfony\Component\VarDumper\Caster\StubCaster;
@@ -31,10 +31,10 @@ class CoreServiceProvider extends AggregateServiceProvider
      */
     public function boot(): void
     {
-        if ($this->program->hasDebugModeEnabled() && ! $this->program->has(ExceptionRenderer::class)) {
-            $this->program->make(Listener::class)->registerListeners(
-                $this->program->make(Dispatcher::class)
-            );
+        if ($this->container->hasDebugModeEnabled() && ! $this->container->has(ExceptionRenderer::class)) {
+            /*$this->container->make(Listener::class)->registerListeners(
+                $this->container->make(Dispatcher::class)
+            );*/
         }
     }
 
@@ -42,7 +42,7 @@ class CoreServiceProvider extends AggregateServiceProvider
      * Register the service provider.
      *
      * @return void
-     * @throws ReflectionException|BindingResolutionException|CircularDependencyException
+     * @throws ReflectionException|ChassisException
      */
     public function register(): void
     {
@@ -61,13 +61,15 @@ class CoreServiceProvider extends AggregateServiceProvider
      */
     public function registerConsoleSchedule(): void
     {
-        $this->program->singleton(Schedule::class, function ($program) {
-            return $program->make(ConsoleKernel::class)->resolveConsoleSchedule();
+        $this->container->singleton(Schedule::class, function ($container) {
+            return $container->make(ConsoleKernel::class)->resolveConsoleSchedule();
         });
     }
 
     /**
-     * Register a var dumper (with source) to debug variables.
+     * Register a CLI var dumper (with source) to debug variables.
+     *
+     * ScrapyardIO is Workshop/CLI-first — no HTML dumper branch.
      *
      * @return void
      */
@@ -78,18 +80,26 @@ class CoreServiceProvider extends AggregateServiceProvider
         AbstractCloner::$defaultCasters[Dispatcher::class] ??= [StubCaster::class, 'cutInternals'];
         //AbstractCloner::$defaultCasters[Grammar::class] ??= [StubCaster::class, 'cutInternals'];
 
-        $basePath = $this->program->basePath();
-
-        $compiledViewPath = $this->program['config']->get('view.compiled');
-
         $format = $_SERVER['VAR_DUMPER_FORMAT'] ?? null;
 
-        match (true) {
-            'cli' == $format => CliDumper::register($basePath, $compiledViewPath),
-            'server' == $format => null,
-            $format && 'tcp' == parse_url($format, PHP_URL_SCHEME) => null,
-            default => in_array(PHP_SAPI, ['cli', 'phpdbg']) ? CliDumper::register($basePath, $compiledViewPath) : HtmlDumper::register($basePath, $compiledViewPath),
-        };
+        // Leave Symfony server/tcp dump formats alone when explicitly requested.
+        if ($format === 'server' || ($format && parse_url($format, PHP_URL_SCHEME) === 'tcp')) {
+            return;
+        }
+
+        if (! in_array(PHP_SAPI, ['cli', 'phpdbg'], true) && $format !== 'cli') {
+            return;
+        }
+
+        $basePath = $this->container instanceof Program
+            ? $this->container->basePath()
+            : (string) ($this->container->bound('path.base') ? $this->container->make('path.base') : getcwd());
+
+        $compiledViewPath = $this->container->bound('config')
+            ? (string) ($this->container['config']->get('view.compiled') ?? '')
+            : '';
+
+        CliDumper::register($basePath, $compiledViewPath);
     }
 
     /**
@@ -100,19 +110,20 @@ class CoreServiceProvider extends AggregateServiceProvider
      */
     protected function registerDeferHandler(): void
     {
-        $this->program->scoped(DeferredCallbackCollection::class);
+        $this->container->scoped(DeferredCallbackCollection::class);
 
-        $this->program['events']->listen(function (CommandFinished $event) {
+        $this->container['events']->listen(function (CommandFinished $event) {
             app(DeferredCallbackCollection::class)->invokeWhen(fn ($callback) => app()->runningInConsole() && ($event->exitCode === 0 || $callback->always));
         });
 
-        $this->program['events']->listen(function (JobAttempted $event) {
+        // JobAttempted defer listener deferred until Queue is restored.
+        /*$this->container['events']->listen(function (JobAttempted $event) {
             if (in_array($event->connectionName, ['sync', 'deferred'])) {
                 return;
             }
 
             app(DeferredCallbackCollection::class)->invokeWhen(fn ($callback) => ($event->successful() || $callback->always));
-        });
+        });*/
     }
 
     /**
@@ -123,18 +134,18 @@ class CoreServiceProvider extends AggregateServiceProvider
      */
     protected function registerExceptionTracking(): void
     {
-        if (! $this->program->runningUnitTests()) {
+        if (! $this->container->runningUnitTests()) {
             return;
         }
 
-        $this->program->instance(
+        $this->container->instance(
             LoggedExceptionCollection::class,
             new LoggedExceptionCollection()
         );
 
-        $this->program->make('events')->listen(MessageLogged::class, function ($event) {
+        $this->container->make('events')->listen(MessageLogged::class, function ($event) {
             if (isset($event->context['exception'])) {
-                $this->program->make(LoggedExceptionCollection::class)
+                $this->container->make(LoggedExceptionCollection::class)
                     ->push($event->context['exception']);
             }
         });

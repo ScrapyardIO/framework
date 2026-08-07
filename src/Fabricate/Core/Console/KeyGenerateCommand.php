@@ -5,7 +5,9 @@ namespace Fabricate\Core\Console;
 use Fabricate\Console\Command;
 use Fabricate\Console\ConfirmableTrait;
 use Fabricate\Console\Prohibitable;
+use Fabricate\Contracts\Filesystem\FileNotFoundException;
 use Fabricate\Encryption\Encrypter;
+use Fabricate\Filesystem\Filesystem;
 use Symfony\Component\Console\Attribute\AsCommand;
 
 #[AsCommand(name: 'key:generate')]
@@ -15,8 +17,6 @@ class KeyGenerateCommand extends Command
 
     /**
      * The name and signature of the console command.
-     *
-     * @var string|null
      */
     protected ?string $signature = 'key:generate
                     {--show : Display the key instead of modifying files}
@@ -24,17 +24,13 @@ class KeyGenerateCommand extends Command
 
     /**
      * The console command description.
-     *
-     * @var string
      */
     protected string $description = 'Set the application key';
 
     /**
      * Execute the console command.
-     *
-     * @return int|null
      */
-    public function handle(): ?int
+    public function handle(): int
     {
         if ($this->isProhibited()) {
             return self::FAILURE;
@@ -48,9 +44,6 @@ class KeyGenerateCommand extends Command
             return self::SUCCESS;
         }
 
-        // Next, we will replace the application key in the environment file so it is
-        // automatically setup for this developer. This key gets generated using a
-        // secure random byte generator and is later base64 encoded for storage.
         if (! $this->setKeyInEnvironmentFile($key)) {
             return self::FAILURE;
         }
@@ -64,8 +57,6 @@ class KeyGenerateCommand extends Command
 
     /**
      * Generate a random key for the application.
-     *
-     * @return string
      */
     protected function generateRandomKey(): string
     {
@@ -76,9 +67,6 @@ class KeyGenerateCommand extends Command
 
     /**
      * Set the application key in the environment file.
-     *
-     * @param  string  $key
-     * @return bool
      */
     protected function setKeyInEnvironmentFile(string $key): bool
     {
@@ -88,25 +76,37 @@ class KeyGenerateCommand extends Command
             return false;
         }
 
-        if (! $this->writeNewEnvironmentFileWith($key)) {
-            return false;
-        }
-
-        return true;
+        return $this->writeNewEnvironmentFileWith($key);
     }
 
     /**
      * Write a new environment file with the given key.
-     *
-     * @param  string  $key
-     * @return bool
      */
     protected function writeNewEnvironmentFileWith(string $key): bool
     {
+        $path = $this->scrapyard_io->environmentFilePath();
+
+        /** @var Filesystem $files */
+        $files = $this->scrapyard_io['files'];
+
+        if ($files->missing($path)) {
+            $this->components->error('Unable to set application key. No .env file was found.');
+
+            return false;
+        }
+
+        try {
+            $input = $files->get($path);
+        } catch (FileNotFoundException) {
+            $this->components->error('Unable to set application key. No .env file was found.');
+
+            return false;
+        }
+
         $replaced = preg_replace(
             $this->keyReplacementPattern(),
             'APP_KEY='.$key,
-            $input = file_get_contents($this->scrapyard_io->environmentFilePath())
+            $input
         );
 
         if ($replaced === $input || is_null($replaced)) {
@@ -119,15 +119,11 @@ class KeyGenerateCommand extends Command
             return false;
         }
 
-        file_put_contents($this->scrapyard_io->environmentFilePath(), $replaced);
-
-        return true;
+        return (bool) $files->put($path, $replaced);
     }
 
     /**
      * Get a regex pattern that will match env APP_KEY with any random key.
-     *
-     * @return string
      */
     protected function keyReplacementPattern(): string
     {

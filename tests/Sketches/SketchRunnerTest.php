@@ -1,126 +1,105 @@
 <?php
 
-namespace DeptOfScrapyardRobotics\Tests\Sketches;
-
-use DeptOfScrapyardRobotics\Tests\Sketches\Fixtures\CountingSketch;
-use DeptOfScrapyardRobotics\Tests\Sketches\Fixtures\ExternalStopSketch;
-use DeptOfScrapyardRobotics\Tests\Sketches\Fixtures\ThrowingSketch;
 use Fabricate\Contracts\Sketches\SketchExitStatus;
 use Fabricate\Contracts\Sketches\SketchLoopResult;
 use Fabricate\Sketches\Sketch;
 use Fabricate\Sketches\SketchRunner;
-use PHPUnit\Framework\TestCase;
-use RuntimeException;
+use Tests\Sketches\Fixtures\CountingSketch;
+use Tests\Sketches\Fixtures\ExternalStopSketch;
+use Tests\Sketches\Fixtures\ThrowingSketch;
 
-class SketchRunnerTest extends TestCase
-{
-    public function testLifecycleOrderingAndRepeatedContinueUntilStop(): void
-    {
-        $sketch = new CountingSketch(3);
-        $runner = new SketchRunner;
+test('lifecycle boots loops and shuts down via Flow', function () {
+    $sketch = new CountingSketch(3);
+    $runner = new SketchRunner;
 
-        $status = $runner->run($sketch);
+    $status = $runner->run($sketch);
 
-        $this->assertSame(SketchExitStatus::SUCCESS->value, $status);
-        $this->assertSame(3, $sketch->loops);
-        $this->assertSame(['boot', 'loop', 'loop', 'loop', 'shutdown'], $sketch->calls);
+    expect($status)->toBe(SketchExitStatus::SUCCESS->value)
+        ->and($sketch->loops)->toBe(3)
+        ->and($sketch->calls)->toBe(['boot', 'loop', 'loop', 'loop', 'shutdown']);
+});
+
+test('external stop ends the loop cooperatively', function () {
+    $runner = new SketchRunner;
+    $sketch = new ExternalStopSketch($runner);
+
+    $status = $runner->run($sketch);
+
+    expect($status)->toBe(SketchExitStatus::SUCCESS->value)
+        ->and($runner->shouldStop())->toBeTrue()
+        ->and($sketch->calls)->toBe(['boot', 'loop', 'shutdown']);
+});
+
+test('exceptions propagate after exactly once shutdown', function () {
+    $sketch = new ThrowingSketch('loop');
+    $runner = new SketchRunner;
+
+    expect(fn () => $runner->run($sketch))
+        ->toThrow(RuntimeException::class, 'loop failed');
+
+    expect($sketch->calls)->toBe(['boot', 'loop', 'shutdown']);
+});
+
+test('boot exceptions still invoke shutdown once', function () {
+    $sketch = new ThrowingSketch('boot');
+    $runner = new SketchRunner;
+
+    expect(fn () => $runner->run($sketch))
+        ->toThrow(RuntimeException::class, 'boot failed');
+
+    expect($sketch->calls)->toBe(['boot', 'shutdown']);
+});
+
+test('signal handler requests cooperative stop', function () {
+    if (! extension_loaded('pcntl') || ! function_exists('posix_kill')) {
+        $this->markTestSkipped('pcntl and posix required');
     }
 
-    public function testExternalStopEndsTheLoopCooperatively(): void
-    {
+    $previousTerm = pcntl_signal_get_handler(SIGTERM);
+    $previousInt = pcntl_signal_get_handler(SIGINT);
+
+    try {
         $runner = new SketchRunner;
-        $sketch = new ExternalStopSketch($runner);
 
-        $status = $runner->run($sketch);
+        $sketch = new class extends Sketch
+        {
+            /** @var list<string> */
+            public array $calls = [];
 
-        $this->assertSame(SketchExitStatus::SUCCESS->value, $status);
-        $this->assertTrue($runner->shouldStop());
-        $this->assertSame(['boot', 'loop', 'shutdown'], $sketch->calls);
-    }
+            public int $loops = 0;
 
-    public function testSignalHandlerRequestsCooperativeStop(): void
-    {
-        if (! extension_loaded('pcntl') || ! function_exists('posix_kill')) {
-            $this->markTestSkipped('pcntl and posix extensions are required for signal stop coverage.');
-        }
-
-        $previousTerm = pcntl_signal_get_handler(SIGTERM);
-        $previousInt = pcntl_signal_get_handler(SIGINT);
-
-        try {
-            $runner = new SketchRunner;
-
-            $sketch = new class extends Sketch
+            public function boot(): void
             {
-                /** @var list<string> */
-                public array $calls = [];
+                $this->calls[] = 'boot';
+            }
 
-                public int $loops = 0;
+            public function loop(): SketchLoopResult
+            {
+                $this->loops++;
+                $this->calls[] = 'loop';
 
-                public function boot(): void
-                {
-                    $this->calls[] = 'boot';
+                if ($this->loops === 1) {
+                    posix_kill(getmypid(), SIGTERM);
+                    pcntl_signal_dispatch();
                 }
 
-                public function loop(): SketchLoopResult
-                {
-                    $this->loops++;
-                    $this->calls[] = 'loop';
+                return SketchLoopResult::CONTINUE;
+            }
 
-                    if ($this->loops === 1) {
-                        posix_kill(getmypid(), SIGTERM);
-                        pcntl_signal_dispatch();
-                    }
+            public function shutdown(): void
+            {
+                $this->calls[] = 'shutdown';
+            }
+        };
 
-                    return SketchLoopResult::CONTINUE;
-                }
+        $status = $runner->run($sketch);
 
-                public function shutdown(): void
-                {
-                    $this->calls[] = 'shutdown';
-                }
-            };
-
-            $status = $runner->run($sketch);
-
-            $this->assertTrue($runner->shouldStop());
-            $this->assertSame(SketchExitStatus::SUCCESS->value, $status);
-            $this->assertSame(1, $sketch->loops);
-            $this->assertSame(['boot', 'loop', 'shutdown'], $sketch->calls);
-            $this->assertSame(1, count(array_filter($sketch->calls, fn (string $call) => $call === 'shutdown')));
-        } finally {
-            pcntl_signal(SIGTERM, $previousTerm ?: SIG_DFL);
-            pcntl_signal(SIGINT, $previousInt ?: SIG_DFL);
-        }
+        expect($runner->shouldStop())->toBeTrue()
+            ->and($status)->toBe(SketchExitStatus::SUCCESS->value)
+            ->and($sketch->loops)->toBe(1)
+            ->and($sketch->calls)->toBe(['boot', 'loop', 'shutdown']);
+    } finally {
+        pcntl_signal(SIGTERM, $previousTerm ?: SIG_DFL);
+        pcntl_signal(SIGINT, $previousInt ?: SIG_DFL);
     }
-
-    public function testExceptionsPropagateAfterExactlyOnceShutdown(): void
-    {
-        $sketch = new ThrowingSketch('loop');
-        $runner = new SketchRunner;
-
-        try {
-            $runner->run($sketch);
-            $this->fail('Expected RuntimeException was not thrown.');
-        } catch (RuntimeException $e) {
-            $this->assertSame('loop failed', $e->getMessage());
-        }
-
-        $this->assertSame(['boot', 'loop', 'shutdown'], $sketch->calls);
-    }
-
-    public function testBootExceptionsStillInvokeShutdownOnce(): void
-    {
-        $sketch = new ThrowingSketch('boot');
-        $runner = new SketchRunner;
-
-        try {
-            $runner->run($sketch);
-            $this->fail('Expected RuntimeException was not thrown.');
-        } catch (RuntimeException $e) {
-            $this->assertSame('boot failed', $e->getMessage());
-        }
-
-        $this->assertSame(['boot', 'shutdown'], $sketch->calls);
-    }
-}
+});

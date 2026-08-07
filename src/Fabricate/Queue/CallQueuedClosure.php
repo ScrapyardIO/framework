@@ -5,7 +5,7 @@ namespace Fabricate\Queue;
 use Closure;
 use Fabricate\Bus\Batchable;
 use Fabricate\Bus\Queueable;
-use Fabricate\Contracts\Chassis\WireframeServiceContainer;
+use Fabricate\Chassis\Contracts\WireframeServiceContainer;
 use Fabricate\Contracts\Queue\ShouldQueue;
 use Fabricate\Core\Bus\Dispatchable;
 use Laravel\SerializableClosure\SerializableClosure;
@@ -67,7 +67,7 @@ class CallQueuedClosure implements ShouldQueue
     /**
      * Execute the job.
      *
-     * @param  \Fabricate\Contracts\Chassis\WireframeServiceContainer  $container
+     * @param  \Fabricate\Chassis\Contracts\WireframeServiceContainer  $container
      * @return void
      */
     public function handle(WireframeServiceContainer $container)

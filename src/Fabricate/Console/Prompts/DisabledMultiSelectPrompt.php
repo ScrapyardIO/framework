@@ -3,7 +3,7 @@
 namespace Fabricate\Console\Prompts;
 
 use Closure;
-use Illuminate\Support\Collection;
+use Fabricate\NutsAndBolts\Collection;
 use Laravel\Prompts\MultiSelectPrompt;
 
 class DisabledMultiSelectPrompt extends MultiSelectPrompt

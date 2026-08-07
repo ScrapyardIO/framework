@@ -1,0 +1,32 @@
+<?php
+
+namespace {{ namespace }};
+
+use Fabricate\Sketches\Flow\AsyncNode;
+
+class {{ class }} extends AsyncNode
+{
+    /**
+     * Read workflow state and prepare input for execAsync.
+     */
+    public function prepAsync(mixed &$shared): mixed
+    {
+        return $shared;
+    }
+
+    /**
+     * Perform the node's work (runs through the sketches concurrency driver).
+     */
+    public function execAsync(mixed $prepRes): mixed
+    {
+        return null;
+    }
+
+    /**
+     * Write results into shared state and return the next action string.
+     */
+    public function postAsync(mixed &$shared, mixed $prepRes, mixed $execRes): mixed
+    {
+        return $execRes;
+    }
+}

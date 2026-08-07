@@ -88,6 +88,7 @@ class PackageManifest
      * @param string $key
      * @return array
      * @throws FileNotFoundException
+     * @throws Exception
      */
     public function config(string $key): array
     {
@@ -184,7 +185,11 @@ class PackageManifest
      */
     protected function write(array $manifest): void
     {
-        if (! is_writable($dirname = dirname($this->manifestPath))) {
+        $dirname = dirname($this->manifestPath);
+
+        $this->files->ensureDirectoryExists($dirname);
+
+        if (! is_writable($dirname)) {
             throw new Exception("The {$dirname} directory must be present and writable.");
         }
 

@@ -11,22 +11,16 @@ class ConfigShowCommand extends Command
 {
     /**
      * The console command signature.
-     *
-     * @var string|null
      */
     protected ?string $signature = 'config:show {config : The configuration file or key to show}';
 
     /**
      * The console command description.
-     *
-     * @var string
      */
     protected string $description = 'Display all of the values for a given configuration file or key';
 
     /**
      * Execute the console command.
-     *
-     * @return int
      */
     public function handle(): int
     {
@@ -45,9 +39,6 @@ class ConfigShowCommand extends Command
 
     /**
      * Render the configuration values.
-     *
-     * @param  string  $name
-     * @return void
      */
     public function render(string $name): void
     {
@@ -71,10 +62,6 @@ class ConfigShowCommand extends Command
 
     /**
      * Render the title.
-     *
-     * @param  string  $title
-     * @param  string|null  $subtitle
-     * @return void
      */
     public function title(string $title, ?string $subtitle = null): void
     {
@@ -86,9 +73,6 @@ class ConfigShowCommand extends Command
 
     /**
      * Format the given configuration key.
-     *
-     * @param  string  $key
-     * @return string
      */
     protected function formatKey(string $key): string
     {
@@ -103,9 +87,6 @@ class ConfigShowCommand extends Command
 
     /**
      * Format the given configuration value.
-     *
-     * @param  mixed  $value
-     * @return string
      */
     protected function formatValue(mixed $value): string
     {

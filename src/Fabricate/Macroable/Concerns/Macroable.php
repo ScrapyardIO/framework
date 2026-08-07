@@ -32,7 +32,7 @@ trait Macroable
      */
     public static function mixin(object $mixin, bool $replace = true): void
     {
-        $methods = (new ReflectionClass($mixin))->getMethods(
+        $methods = new ReflectionClass($mixin)->getMethods(
             ReflectionMethod::IS_PUBLIC | ReflectionMethod::IS_PROTECTED
         );
 
@@ -83,6 +83,7 @@ trait Macroable
     /**
      * Dynamically handle calls to the class.
      * @throws BadMethodCallException
+     * @throws ReflectionException
      */
     public function __call(string $method, array $parameters): mixed
     {
@@ -95,7 +96,7 @@ trait Macroable
         $macro = static::$macros[$method];
 
         if ($macro instanceof Closure) {
-            if ((new ReflectionFunction($macro))->isStatic()) {
+            if (new ReflectionFunction($macro)->isStatic()) {
                 $macro = $macro->bindTo(null, static::class);
             } else {
                 try {

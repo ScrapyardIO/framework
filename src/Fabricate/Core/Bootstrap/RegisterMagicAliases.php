@@ -2,12 +2,12 @@
 
 namespace Fabricate\Core\Bootstrap;
 
-use Fabricate\Contracts\Chassis\BindingResolutionException;
-use Fabricate\Contracts\Core\Program;
-use Fabricate\Contracts\Filesystem\FileNotFoundException;
 use Fabricate\Core\AliasLoader;
 use Fabricate\Core\PackageManifest;
-use Fabricate\NutsAndBolts\MagicAliases\MagicAlias;
+use Fabricate\Contracts\Core\Program;
+use Fabricate\MagicAliases\MagicAlias;
+use Fabricate\Contracts\Filesystem\FileNotFoundException;
+use Fabricate\Chassis\Exceptions\BindingResolutionException;
 
 class RegisterMagicAliases
 {
@@ -25,7 +25,7 @@ class RegisterMagicAliases
         MagicAlias::setMagicAliasApplication($app);
 
         AliasLoader::getInstance(array_merge(
-            MagicAlias::defaultAliases()->all(),
+            AliasLoader::defaultAliases()->all(),
             $app->make('config')->get('machine.aliases', []),
             $app->make(PackageManifest::class)->aliases()
         ))->register();

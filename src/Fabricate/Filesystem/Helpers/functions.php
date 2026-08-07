@@ -6,10 +6,10 @@ if (! function_exists('Fabricate\Filesystem\join_paths')) {
     /**
      * Join the given paths together.
      *
-     * @param  string|null  $basePath
+     * @param string|null $basePath
      * @param  string  ...$paths
      */
-    function join_paths($basePath, ...$paths): string
+    function join_paths(?string $basePath, ...$paths): string
     {
         foreach ($paths as $index => $path) {
             if (empty($path) && $path !== '0') {
@@ -27,10 +27,10 @@ namespace Fabricate\Filesystem\Helpers;
 
 if (! function_exists('Fabricate\Filesystem\Helpers\join_paths')) {
     /**
-     * @param  string|null  $basePath
+     * @param string|null $basePath
      * @param  string  ...$paths
      */
-    function join_paths($basePath, ...$paths): string
+    function join_paths(?string $basePath, ...$paths): string
     {
         return \Fabricate\Filesystem\join_paths($basePath, ...$paths);
     }

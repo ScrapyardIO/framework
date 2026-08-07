@@ -17,9 +17,9 @@ use Fabricate\Console\Concerns\PromptsForMissingInput;
 use Fabricate\Console\Contracts\CommandMutex;
 use Fabricate\Console\Exceptions\ManuallyFailedException;
 use Fabricate\Console\View\Components\Factory as ComponentFactory;
-use Fabricate\Contracts\Chassis\BindingResolutionException;
+use Fabricate\Chassis\Exceptions\BindingResolutionException;
+use Fabricate\Contracts\Chassis\ServiceContainer;
 use Fabricate\Contracts\Console\Isolatable;
-use Fabricate\Contracts\Core\Program;
 use Fabricate\NutsAndBolts\Concerns\Macroable;
 use ReflectionClass;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -41,7 +41,7 @@ class Command extends SymfonyCommand
     /**
      * The ScrapyardIO application instance.
      */
-    protected Program $scrapyard_io;
+    protected ServiceContainer $scrapyard_io;
 
     /**
      * The name and signature of the console command.
@@ -381,7 +381,7 @@ class Command extends SymfonyCommand
     /**
      * Get the ScrapyardIO application instance.
      */
-    public function getScrapyardIO(): Program
+    public function getScrapyardIO(): ServiceContainer
     {
         return $this->scrapyard_io;
     }
@@ -389,7 +389,7 @@ class Command extends SymfonyCommand
     /**
      * Set the ScrapyardIO application instance.
      */
-    public function setScrapyardIO(Program $scrapyard_io): void
+    public function setScrapyardIO(ServiceContainer $scrapyard_io): void
     {
         $this->scrapyard_io = $scrapyard_io;
     }

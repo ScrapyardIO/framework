@@ -6,7 +6,6 @@ use Dotenv\Dotenv;
 use Dotenv\Exception\InvalidFileException;
 use Fabricate\Contracts\Core\Program;
 use Fabricate\NutsAndBolts\Env;
-use JetBrains\PhpStorm\NoReturn;
 use Laravel\Prompts\Output\ConsoleOutput;
 use Symfony\Component\Console\Input\ArgvInput;
 
@@ -35,7 +34,7 @@ class LoadEnvironmentVariables
      */
     protected function checkForSpecificEnvironmentFile(Program $program): void
     {
-        if ($program->runningInConsole() &&
+        if ((!$program->runningInProduction()) &&
             ($input = new ArgvInput)->hasParameterOption('--env') &&
             $this->setEnvironmentFilePath($program, $program->environmentFile().'.'.$input->getParameterOption('--env'))) {
             return;
@@ -91,7 +90,6 @@ class LoadEnvironmentVariables
      * @param InvalidFileException $e
      * @return never
      */
-    #[NoReturn]
     protected function writeErrorAndDie(InvalidFileException $e): never
     {
         $output = (new ConsoleOutput)->getErrorOutput();

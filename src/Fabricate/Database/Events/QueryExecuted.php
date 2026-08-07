@@ -2,8 +2,6 @@
 
 namespace Fabricate\Database\Events;
 
-use Fabricate\Database\Connection;
-
 class QueryExecuted
 {
     /**
@@ -30,7 +28,7 @@ class QueryExecuted
     /**
      * The database connection instance.
      *
-     * @var Connection
+     * @var \Fabricate\Database\Connection
      */
     public $connection;
 
@@ -44,20 +42,20 @@ class QueryExecuted
     /**
      * The PDO read / write type for the executed query.
      *
-     * @var null|'read'|'write'|'direct'
+     * @var null|'read'|'write'
      */
     public $readWriteType;
 
     /**
      * Create a new event instance.
      *
-     * @param string $sql
-     * @param array $bindings
-     * @param float|null $time
-     * @param Connection $connection
-     * @param 'read'|'write'|'direct'|null $readWriteType
+     * @param  string  $sql
+     * @param  array  $bindings
+     * @param  float|null  $time
+     * @param  \Fabricate\Database\Connection  $connection
+     * @param  null|'read'|'write'  $readWriteType
      */
-    public function __construct(string $sql, array $bindings, ?float $time, Connection $connection, ?string $readWriteType = null)
+    public function __construct($sql, $bindings, $time, $connection, $readWriteType = null)
     {
         $this->sql = $sql;
         $this->time = $time;

@@ -1,6 +1,6 @@
 <?php
 
-namespace Illuminate\Contracts\Events;
+namespace Fabricate\Contracts\Events;
 
 interface ShouldHandleEventsAfterCommit
 {

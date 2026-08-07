@@ -20,6 +20,13 @@ abstract class Sketch implements SketchContract
     protected string $description = '';
 
     /**
+     * Middleware for this sketch (class-strings / callables), merged after global stack.
+     *
+     * @var array<int, class-string|callable|object>
+     */
+    protected array $middleware = [];
+
+    /**
      * Bind console input/output for use during the sketch lifecycle.
      */
     public function configureIO(InputInterface $input, OutputStyle $output): void
@@ -34,6 +41,14 @@ abstract class Sketch implements SketchContract
     public function getDescription(): string
     {
         return $this->description;
+    }
+
+    /**
+     * @return array<int, class-string|callable|object>
+     */
+    public function middleware(): array
+    {
+        return $this->middleware;
     }
 
     /**

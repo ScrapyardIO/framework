@@ -11,15 +11,15 @@ class ProcessTimedOutException extends RuntimeException
     /**
      * The process result instance.
      *
-     * @var ProcessResult
+     * @var \Fabricate\Contracts\Process\ProcessResult
      */
     public $result;
 
     /**
      * Create a new exception instance.
      *
-     * @param SymfonyTimeoutException $original
-     * @param ProcessResult $result
+     * @param  \Symfony\Component\Process\Exception\ProcessTimedOutException  $original
+     * @param  \Fabricate\Contracts\Process\ProcessResult  $result
      */
     public function __construct(SymfonyTimeoutException $original, ProcessResult $result)
     {

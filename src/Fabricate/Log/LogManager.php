@@ -3,7 +3,7 @@
 namespace Fabricate\Log;
 
 use Closure;
-use Fabricate\Contracts\Chassis\BindingResolutionException;
+use Fabricate\Chassis\Exceptions\BindingResolutionException;
 use Fabricate\Contracts\Core\Program;
 use Fabricate\Log\Concerns\ParsesLogConfiguration;
 use Fabricate\NutsAndBolts\Collection;

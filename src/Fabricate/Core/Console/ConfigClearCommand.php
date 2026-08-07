@@ -25,15 +25,11 @@ class ConfigClearCommand extends Command
 
     /**
      * The filesystem instance.
-     *
-     * @var \Fabricate\Filesystem\Filesystem
      */
     protected Filesystem $files;
 
     /**
      * Create a new config clear command instance.
-     *
-     * @param  \Fabricate\Filesystem\Filesystem  $files
      */
     public function __construct(Filesystem $files)
     {
@@ -44,13 +40,13 @@ class ConfigClearCommand extends Command
 
     /**
      * Execute the console command.
-     *
-     * @return void
      */
-    public function handle(): void
+    public function handle(): int
     {
         $this->files->delete($this->scrapyard_io->getCachedConfigPath());
 
         $this->components->info('Configuration cache cleared successfully.');
+
+        return self::SUCCESS;
     }
 }

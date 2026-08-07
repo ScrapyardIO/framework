@@ -1,0 +1,15 @@
+<?php
+
+namespace {{ namespace }};
+
+use Fabricate\Graph\Polisher\Model;
+
+class {{ class }} extends Model
+{
+    /**
+     * Neo4j label (Polisher "table").
+     *
+     * @var string
+     */
+    protected $table = '{{ label }}';
+}

@@ -1,9 +1,9 @@
 <?php
 
-namespace DeptOfScrapyardRobotics\Tests\Redis;
+namespace Tests\Redis;
 
 use Fabricate\Contracts\Redis\LimiterTimeoutException;
-use DeptOfScrapyardRobotics\Tests\Redis\Concerns\InteractsWithRedis;
+use Tests\Redis\Concerns\InteractsWithRedis;
 use Fabricate\Redis\Limiters\DurationLimiter;
 use PHPUnit\Framework\TestCase;
 use Throwable;

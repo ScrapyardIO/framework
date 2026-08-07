@@ -1,6 +1,6 @@
 <?php
 
-namespace DeptOfScrapyardRobotics\Tests\Sketches\Fixtures;
+namespace Tests\Sketches\Fixtures;
 
 use Fabricate\Contracts\Sketches\SketchLoopResult;
 use Fabricate\Sketches\Sketch;

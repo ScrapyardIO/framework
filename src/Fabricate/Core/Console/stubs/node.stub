@@ -2,38 +2,31 @@
 
 namespace {{ namespace }};
 
-use Fabricate\Contracts\Rendering\DrawingSurface;
-use Fabricate\NutsAndBolts\Geometry\Constraints;
-use Fabricate\NutsAndBolts\Geometry\Size;
-use Fabricate\UX\Node;
+use Fabricate\Sketches\Flow\Node;
 
 class {{ class }} extends Node
 {
     /**
-     * Answer a size inside the range the parent offered.
+     * Read workflow state and prepare input for exec.
      */
-    public function measure(Constraints $constraints): Size
+    public function prep(mixed &$shared): mixed
     {
-        return $constraints->constrain($this->size());
+        return $shared;
     }
 
     /**
-     * Paint in local coordinates, with the origin at this node's top left. The
-     * surface cannot paint outside the node's bounds, so there is nothing to
-     * range check.
+     * Perform the node's work.
      */
-    public function paint(DrawingSurface $surface): void
+    public function exec(mixed $prepRes): mixed
     {
-        //
+        return null;
     }
 
     /**
-     * Only true when this node paints every pixel of its own bounds. Saying so
-     * lets a stage repaint from here instead of from the root; saying so untruly
-     * leaves ghosts behind moving children.
+     * Write results into shared state and return the next action string.
      */
-    public function isOpaque(): bool
+    public function post(mixed &$shared, mixed $prepRes, mixed $execRes): mixed
     {
-        return false;
+        return $execRes;
     }
 }

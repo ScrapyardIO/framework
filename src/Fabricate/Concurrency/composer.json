@@ -1,0 +1,50 @@
+{
+    "name": "fabricate/concurrency",
+    "description": "The Fabricate Concurrency package.",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Angel Gonzalez",
+            "email": "angel@projectsaturnstudios.com"
+        },
+        {
+            "name": "Taylor Otwell"
+        }
+    ],
+    "homepage": "https://scrapyard-io.projectsaturnstudios.com",
+    "support": {
+        "issues": "https://github.com/ScrapyardIO/framework/issues",
+        "source": "https://github.com/ScrapyardIO/framework"
+    },
+    "require": {
+        "php": "^8.4|^8.5|^8.6",
+        "fabricate/collections": "^0.7.0",
+        "fabricate/console": "^0.7.0",
+        "fabricate/contracts": "^0.7.0",
+        "fabricate/nuts-and-bolts": "^0.7.0",
+        "fabricate/process": "^0.7.0",
+        "laravel/serializable-closure": "^2.0.10",
+        "nesbot/carbon": "^3.8.4"
+    },
+    "suggest": {
+        "spatie/fork": "Required to use the fork concurrency driver (^1.2).",
+        "nunomaduro/pokio": "Required to use the pokio concurrency driver (^0.1)."
+    },
+    "minimum-stability": "dev",
+    "autoload": {
+        "psr-4": {
+            "Fabricate\\Concurrency\\": ""
+        },
+        "files": [
+            "Fiber/functions.php"
+        ]
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "0.7.x-dev"
+        }
+    }
+}

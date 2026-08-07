@@ -150,7 +150,7 @@ class LoadConfiguration
             'filesystems' => ['disks'],
             'logging' => ['channels'],
             //'mail' => ['mailers'],
-            //'queue' => ['connections'],
+            'queue' => ['connections'],
             'redis' => ['clusters'],
             'sketches' => ['load'],
         ][$name] ?? [];

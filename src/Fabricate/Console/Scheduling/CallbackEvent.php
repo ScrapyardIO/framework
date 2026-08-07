@@ -2,7 +2,7 @@
 
 namespace Fabricate\Console\Scheduling;
 
-use Fabricate\Contracts\Chassis\WireframeServiceContainer as Container;
+use Fabricate\Chassis\Contracts\WireframeServiceContainer as Container;
 use Fabricate\NutsAndBolts\Reflector;
 use InvalidArgumentException;
 use LogicException;

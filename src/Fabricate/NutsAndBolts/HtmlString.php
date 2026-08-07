@@ -2,8 +2,8 @@
 
 namespace Fabricate\NutsAndBolts;
 
+use Fabricate\NutsAndBolts\Contracts\Htmlable;
 use Stringable;
-use Fabricate\Contracts\NutsAndBolts\Htmlable;
 
 class HtmlString implements Htmlable, Stringable
 {
@@ -12,14 +12,14 @@ class HtmlString implements Htmlable, Stringable
      *
      * @var string
      */
-    protected string $html;
+    protected $html;
 
     /**
      * Create a new HTML string instance.
      *
-     * @param string $html
+     * @param  string  $html
      */
-    public function __construct(string $html = '')
+    public function __construct($html = '')
     {
         $this->html = $html;
     }
@@ -29,7 +29,7 @@ class HtmlString implements Htmlable, Stringable
      *
      * @return string
      */
-    public function toHtml(): string
+    public function toHtml()
     {
         return $this->html;
     }
@@ -39,7 +39,7 @@ class HtmlString implements Htmlable, Stringable
      *
      * @return bool
      */
-    public function isEmpty(): bool
+    public function isEmpty()
     {
         return ($this->html ?? '') === '';
     }
@@ -49,7 +49,7 @@ class HtmlString implements Htmlable, Stringable
      *
      * @return bool
      */
-    public function isNotEmpty(): bool
+    public function isNotEmpty()
     {
         return ! $this->isEmpty();
     }

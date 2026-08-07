@@ -2,8 +2,6 @@
 
 namespace Fabricate\Contracts\Filesystem;
 
-use Fabricate\Filesystem\Enums\Visibility;
-
 interface Filesystem
 {
     /**

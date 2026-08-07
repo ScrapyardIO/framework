@@ -5,9 +5,9 @@ namespace Fabricate\Queue;
 use Fabricate\Contracts\Database\ModelIdentifier;
 use Fabricate\Contracts\Queue\QueueableCollection;
 use Fabricate\Contracts\Queue\QueueableEntity;
-use Fabricate\Database\Eloquent\Collection as EloquentCollection;
-use Fabricate\Database\Eloquent\Relations\Concerns\AsPivot;
-use Fabricate\Database\Eloquent\Relations\Pivot;
+use Fabricate\Database\Polisher\Collection as EloquentCollection;
+use Fabricate\Database\Polisher\Relations\Concerns\AsPivot;
+use Fabricate\Database\Polisher\Relations\Pivot;
 use Fabricate\NutsAndBolts\Collection;
 
 trait SerializesAndRestoresModelIdentifiers
@@ -67,7 +67,7 @@ trait SerializesAndRestoresModelIdentifiers
      * Restore a queueable collection instance.
      *
      * @param  \Fabricate\Contracts\Database\ModelIdentifier  $value
-     * @return \Fabricate\Database\Eloquent\Collection
+     * @return \Fabricate\Database\Polisher\Collection
      */
     protected function restoreCollection($value)
     {
@@ -103,7 +103,7 @@ trait SerializesAndRestoresModelIdentifiers
      * Restore the model from the model identifier instance.
      *
      * @param  \Fabricate\Contracts\Database\ModelIdentifier  $value
-     * @return \Fabricate\Database\Eloquent\Model
+     * @return \Fabricate\Database\Polisher\Model
      */
     public function restoreModel($value)
     {
@@ -115,11 +115,11 @@ trait SerializesAndRestoresModelIdentifiers
     /**
      * Get the query for model restoration.
      *
-     * @template TModel of \Fabricate\Database\Eloquent\Model
+     * @template TModel of \Fabricate\Database\Polisher\Model
      *
      * @param  TModel  $model
      * @param  array|int  $ids
-     * @return \Fabricate\Database\Eloquent\Builder<TModel>
+     * @return \Fabricate\Database\Polisher\Builder<TModel>
      */
     protected function getQueryForModelRestoration($model, $ids)
     {

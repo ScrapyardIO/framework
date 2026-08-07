@@ -1,6 +1,6 @@
 <?php
 
-namespace DeptOfScrapyardRobotics\Tests\Redis;
+namespace Tests\Redis;
 
 use Fabricate\Chassis\Chassis;
 use Fabricate\Contracts\Redis\Connector;

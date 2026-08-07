@@ -18,7 +18,6 @@
   },
   "require": {
       "php": "^8.4|^8.5|^8.6",
-      "fabricate/contracts": "^0.6.0",
       "fabricate/macroable": "^0.6.0",
       "fabricate/nuts-and-bolts": "^0.6.0"
   },

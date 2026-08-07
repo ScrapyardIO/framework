@@ -3,7 +3,7 @@
 namespace Fabricate\Core\Console;
 
 use Fabricate\Console\Command;
-use Fabricate\Contracts\Console\ConsoleKernel as ConsoleKernelContract;
+use Fabricate\Contracts\Console\CLIKernel;
 use Fabricate\Filesystem\Filesystem;
 use Fabricate\NutsAndBolts\Arr;
 use LogicException;
@@ -29,15 +29,11 @@ class ConfigCacheCommand extends Command
 
     /**
      * The filesystem instance.
-     *
-     * @var \Fabricate\Filesystem\Filesystem
      */
     protected Filesystem $files;
 
     /**
      * Create a new config cache command instance.
-     *
-     * @param  \Fabricate\Filesystem\Filesystem  $files
      */
     public function __construct(Filesystem $files)
     {
@@ -49,11 +45,9 @@ class ConfigCacheCommand extends Command
     /**
      * Execute the console command.
      *
-     * @return void
-     *
      * @throws \LogicException
      */
-    public function handle(): void
+    public function handle(): int
     {
         $this->callSilent('config:clear');
 
@@ -75,8 +69,8 @@ class ConfigCacheCommand extends Command
             foreach (Arr::dot($config) as $key => $value) {
                 try {
                     eval(var_export($value, true).';');
-                } catch (Throwable $e) {
-                    throw new LogicException("Your configuration files could not be serialized because the value at \"{$key}\" is non-serializable.", 0, $e);
+                } catch (Throwable $nested) {
+                    throw new LogicException("Your configuration files could not be serialized because the value at \"{$key}\" is non-serializable.", 0, $nested);
                 }
             }
 
@@ -84,12 +78,14 @@ class ConfigCacheCommand extends Command
         }
 
         $this->components->info('Configuration cached successfully.');
+
+        return self::SUCCESS;
     }
 
     /**
      * Boot a fresh copy of the application configuration.
      *
-     * @return array
+     * @return array<string, mixed>
      */
     protected function getFreshConfiguration(): array
     {
@@ -97,7 +93,7 @@ class ConfigCacheCommand extends Command
 
         $app->useStoragePath($this->scrapyard_io->storagePath());
 
-        $app->make(ConsoleKernelContract::class)->bootstrap();
+        $app->make(CLIKernel::class)->bootstrap();
 
         return $app['config']->all();
     }

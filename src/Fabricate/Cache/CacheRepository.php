@@ -35,7 +35,6 @@ use Fabricate\NutsAndBolts\Concerns\InteractsWithTime;
 use Fabricate\NutsAndBolts\Concerns\Macroable;
 use InvalidArgumentException;
 
-use function Fabricate\NutsAndBolts\Helpers\defer;
 use function Fabricate\NutsAndBolts\Helpers\enum_value;
 
 /**

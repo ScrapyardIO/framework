@@ -2,6 +2,28 @@
 
 namespace Fabricate\Core;
 
+use Fabricate\Core\MagicAliases\App;
+use Fabricate\Core\MagicAliases\Bus;
+use Fabricate\Core\MagicAliases\Cache;
+use Fabricate\Core\MagicAliases\Concurrency;
+use Fabricate\Core\MagicAliases\Crypt;
+use Fabricate\Core\MagicAliases\Date;
+use Fabricate\Core\MagicAliases\Event;
+use Fabricate\Core\MagicAliases\Hash;
+use Fabricate\Core\MagicAliases\Http;
+use Fabricate\Core\MagicAliases\Lang;
+use Fabricate\Core\MagicAliases\Log;
+use Fabricate\Core\MagicAliases\Pipeline;
+use Fabricate\Core\MagicAliases\Process;
+use Fabricate\Core\MagicAliases\Queue;
+use Fabricate\Core\MagicAliases\Redis;
+use Fabricate\Core\MagicAliases\Storage;
+use Fabricate\Core\MagicAliases\Validator;
+use Fabricate\Core\MagicAliases\Workshop;
+use Fabricate\NutsAndBolts\Arr;
+use Fabricate\NutsAndBolts\Collection;
+use Fabricate\NutsAndBolts\Str;
+
 class AliasLoader
 {
     /**
@@ -240,6 +262,34 @@ class AliasLoader
     public static function setInstance(AliasLoader $loader): void
     {
         static::$instance = $loader;
+    }
+
+    public static function defaultAliases(): Collection
+    {
+        return new Collection([
+            'App' => App::class,
+            'Arr' => Arr::class,
+            'Bus' => Bus::class,
+            'Workshop' => Workshop::class,
+            'Cache' => Cache::class,
+            'Concurrency' => Concurrency::class,
+            'Crypt' => Crypt::class,
+            'Date' => Date::class,
+            'DB' => \Fabricate\Core\MagicAliases\DB::class,
+            'Schema' => \Fabricate\Core\MagicAliases\Schema::class,
+            'Event' => Event::class,
+            'Hash' => Hash::class,
+            'Http' => Http::class,
+            'Lang' => Lang::class,
+            'Log' => Log::class,
+            'Pipeline' => Pipeline::class,
+            'Process' => Process::class,
+            'Queue' => Queue::class,
+            'Redis' => Redis::class,
+            'Storage' => Storage::class,
+            'Str' => Str::class,
+            'Validator' => Validator::class,
+        ]);
     }
 
     /**

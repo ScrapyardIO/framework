@@ -5,7 +5,7 @@ namespace Fabricate\Console\View\Components;
 use ReflectionClass;
 use Fabricate\Console\OutputStyle;
 use Fabricate\Console\QuestionHelper;
-use Fabricate\Contracts\NutsAndBolts\Arrayable;
+use Fabricate\NutsAndBolts\Contracts\Arrayable;
 use Symfony\Component\Console\Helper\SymfonyQuestionHelper;
 
 use function Termwind\render;

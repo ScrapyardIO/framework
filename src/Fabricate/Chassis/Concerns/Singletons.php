@@ -2,8 +2,8 @@
 
 namespace Fabricate\Chassis\Concerns;
 
-use Fabricate\Contracts\Chassis\BindingResolutionException;
-use Fabricate\Contracts\Chassis\CircularDependencyException;
+use Fabricate\Chassis\Exceptions\BindingResolutionException;
+use Fabricate\Chassis\Exceptions\CircularDependencyException;
 use ReflectionException;
 
 trait Singletons
@@ -11,26 +11,29 @@ trait Singletons
     /**
      * The container's shared instances.
      *
-     * @var object[]
+     * @var array<string, mixed>
      */
     protected array $instances = [];
 
     /**
      * The container's scoped instances.
      *
-     * @var array
+     * @var list<callable|string>
      */
     protected array $scopedInstances = [];
 
     /**
      * Register a scoped binding in the container.
      *
-     * @param Closure|string $abstract
-     * @param Closure|string|null $concrete
+     * @param callable|string $abstract
+     * @param callable|string|null $concrete
      * @return void
-     * @throws ReflectionException|CircularDependencyException|BindingResolutionException
- */
-    public function scoped($abstract, $concrete = null): void
+     *
+     * @throws BindingResolutionException
+     * @throws CircularDependencyException
+     * @throws ReflectionException
+     */
+    public function scoped(callable|string $abstract, callable|string|null $concrete = null): void
     {
         $this->scopedInstances[] = $abstract;
 
@@ -40,12 +43,15 @@ trait Singletons
     /**
      * Register a shared binding in the container.
      *
-     * @param Closure|string $abstract
-     * @param Closure|string|null $concrete
+     * @param callable|string $abstract
+     * @param callable|string|null $concrete
      * @return void
-     * @throws ReflectionException|CircularDependencyException|BindingResolutionException
- */
-    public function singleton($abstract, $concrete = null): void
+     *
+     * @throws BindingResolutionException
+     * @throws CircularDependencyException
+     * @throws ReflectionException
+     */
+    public function singleton(callable|string $abstract, callable|string|null $concrete = null): void
     {
         $this->bind($abstract, $concrete, true);
     }
@@ -53,18 +59,38 @@ trait Singletons
     /**
      * Register a shared binding if it hasn't already been registered.
      *
-     * @param Closure|string $abstract
-     * @param Closure|string|null $concrete
+     * @param callable|string $abstract
+     * @param callable|string|null $concrete
      * @return void
-     * @throws ReflectionException|CircularDependencyException|BindingResolutionException
- */
-    public function singletonIf($abstract, $concrete = null): void
+     *
+     * @throws BindingResolutionException
+     * @throws CircularDependencyException
+     * @throws ReflectionException
+     */
+    public function singletonIf(callable|string $abstract, callable|string|null $concrete = null): void
     {
         if (! $this->bound($abstract)) {
             $this->singleton($abstract, $concrete);
         }
     }
 
+    /**
+     * Register a scoped binding if it hasn't already been registered.
+     *
+     * @param callable|string $abstract
+     * @param callable|string|null $concrete
+     * @return void
+     *
+     * @throws BindingResolutionException
+     * @throws CircularDependencyException
+     * @throws ReflectionException
+     */
+    public function scopedIf(callable|string $abstract, callable|string|null $concrete = null): void
+    {
+        if (! $this->bound($abstract)) {
+            $this->scoped($abstract, $concrete);
+        }
+    }
 
     /**
      * Clear all of the scoped instances from the container.
@@ -88,20 +114,4 @@ trait Singletons
     {
         unset($this->instances[$abstract], $this->aliases[$abstract]);
     }
-
-    /**
-     * Register a scoped binding if it hasn't already been registered.
-     *
-     * @param Closure|string $abstract
-     * @param Closure|string|null $concrete
-     * @return void
-     * @throws ReflectionException|CircularDependencyException|BindingResolutionException
-    */
-    public function scopedIf($abstract, $concrete = null): void
-    {
-        if (! $this->bound($abstract)) {
-            $this->scoped($abstract, $concrete);
-        }
-    }
-
 }

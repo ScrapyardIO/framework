@@ -2,22 +2,26 @@
 
 namespace Fabricate\Contracts\Database;
 
+use Fabricate\Database\Polisher\Relations\Relation;
+
 class ModelIdentifier
 {
     /**
-     * Use a morph map for a Model's name when serializing.
+     * Use the Relation morphMap for a Model's name when serializing.
      */
     protected static bool $useMorphMap = false;
 
     /**
      * The class name of the model.
      *
-     * @var class-string|string|null
+     * @var class-string<\Fabricate\Database\Polisher\Model>|string|null
      */
     public $class;
 
     /**
      * The unique identifier of the model.
+     *
+     * This may be either a single ID or an array of IDs.
      *
      * @var mixed
      */
@@ -40,20 +44,24 @@ class ModelIdentifier
     /**
      * The class name of the model collection.
      *
-     * @var class-string|null
+     * @var class-string<\Fabricate\Database\Polisher\Collection>|null
      */
     public $collectionClass;
 
     /**
      * Create a new model identifier.
      *
-     * @param  class-string|null  $class
+     * @param  class-string<\Fabricate\Database\Polisher\Model>|null  $class
      * @param  mixed  $id
      * @param  array  $relations
      * @param  mixed  $connection
      */
     public function __construct($class, $id, array $relations, $connection)
     {
+        if ($class !== null && self::$useMorphMap) {
+            $class = Relation::getMorphAlias($class);
+        }
+
         $this->class = $class;
         $this->id = $id;
         $this->relations = $relations;
@@ -63,7 +71,7 @@ class ModelIdentifier
     /**
      * Specify the collection class that should be used when serializing / restoring collections.
      *
-     * @param  class-string|null  $collectionClass
+     * @param  class-string<\Fabricate\Database\Polisher\Collection>  $collectionClass
      * @return $this
      */
     public function useCollectionClass(?string $collectionClass)
@@ -76,15 +84,19 @@ class ModelIdentifier
     /**
      * Get the fully-qualified class name of the Model.
      *
-     * @return class-string|null
+     * @return class-string<\Fabricate\Database\Polisher\Model>|null
      */
     public function getClass(): ?string
     {
+        if (self::$useMorphMap && $this->class !== null) {
+            return Relation::getMorphedModel($this->class) ?? $this->class;
+        }
+
         return $this->class;
     }
 
     /**
-     * Indicate whether to use a relational morph-map when serializing Models.
+     * Indicate whether to use the relational morph-map when serializing Models.
      */
     public static function useMorphMap(bool $useMorphMap = true): void
     {

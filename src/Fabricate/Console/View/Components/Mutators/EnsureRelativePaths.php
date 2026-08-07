@@ -2,8 +2,8 @@
 
 namespace Fabricate\Console\View\Components\Mutators;
 
-use Fabricate\Contracts\Chassis\BindingResolutionException;
-use Fabricate\Contracts\Chassis\CircularDependencyException;
+use Fabricate\Chassis\Exceptions\BindingResolutionException;
+use Fabricate\Chassis\Exceptions\CircularDependencyException;
 use ReflectionException;
 
 class EnsureRelativePaths

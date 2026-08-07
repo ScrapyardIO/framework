@@ -1,10 +1,10 @@
 <?php
 
-namespace DeptOfScrapyardRobotics\Tests\Redis;
+namespace Tests\Redis;
 
 use Fabricate\Contracts\Events\Dispatcher;
 use Fabricate\Chassis\Chassis;
-use DeptOfScrapyardRobotics\Tests\Redis\Concerns\InteractsWithRedis;
+use Tests\Redis\Concerns\InteractsWithRedis;
 use Fabricate\Redis\Connections\Connection;
 use Fabricate\Redis\Connections\PhpRedisConnection;
 use Fabricate\Redis\RedisManager;

@@ -1,0 +1,54 @@
+{
+    "name": "fabricate/validation",
+    "description": "The Fabricate Validation package.",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Angel Gonzalez",
+            "email": "angel@projectsaturnstudios.com"
+        },
+        {
+            "name": "Taylor Otwell"
+        }
+    ],
+    "homepage": "https://scrapyard-io.projectsaturnstudios.com",
+    "support": {
+        "issues": "https://github.com/ScrapyardIO/framework/issues",
+        "source": "https://github.com/ScrapyardIO/framework"
+    },
+    "require": {
+        "php": "^8.4|^8.5|^8.6",
+        "ext-filter": "*",
+        "ext-mbstring": "*",
+        "brick/math": "^0.14.2 || ^0.15 || ^0.16 || ^0.17 || ^0.18",
+        "egulias/email-validator": "^4.0",
+        "fabricate/chassis": "^0.7.0",
+        "fabricate/collections": "^0.7.0",
+        "fabricate/conditionable": "^0.7.0",
+        "fabricate/contracts": "^0.7.0",
+        "fabricate/macroable": "^0.7.0",
+        "fabricate/nuts-and-bolts": "^0.7.0",
+        "fabricate/translation": "^0.7.0",
+        "nesbot/carbon": "^3.8.4",
+        "ramsey/uuid": "^4.7",
+        "symfony/http-foundation": "^7.4.0 || ^8.0.0",
+        "symfony/mime": "^7.4.0 || ^8.0.0"
+    },
+    "suggest": {
+        "fabricate/database": "Required to use the database presence verifier (^0.7.0)."
+    },
+    "minimum-stability": "dev",
+    "autoload": {
+        "psr-4": {
+            "Fabricate\\Validation\\": ""
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "0.7.x-dev"
+        }
+    }
+}

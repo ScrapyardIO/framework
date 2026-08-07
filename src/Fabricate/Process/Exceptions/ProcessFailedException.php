@@ -10,14 +10,14 @@ class ProcessFailedException extends RuntimeException
     /**
      * The process result instance.
      *
-     * @var ProcessResult
+     * @var \Fabricate\Contracts\Process\ProcessResult
      */
-    public ProcessResult $result;
+    public $result;
 
     /**
      * Create a new exception instance.
      *
-     * @param ProcessResult $result
+     * @param  \Fabricate\Contracts\Process\ProcessResult  $result
      */
     public function __construct(ProcessResult $result)
     {

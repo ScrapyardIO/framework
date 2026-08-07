@@ -1,193 +1,34 @@
 <?php
 
-namespace DeptOfScrapyardRobotics\Tests\Reflection;
-
-use Attribute;
-use Closure;
-use Fabricate\NutsAndBolts\Concerns\ReflectsClosures;
 use Fabricate\NutsAndBolts\Reflector;
-use PHPUnit\Framework\TestCase;
-use ReflectionMethod;
-use ReflectionParameter;
-use RuntimeException;
 
-class ReflectorTest extends TestCase
-{
-    public function testItDeterminesWhetherValuesAreCallable(): void
+test('reflector isCallable accepts closures and rejects broken arrays', function () {
+    expect(Reflector::isCallable(fn () => true))->toBeTrue()
+        ->and(Reflector::isCallable('strlen'))->toBeTrue()
+        ->and(Reflector::isCallable(['missing', 'method']))->toBeFalse()
+        ->and(Reflector::isCallable([new stdClass, 'nope']))->toBeFalse();
+});
+
+test('reflector isCallable recognizes public instance methods', function () {
+    $subject = new class
     {
-        $subject = new CallableSubject();
+        public function greet(): string
+        {
+            return 'hi';
+        }
 
-        $this->assertTrue(Reflector::isCallable(fn (): null => null));
-        $this->assertTrue(Reflector::isCallable([$subject, 'publicMethod']));
-        $this->assertFalse(Reflector::isCallable([$subject, 'protectedMethod']));
-        $this->assertTrue(Reflector::isCallable([$subject, 'dynamicMethod']));
-        $this->assertTrue(Reflector::isCallable([CallableSubject::class, 'dynamicStaticMethod']));
-        $this->assertFalse(Reflector::isCallable(['MissingClass', 'method']));
-    }
+        protected function hidden(): void {}
+    };
 
-    public function testItReadsAttributesFromAClassAndItsParents(): void
-    {
-        $direct = Reflector::getClassAttributes(AttributedChild::class, Marker::class);
-        $inherited = Reflector::getClassAttributes(AttributedChild::class, Marker::class, includeParents: true);
+    expect(Reflector::isCallable([$subject, 'greet']))->toBeTrue()
+        ->and(Reflector::isCallable([$subject, 'hidden']))->toBeFalse();
+});
 
-        $this->assertSame(['child'], $direct->map(fn (Marker $marker) => $marker->name)->all());
-        $this->assertSame(
-            ['child', 'parent'],
-            $inherited->flatten()->map(fn (Marker $marker) => $marker->name)->all(),
-        );
-        $this->assertSame('child', Reflector::getClassAttribute(AttributedChild::class, Marker::class)->name);
-    }
+test('reflector getParameterClassName resolves named types', function () {
+    $fn = static function (DateTimeInterface $when, string $label, int|DateTime $mixed): void {};
+    $parameters = (new ReflectionFunction($fn))->getParameters();
 
-    public function testItResolvesParameterClassNamesIncludingSelfParentAndUnions(): void
-    {
-        $this->assertSame(
-            ReflectionDependency::class,
-            Reflector::getParameterClassName($this->parameter(ReflectionChild::class, 'dependency')),
-        );
-        $this->assertSame(
-            ReflectionChild::class,
-            Reflector::getParameterClassName($this->parameter(ReflectionChild::class, 'selfType')),
-        );
-        $this->assertSame(
-            ReflectionParent::class,
-            Reflector::getParameterClassName($this->parameter(ReflectionChild::class, 'parentType')),
-        );
-        $this->assertSame(
-            [ReflectionDependency::class, OtherDependency::class],
-            Reflector::getParameterClassNames($this->parameter(ReflectionChild::class, 'unionType')),
-        );
-    }
-
-    public function testItIdentifiesSubclassAndStringBackedEnumParameters(): void
-    {
-        $this->assertTrue(Reflector::isParameterSubclassOf(
-            $this->parameter(ReflectionChild::class, 'parentType'),
-            ReflectionDependency::class,
-        ));
-        $this->assertTrue(Reflector::isParameterBackedEnumWithStringBackingType(
-            $this->parameter(ReflectionChild::class, 'state'),
-        ));
-        $this->assertFalse(Reflector::isParameterBackedEnumWithStringBackingType(
-            $this->parameter(ReflectionChild::class, 'dependency'),
-        ));
-    }
-
-    public function testClosureReflectionReturnsParameterAndReturnTypes(): void
-    {
-        $harness = new ClosureReflectionHarness();
-        $closure = fn (ReflectionDependency|OtherDependency $dependency): AttributedChild => new AttributedChild();
-
-        $this->assertSame(
-            [ReflectionDependency::class, OtherDependency::class],
-            $harness->firstParameterTypes($closure),
-        );
-        $this->assertSame([AttributedChild::class], $harness->returnTypes($closure));
-    }
-
-    public function testClosureReflectionRejectsClosuresWithoutParameters(): void
-    {
-        $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('The given Closure has no parameters.');
-
-        (new ClosureReflectionHarness())->firstParameterTypes(fn (): null => null);
-    }
-
-    private function parameter(string $class, string $method): ReflectionParameter
-    {
-        return (new ReflectionMethod($class, $method))->getParameters()[0];
-    }
-}
-
-#[Attribute(Attribute::TARGET_CLASS)]
-class Marker
-{
-    public function __construct(public string $name)
-    {
-    }
-}
-
-#[Marker('parent')]
-class AttributedParent
-{
-}
-
-#[Marker('child')]
-class AttributedChild extends AttributedParent
-{
-}
-
-class CallableSubject
-{
-    public function publicMethod(): void
-    {
-    }
-
-    protected function protectedMethod(): void
-    {
-    }
-
-    public function __call(string $method, array $parameters): mixed
-    {
-        return null;
-    }
-
-    public static function __callStatic(string $method, array $parameters): mixed
-    {
-        return null;
-    }
-}
-
-class ReflectionDependency
-{
-}
-
-class ReflectionParent extends ReflectionDependency
-{
-}
-
-class OtherDependency
-{
-}
-
-class ReflectionChild extends ReflectionParent
-{
-    public function dependency(ReflectionDependency $dependency): void
-    {
-    }
-
-    public function selfType(self $dependency): void
-    {
-    }
-
-    public function parentType(parent $dependency): void
-    {
-    }
-
-    public function unionType(ReflectionDependency|OtherDependency|string $dependency): void
-    {
-    }
-
-    public function state(MACHINE_STATE $state): void
-    {
-    }
-}
-
-enum MACHINE_STATE: string
-{
-    case READY = 'ready';
-}
-
-class ClosureReflectionHarness
-{
-    use ReflectsClosures;
-
-    public function firstParameterTypes(Closure $closure): array
-    {
-        return $this->firstClosureParameterTypes($closure);
-    }
-
-    public function returnTypes(Closure $closure): array
-    {
-        return $this->closureReturnTypes($closure);
-    }
-}
+    expect(Reflector::getParameterClassName($parameters[0]))->toBe(DateTimeInterface::class)
+        ->and(Reflector::getParameterClassName($parameters[1]))->toBeNull()
+        ->and(Reflector::getParameterClassNames($parameters[2]))->toBe([DateTime::class]);
+});

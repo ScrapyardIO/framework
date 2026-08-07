@@ -11,8 +11,8 @@ use JsonSerializable;
 use UnexpectedValueException;
 use Fabricate\NutsAndBolts\Arr;
 use Fabricate\NutsAndBolts\Collection;
-use Fabricate\Contracts\NutsAndBolts\Jsonable;
-use Fabricate\Contracts\NutsAndBolts\Arrayable;
+use Fabricate\NutsAndBolts\Contracts\Jsonable;
+use Fabricate\NutsAndBolts\Contracts\Arrayable;
 use Fabricate\NutsAndBolts\Contracts\Enumerable;
 use Fabricate\NutsAndBolts\HigherOrderCollectionProxy;
 

@@ -2,7 +2,7 @@
 
 namespace Fabricate\Core\Exceptions;
 
-use Fabricate\Contracts\Chassis\WireframeServiceContainer;
+use Fabricate\Chassis\Contracts\WireframeServiceContainer;
 use Fabricate\Contracts\Debug\ExceptionHandler as ExceptionHandlerContract;
 use Fabricate\NutsAndBolts\Concerns\ReflectsClosures;
 use Symfony\Component\Console\Output\OutputInterface;

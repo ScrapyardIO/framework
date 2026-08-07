@@ -10,23 +10,24 @@ class EnvironmentCommand extends Command
 {
     /**
      * The console command name.
-     *
-     * @var string
      */
     protected string $name = 'env';
 
     /**
      * The console command description.
-     *
-     * @var string
      */
     protected string $description = 'Display the current framework environment';
 
-    public function handle(): void
+    /**
+     * Execute the console command.
+     */
+    public function handle(): int
     {
         $this->components->info(sprintf(
             'The application environment is [%s].',
             $this->scrapyard_io['env'],
         ));
+
+        return static::SUCCESS;
     }
 }

@@ -2,10 +2,11 @@
 
 namespace Fabricate\Chassis\Concerns;
 
-use Fabricate\Contracts\Chassis\BindingResolutionException;
-use Fabricate\Contracts\Chassis\CircularDependencyException;
+use Fabricate\Chassis\Exceptions\BindingResolutionException;
+use Fabricate\Chassis\Exceptions\CircularDependencyException;
 use Fabricate\Contracts\Chassis\ContextualAttribute;
 use ReflectionAttribute;
+use ReflectionException;
 
 trait CallbackManagement
 {
@@ -17,27 +18,6 @@ trait CallbackManagement
     protected array $reboundCallbacks = [];
 
     /**
-     * Every global before resolving callback.
-     *
-     * @var Closure[]
-     */
-    protected array $globalBeforeResolvingCallbacks = [];
-
-    /**
-     * Every global resolving callback.
-     *
-     * @var Closure[]
-     */
-    protected array $globalResolvingCallbacks = [];
-
-    /**
-     * Every global after resolving callback.
-     *
-     * @var Closure[]
-     */
-    protected array $globalAfterResolvingCallbacks = [];
-
-    /**
      * Every before resolving callback by class type.
      *
      * @var array[]
@@ -45,23 +25,44 @@ trait CallbackManagement
     protected array $beforeResolvingCallbacks = [];
 
     /**
+     * Every global before resolving callback.
+     *
+     * @var list<callable>
+     */
+    protected array $globalBeforeResolvingCallbacks = [];
+
+    /**
+     * Every global resolving callback.
+     *
+     * @var list<callable>
+     */
+    protected array $globalResolvingCallbacks = [];
+
+    /**
      * Every resolving callback by class type.
      *
-     * @var array[]
+     * @var array<string, list<callable>>
      */
     protected array $resolvingCallbacks = [];
 
     /**
+     * Every global after resolving callback.
+     *
+     * @var list<callable>
+     */
+    protected array $globalAfterResolvingCallbacks = [];
+
+    /**
      * Every after resolving callback by class type.
      *
-     * @var array[]
+     * @var array<string, list<callable>>
      */
     protected array $afterResolvingCallbacks = [];
 
     /**
      * Every after resolving attribute callback by class type.
      *
-     * @var array[]
+     * @var array<string, list<callable>>
      */
     protected array $afterResolvingAttributeCallbacks = [];
 
@@ -70,7 +71,7 @@ trait CallbackManagement
      *
      * @param string $abstract
      * @return void
-     * @throws BindingResolutionException|CircularDependencyException
+     * @throws BindingResolutionException|CircularDependencyException|ReflectionException
      */
     protected function rebound(string $abstract): void
     {
@@ -158,24 +159,17 @@ trait CallbackManagement
     }
 
     /**
-     * Get all callbacks for a given type.
+     * Fire an array of callbacks with an object.
      *
-     * @param string $abstract
      * @param mixed $object
-     * @param array $callbacksPerType
-     * @return array
+     * @param array $callbacks
+     * @return void
      */
-    protected function getCallbacksForType(string $abstract, mixed $object, array $callbacksPerType): array
+    protected function fireCallbackArray(mixed $object, array $callbacks): void
     {
-        $results = [];
-
-        foreach ($callbacksPerType as $type => $callbacks) {
-            if ($type === $abstract || (is_object($object) && $object instanceof $type)) {
-                $results = array_merge($results, $callbacks);
-            }
+        foreach ($callbacks as $callback) {
+            $callback($object, $this);
         }
-
-        return $results;
     }
 
     /**
@@ -197,20 +191,6 @@ trait CallbackManagement
     }
 
     /**
-     * Fire an array of callbacks with an object.
-     *
-     * @param mixed $object
-     * @param array $callbacks
-     * @return void
-     */
-    protected function fireCallbackArray(mixed $object, array $callbacks): void
-    {
-        foreach ($callbacks as $callback) {
-            $callback($object, $this);
-        }
-    }
-
-    /**
      * Fire every after resolving callbacks.
      *
      * @param string $abstract
@@ -226,4 +206,24 @@ trait CallbackManagement
         );
     }
 
+    /**
+     * Get all callbacks for a given type.
+     *
+     * @param string $abstract
+     * @param mixed $object
+     * @param array $callbacksPerType
+     * @return array
+     */
+    protected function getCallbacksForType(string $abstract, mixed $object, array $callbacksPerType): array
+    {
+        $results = [];
+
+        foreach ($callbacksPerType as $type => $callbacks) {
+            if ($type === $abstract || (is_object($object) && $object instanceof $type)) {
+                $results = array_merge($results, $callbacks);
+            }
+        }
+
+        return $results;
+    }
 }

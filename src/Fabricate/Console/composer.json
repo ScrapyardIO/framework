@@ -21,10 +21,10 @@
     "php": "^8.4|^8.5|^8.6",
     "laravel/prompts": "^0.3.0",
     "nunomaduro/termwind": "^2.0",
-    "fabricate/macroable": "^0.6.0",
-    "fabricate/contracts": "^0.6.0",
-    "fabricate/collections": "^0.6.0",
-    "fabricate/nuts-and-bolts": "^0.6.0",
+    "fabricate/macroable": "^0.7.0",
+    "fabricate/contracts": "^0.7.0",
+    "fabricate/collections": "^0.7.0",
+    "fabricate/conditionable": "^0.7.0",
     "symfony/process": "^7.4.5 || ^8.0.5",
     "symfony/console": "^7.4.0 || ^8.0.0"
   },
@@ -32,14 +32,17 @@
   "autoload": {
     "psr-4": {
       "Fabricate\\Console\\": ""
-    }
+    },
+    "files": [
+      "Prompts/helpers.php"
+    ]
   },
   "config": {
     "sort-packages": true
   },
   "extra": {
     "branch-alias": {
-      "dev-master": "0.6.x-dev"
+      "dev-master": "0.7.x-dev"
     }
   }
 }

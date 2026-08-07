@@ -3,7 +3,6 @@
 namespace Fabricate\Queue;
 
 use Fabricate\Queue\Attributes\WithoutRelations;
-use Fabricate\NutsAndBolts\Reflector;
 use ReflectionClass;
 use ReflectionProperty;
 
@@ -25,7 +24,7 @@ trait SerializesModels
         [$class, $properties, $classLevelWithoutRelations] = [
             get_class($this),
             $reflectionClass->getProperties(),
-            ! is_null(Reflector::getClassAttribute($this, WithoutRelations::class, ascend: true)),
+            ! empty($reflectionClass->getAttributes(WithoutRelations::class)),
         ];
 
         foreach ($properties as $property) {

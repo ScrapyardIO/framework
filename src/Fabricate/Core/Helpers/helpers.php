@@ -3,8 +3,11 @@
 use Fabricate\Core\Machine;
 use Fabricate\Chassis\Chassis;
 use Fabricate\Contracts\Debug\ExceptionHandler;
-use Fabricate\Contracts\Chassis\BindingResolutionException;
-use Fabricate\Contracts\Chassis\CircularDependencyException;
+use Fabricate\NutsAndBolts\Defer\DeferredCallback;
+use Symfony\Component\Process\PhpExecutableFinder;
+use Fabricate\NutsAndBolts\Defer\DeferredCallbackCollection;
+use Fabricate\Chassis\Exceptions\BindingResolutionException;
+use Fabricate\Chassis\Exceptions\CircularDependencyException;
 
 if (! function_exists('app')) {
     /**
@@ -23,6 +26,30 @@ if (! function_exists('app')) {
         }
 
         return Chassis::getInstance()->make($abstract, $parameters);
+    }
+}
+
+if (! function_exists('encrypt')) {
+    /**
+     * Encrypt the given value.
+     *
+     * @throws ReflectionException|BindingResolutionException|CircularDependencyException
+     */
+    function encrypt(#[\SensitiveParameter] mixed $value, bool $serialize = true): string
+    {
+        return app('encrypter')->encrypt($value, $serialize);
+    }
+}
+
+if (! function_exists('bcrypt')) {
+    /**
+     * Hash the given value against the bcrypt algorithm.
+     *
+     * @throws ReflectionException|BindingResolutionException|CircularDependencyException
+     */
+    function bcrypt(#[\SensitiveParameter] string $value, array $options = []): string
+    {
+        return app('hash')->driver('bcrypt')->make($value, $options);
     }
 }
 
@@ -112,6 +139,16 @@ if (! function_exists('app_path')) {
     }
 }
 
+if (! function_exists('database_path')) {
+    /**
+     * Get the path to the database directory.
+     */
+    function database_path(string $path = ''): string
+    {
+        return app()->databasePath($path);
+    }
+}
+
 if (! function_exists('config_path')) {
     /**
      * Get the configuration path.
@@ -197,6 +234,20 @@ if (! function_exists('config')) {
     }
 }
 
+if (! function_exists('event')) {
+    /**
+     * Dispatch an event and call the listeners.
+     *
+     * @param mixed ...$args
+     * @return array|null
+     * @throws ReflectionException|BindingResolutionException|CircularDependencyException
+     */
+    function event(...$args): ?array
+    {
+        return app('events')->dispatch(...$args);
+    }
+}
+
 if (! function_exists('logger')) {
     /**
      * Log a debug message to the logs.
@@ -227,5 +278,30 @@ if (! function_exists('logs')) {
     function logs(?string $driver = null): LoggerInterface|LogManager
     {
         return $driver ? app('log')->driver($driver) : app('log');
+    }
+}
+
+
+
+if (! function_exists('Fabricate\Core\Helpers\defer')) {
+    /**
+     * Defer execution of the given callback.
+     *
+     * @param callable|null $callback
+     * @param string|null $name
+     * @param bool $always
+     * @return ($callback is null ? DeferredCallbackCollection : \Fabricate\NutsAndBolts\Defer\DeferredCallback)
+     * @throws ReflectionException
+     */
+    function defer(?callable $callback = null, ?string $name = null, bool $always = false): DeferredCallback|DeferredCallbackCollection
+    {
+        if ($callback === null) {
+            return app(DeferredCallbackCollection::class);
+        }
+
+        return tap(
+            new DeferredCallback($callback, $name, $always),
+            fn ($deferred) => app(DeferredCallbackCollection::class)[] = $deferred
+        );
     }
 }

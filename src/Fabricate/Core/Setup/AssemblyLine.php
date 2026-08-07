@@ -2,11 +2,12 @@
 
 namespace Fabricate\Core\Setup;
 
-use Fabricate\Core\Machine;
-use Fabricate\NutsAndBolts\Collection;
-use Fabricate\Contracts\Console\ConsoleKernel;
+use Fabricate\Contracts\Console\CLIKernel as ConsoleKernel;
 use Fabricate\Core\Bootstrap\RegisterProviders;
-use Fabricate\Core\Support\Providers\EventServiceProvider as AppEventServiceProvider;
+use Fabricate\Core\Machine;
+use Fabricate\Core\Providers\EventServiceProvider as AppEventServiceProvider;
+use Fabricate\NutsAndBolts\Collection;
+use ReflectionException;
 
 class AssemblyLine
 {
@@ -16,13 +17,6 @@ class AssemblyLine
      * @var array
      */
     protected array $pendingProviders = [];
-
-    /**
-     * Any additional routing callbacks that should be invoked while registering routes.
-     *
-     * @var array
-     */
-    protected array $additionalRoutingCallbacks = [];
 
 
     /**
@@ -34,12 +28,37 @@ class AssemblyLine
      * Register the standard kernel classes for the application.
      *
      * @return $this
+     * @throws ReflectionException
      */
     public function withKernels(): static
     {
         $this->machine->singleton(
-            \Fabricate\Contracts\Console\ConsoleKernel::class,
+            \Fabricate\Contracts\Console\CLIKernel::class,
             \Fabricate\Core\Console\ConsoleKernel::class,
+        );
+
+        $this->machine->singleton(
+            \Fabricate\Contracts\Sketches\SketchKernel::class,
+            \Fabricate\Sketches\Runner\SketchKernel::class,
+        );
+
+        return $this;
+    }
+
+    /**
+     * Register additional service providers.
+     *
+     * @param  array  $providers
+     * @param  bool  $withBootstrapProviders
+     * @return $this
+     */
+    public function withProviders(array $providers = [], bool $withBootstrapProviders = true): static
+    {
+        RegisterProviders::merge(
+            $providers,
+            $withBootstrapProviders
+                ? $this->machine->getBootstrapProvidersPath()
+                : null
         );
 
         return $this;
@@ -73,55 +92,11 @@ class AssemblyLine
     }
 
     /**
-     * Register additional Artisan commands with the application.
-     *
-     * @param  array  $commands
-     * @return $this
-     */
-    public function withCommands(array $commands = []): static
-    {
-        if (empty($commands)) {
-            $commands = [$this->machine->path('Console/Commands')];
-        }
-
-        $this->machine->afterResolving(ConsoleKernel::class, function ($kernel) use ($commands) {
-            [$commands, $paths] = new Collection($commands)->partition(fn ($command) => class_exists($command));
-            [$routes, $paths] = $paths->partition(fn ($path) => is_file($path));
-
-            $this->machine->booted(static function () use ($kernel, $commands, $paths, $routes) {
-                $kernel->addCommands($commands->all());
-                $kernel->addCommandPaths($paths->all());
-                $kernel->addCommandRoutePaths($routes->all());
-            });
-        });
-
-        return $this;
-    }
-
-    /**
-     * Register additional service providers.
-     *
-     * @param  array  $providers
-     * @param  bool  $withBootstrapProviders
-     * @return $this
-     */
-    public function withProviders(array $providers = [], bool $withBootstrapProviders = true): static
-    {
-        RegisterProviders::merge(
-            $providers,
-            $withBootstrapProviders
-                ? $this->machine->getBootstrapProvidersPath()
-                : null
-        );
-
-        return $this;
-    }
-
-    /**
      * Register and configure the application's exception handler.
      *
-     * @param  callable|null  $using
+     * @param callable|null $using
      * @return $this
+     * @throws ReflectionException
      */
     public function withExceptions(?callable $using = null): static
     {
@@ -141,40 +116,26 @@ class AssemblyLine
     }
 
     /**
-     * Register a callback to be invoked when the application's service providers are registered.
+     * Register additional Artisan commands with the application.
      *
-     * @param  callable  $callback
+     * @param  array  $commands
      * @return $this
      */
-    public function registered(callable $callback): static
+    public function withCommands(array $commands = []): static
     {
-        $this->machine->registered($callback);
+        if (empty($commands)) {
+            $commands = [$this->machine->path('Console/Commands')];
+        }
 
-        return $this;
-    }
+        $this->machine->afterResolving(ConsoleKernel::class, function ($kernel) use ($commands) {
+            [$commands, $paths] = new Collection($commands)->partition(fn ($command) => class_exists($command));
+            [$routes, $paths] = $paths->partition(fn ($path) => is_file($path));
 
-    /**
-     * Register a callback to be invoked when the application is "booting".
-     *
-     * @param  callable  $callback
-     * @return $this
-     */
-    public function booting(callable $callback): static
-    {
-        $this->machine->booting($callback);
-
-        return $this;
-    }
-
-    /**
-     * Register a callback to be invoked when the application is "booted".
-     *
-     * @param  callable  $callback
-     * @return $this
-     */
-    public function booted(callable $callback): static
-    {
-        $this->machine->booted($callback);
+            $this->machine->booted(static function () use ($kernel, $commands, $paths, $routes) {
+                $kernel->addCommands($commands->all());
+                $kernel->addCommandPaths($paths->all());
+            });
+        });
 
         return $this;
     }

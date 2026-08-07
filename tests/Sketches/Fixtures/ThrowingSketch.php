@@ -1,6 +1,6 @@
 <?php
 
-namespace DeptOfScrapyardRobotics\Tests\Sketches\Fixtures;
+namespace Tests\Sketches\Fixtures;
 
 use Fabricate\Contracts\Sketches\SketchLoopResult;
 use Fabricate\Sketches\Sketch;
@@ -11,13 +11,13 @@ class ThrowingSketch extends Sketch
     /** @var list<string> */
     public array $calls = [];
 
-    public function __construct(protected string $phase = 'loop') {}
+    public function __construct(public string $failAt = 'loop') {}
 
     public function boot(): void
     {
         $this->calls[] = 'boot';
 
-        if ($this->phase === 'boot') {
+        if ($this->failAt === 'boot') {
             throw new RuntimeException('boot failed');
         }
     }
@@ -26,7 +26,11 @@ class ThrowingSketch extends Sketch
     {
         $this->calls[] = 'loop';
 
-        throw new RuntimeException('loop failed');
+        if ($this->failAt === 'loop') {
+            throw new RuntimeException('loop failed');
+        }
+
+        return SketchLoopResult::STOP;
     }
 
     public function shutdown(): void

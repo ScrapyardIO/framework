@@ -1,6 +1,6 @@
 <?php
 
-namespace DeptOfScrapyardRobotics\Tests\Redis\Connections;
+namespace Tests\Redis\Connections;
 
 use Fabricate\Redis\Connections\PhpRedisClusterConnection;
 use Mockery as m;

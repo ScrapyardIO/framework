@@ -1,4 +1,5 @@
 # Playbooks
 
-* [First sketch](first-sketch.md)
-* [Add a service provider](add-service-provider.md)
+* [Require the framework](require-framework.md) - `composer require scrapyard-io/framework`; use `Fabricate\NutsAndBolts\*`.
+* [Use collect / data helpers](use-collect-helpers.md) - Global helpers autoloaded from Collections.
+* [Port from 0.6.x or Illuminate](port-from-0.6-or-illuminate.md) - Code + OKF + Laravel-equivalent Guide/SDK docs (required).

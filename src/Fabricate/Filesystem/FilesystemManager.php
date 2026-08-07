@@ -7,7 +7,7 @@ use Aws\S3\S3Client;
 use InvalidArgumentException;
 use Fabricate\NutsAndBolts\Arr;
 use League\Flysystem\Ftp\FtpAdapter;
-use Fabricate\Contracts\Core\Program;
+use Fabricate\Contracts\Chassis\ServiceContainer;
 use League\Flysystem\Filesystem as Flysystem;
 use League\Flysystem\Ftp\FtpConnectionOptions;
 use League\Flysystem\AwsS3V3\AwsS3V3Adapter as S3Adapter;
@@ -30,7 +30,7 @@ use function Fabricate\NutsAndBolts\Helpers\enum_value;
  */
 class FilesystemManager implements FactoryContract
 {
-    protected Program $program;
+    protected ServiceContainer $container;
 
     /**
      * The array of resolved filesystem drivers.
@@ -49,11 +49,11 @@ class FilesystemManager implements FactoryContract
     /**
      * Create a new filesystem manager instance.
      *
-     * @param Program $app
+     * @param ServiceContainer $container
      */
-    public function __construct(Program $app)
+    public function __construct(ServiceContainer $container)
     {
-        $this->program = $app;
+        $this->container = $container;
     }
 
     /**
@@ -161,7 +161,7 @@ class FilesystemManager implements FactoryContract
      */
     protected function callCustomCreator(array $config)
     {
-        return $this->customCreators[$config['driver']]($this->program, $config);
+        return $this->customCreators[$config['driver']]($this->container, $config);
     }
 
     /**
@@ -371,8 +371,8 @@ class FilesystemManager implements FactoryContract
      */
     protected function getConfig($name)
     {
-        if ($this->program->bound('config')) {
-            return $this->program['config']["filesystems.disks.{$name}"] ?: [];
+        if ($this->container->bound('config')) {
+            return $this->container['config']["filesystems.disks.{$name}"] ?: [];
         }
 
         return match ($name) {
@@ -399,11 +399,11 @@ class FilesystemManager implements FactoryContract
      */
     public function getDefaultDriver()
     {
-        if (! $this->program->bound('config')) {
+        if (! $this->container->bound('config')) {
             return 'local';
         }
 
-        return $this->program['config']['filesystems.default'];
+        return $this->container['config']['filesystems.default'];
     }
 
     /**
@@ -413,11 +413,11 @@ class FilesystemManager implements FactoryContract
      */
     public function getDefaultCloudDriver()
     {
-        if (! $this->program->bound('config')) {
+        if (! $this->container->bound('config')) {
             return 's3';
         }
 
-        return $this->program['config']['filesystems.cloud'] ?? 's3';
+        return $this->container['config']['filesystems.cloud'] ?? 's3';
     }
 
     /**
@@ -466,14 +466,14 @@ class FilesystemManager implements FactoryContract
     }
 
     /**
-     * Set the application instance used by the manager.
+     * Set the container instance used by the manager.
      *
-     * @param Program $app
+     * @param ServiceContainer $container
      * @return $this
      */
-    public function setApplication(Program $app): static
+    public function setContainer(ServiceContainer $container): static
     {
-        $this->program = $app;
+        $this->container = $container;
 
         return $this;
     }

@@ -2,13 +2,13 @@
 
 namespace Fabricate\Config;
 
-use ArrayAccess;
 use Closure;
-use Fabricate\Contracts\Config\Repository as ConfigContract;
+use ArrayAccess;
+use InvalidArgumentException;
 use Fabricate\NutsAndBolts\Arr;
 use Fabricate\NutsAndBolts\Collection;
 use Fabricate\NutsAndBolts\Concerns\Macroable;
-use InvalidArgumentException;
+use Fabricate\Contracts\Config\Repository as ConfigContract;
 
 class Repository implements ArrayAccess, ConfigContract
 {
@@ -19,7 +19,7 @@ class Repository implements ArrayAccess, ConfigContract
      *
      * @var array<string,mixed>
      */
-    protected $items = [];
+    protected array $items = [];
 
     /**
      * Create a new configuration repository.

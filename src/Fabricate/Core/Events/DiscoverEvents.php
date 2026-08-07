@@ -2,16 +2,16 @@
 
 namespace Fabricate\Core\Events;
 
-use SplFileInfo;
-use ReflectionClass;
-use ReflectionMethod;
-use ReflectionException;
-use Fabricate\NutsAndBolts\Str;
-use Fabricate\NutsAndBolts\Arr;
-use Symfony\Component\Finder\Finder;
-use Fabricate\NutsAndBolts\Reflector;
-use Fabricate\NutsAndBolts\Collection;
 use Fabricate\Contracts\Events\ShouldBeDiscovered;
+use Fabricate\NutsAndBolts\Arr;
+use Fabricate\NutsAndBolts\Collection;
+use Fabricate\NutsAndBolts\Reflector;
+use Fabricate\NutsAndBolts\Str;
+use ReflectionClass;
+use ReflectionException;
+use ReflectionMethod;
+use SplFileInfo;
+use Symfony\Component\Finder\Finder;
 
 class DiscoverEvents
 {

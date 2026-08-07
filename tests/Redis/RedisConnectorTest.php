@@ -1,9 +1,9 @@
 <?php
 
-namespace DeptOfScrapyardRobotics\Tests\Redis;
+namespace Tests\Redis;
 
 use Fabricate\Chassis\Chassis;
-use DeptOfScrapyardRobotics\Tests\Redis\Concerns\InteractsWithRedis;
+use Tests\Redis\Concerns\InteractsWithRedis;
 use Fabricate\Redis\RedisManager;
 use PHPUnit\Framework\TestCase;
 use Predis\Client as PredisClient;

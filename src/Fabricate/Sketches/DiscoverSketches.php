@@ -11,7 +11,7 @@ use Symfony\Component\Finder\Finder;
 class DiscoverSketches
 {
     /**
-     * Discover concrete app Sketch subclasses under the given path.
+     * Discover concrete Sketch subclasses under the given path.
      *
      * @return array<string, class-string>  registration key => FQCN
      */

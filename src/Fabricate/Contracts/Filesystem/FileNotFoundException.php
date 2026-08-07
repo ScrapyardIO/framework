@@ -3,7 +3,7 @@
 namespace Fabricate\Contracts\Filesystem;
 
 use Exception;
-use Fabricate\NutsAndBolts\ScrapyardIOException;
+use Fabricate\Contracts\Core\ScrapyardIOException;
 
 class FileNotFoundException extends ScrapyardIOException
 {

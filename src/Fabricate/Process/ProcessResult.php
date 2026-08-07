@@ -13,7 +13,7 @@ class ProcessResult implements ProcessResultContract
      *
      * @var \Symfony\Component\Process\Process
      */
-    protected Process $process;
+    protected $process;
 
     /**
      * Create a new process result instance.
@@ -30,7 +30,7 @@ class ProcessResult implements ProcessResultContract
      *
      * @return string
      */
-    public function command(): string
+    public function command()
     {
         return $this->process->getCommandLine();
     }
@@ -40,7 +40,7 @@ class ProcessResult implements ProcessResultContract
      *
      * @return bool
      */
-    public function successful(): bool
+    public function successful()
     {
         return $this->process->isSuccessful();
     }
@@ -50,7 +50,7 @@ class ProcessResult implements ProcessResultContract
      *
      * @return bool
      */
-    public function failed(): bool
+    public function failed()
     {
         return ! $this->successful();
     }
@@ -60,7 +60,7 @@ class ProcessResult implements ProcessResultContract
      *
      * @return int|null
      */
-    public function exitCode(): ?int
+    public function exitCode()
     {
         return $this->process->getExitCode();
     }
@@ -70,7 +70,7 @@ class ProcessResult implements ProcessResultContract
      *
      * @return string
      */
-    public function output(): string
+    public function output()
     {
         return $this->process->getOutput();
     }
@@ -81,7 +81,7 @@ class ProcessResult implements ProcessResultContract
      * @param  string  $output
      * @return bool
      */
-    public function seeInOutput(string $output): bool
+    public function seeInOutput(string $output)
     {
         return str_contains($this->output(), $output);
     }
@@ -91,7 +91,7 @@ class ProcessResult implements ProcessResultContract
      *
      * @return string
      */
-    public function errorOutput(): string
+    public function errorOutput()
     {
         return $this->process->getErrorOutput();
     }
@@ -102,7 +102,7 @@ class ProcessResult implements ProcessResultContract
      * @param  string  $output
      * @return bool
      */
-    public function seeInErrorOutput(string $output): bool
+    public function seeInErrorOutput(string $output)
     {
         return str_contains($this->errorOutput(), $output);
     }
@@ -113,9 +113,9 @@ class ProcessResult implements ProcessResultContract
      * @param  callable|null  $callback
      * @return $this
      *
-     * @throws ProcessFailedException
+     * @throws \Fabricate\Process\Exceptions\ProcessFailedException
      */
-    public function throw(?callable $callback = null): static
+    public function throw(?callable $callback = null)
     {
         if ($this->successful()) {
             return $this;
@@ -139,7 +139,7 @@ class ProcessResult implements ProcessResultContract
      *
      * @throws \Throwable
      */
-    public function throwIf(bool $condition, ?callable $callback = null): static
+    public function throwIf(bool $condition, ?callable $callback = null)
     {
         if ($condition) {
             return $this->throw($callback);

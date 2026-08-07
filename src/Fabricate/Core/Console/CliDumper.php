@@ -17,40 +17,28 @@ class CliDumper extends BaseCliDumper
 
     /**
      * The base path of the application.
-     *
-     * @var string
      */
-    protected $basePath;
+    protected string $basePath;
 
     /**
      * The output instance.
-     *
-     * @var OutputInterface
      */
-    protected $output;
+    protected OutputInterface $output;
 
     /**
      * The compiled view path for the application.
-     *
-     * @var string
      */
-    protected $compiledViewPath;
+    protected string $compiledViewPath;
 
     /**
      * If the dumper is currently dumping.
-     *
-     * @var bool
      */
-    protected $dumping = false;
+    protected bool $dumping = false;
 
     /**
      * Create a new CLI dumper instance.
-     *
-     * @param  OutputInterface  $output
-     * @param  string  $basePath
-     * @param  string  $compiledViewPath
      */
-    public function __construct($output, $basePath, $compiledViewPath)
+    public function __construct(OutputInterface $output, string $basePath, string $compiledViewPath)
     {
         parent::__construct();
 
@@ -63,27 +51,23 @@ class CliDumper extends BaseCliDumper
 
     /**
      * Create a new CLI dumper instance and register it as the default dumper.
-     *
-     * @param  string  $basePath
-     * @param  string  $compiledViewPath
-     * @return void
      */
-    public static function register($basePath, $compiledViewPath): void
+    public static function register(string $basePath, string $compiledViewPath): void
     {
-        $cloner = tap(new VarCloner)->addCasters(ReflectionCaster::UNSET_CLOSURE_FILE_INFO);
+        $cloner = new VarCloner;
+        $cloner->addCasters(ReflectionCaster::UNSET_CLOSURE_FILE_INFO);
 
         $dumper = new static(new ConsoleOutput(), $basePath, $compiledViewPath);
 
-        VarDumper::setHandler(fn ($value) => $dumper->dumpWithSource($cloner->cloneVar($value)));
+        VarDumper::setHandler(static function (mixed $value) use ($dumper, $cloner): void {
+            $dumper->dumpWithSource($cloner->cloneVar($value));
+        });
     }
 
     /**
      * Dump a variable with its source file / line.
-     *
-     * @param Data $data
-     * @return void
      */
-    public function dumpWithSource(Data $data)
+    public function dumpWithSource(Data $data): void
     {
         if ($this->dumping) {
             $this->dump($data);
@@ -95,8 +79,11 @@ class CliDumper extends BaseCliDumper
 
         $output = (string) $this->dump($data, true);
         $lines = explode("\n", $output);
+        $lastLineKey = array_key_last($lines);
 
-        $lines[array_key_last($lines) - 1] .= $this->getDumpSourceContent();
+        if (! is_null($lastLineKey) && $lastLineKey > 0) {
+            $lines[$lastLineKey - 1] .= $this->getDumpSourceContent();
+        }
 
         $this->output->write(implode("\n", $lines));
 
@@ -105,10 +92,8 @@ class CliDumper extends BaseCliDumper
 
     /**
      * Get the dump's source console content.
-     *
-     * @return string
      */
-    protected function getDumpSourceContent()
+    protected function getDumpSourceContent(): string
     {
         if (is_null($dumpSource = $this->resolveDumpSource())) {
             return '';

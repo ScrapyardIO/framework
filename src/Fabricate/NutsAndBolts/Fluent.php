@@ -4,8 +4,8 @@ namespace Fabricate\NutsAndBolts;
 
 use ArrayAccess;
 use ArrayIterator;
-use Fabricate\Contracts\NutsAndBolts\Arrayable;
-use Fabricate\Contracts\NutsAndBolts\Jsonable;
+use Fabricate\NutsAndBolts\Contracts\Arrayable;
+use Fabricate\NutsAndBolts\Contracts\Jsonable;
 use Fabricate\NutsAndBolts\Concerns\Conditionable;
 use Fabricate\NutsAndBolts\Concerns\InteractsWithData;
 use Fabricate\NutsAndBolts\Concerns\Macroable;
@@ -17,7 +17,7 @@ use Traversable;
  * @template TKey of array-key
  * @template TValue
  *
- * @implements \Fabricate\Contracts\NutsAndBolts\Arrayable<TKey, TValue>
+ * @implements \Fabricate\NutsAndBolts\Contracts\Arrayable<TKey, TValue>
  * @implements \ArrayAccess<TKey, TValue>
  */
 class Fluent implements Arrayable, ArrayAccess, IteratorAggregate, Jsonable, JsonSerializable
@@ -198,7 +198,7 @@ class Fluent implements Arrayable, ArrayAccess, IteratorAggregate, Jsonable, Jso
      * @param  int  $options
      * @return string
      */
-    public function toJson($options = 0)
+    public function toJson(int $options = 0): string
     {
         return json_encode($this->jsonSerialize(), $options);
     }

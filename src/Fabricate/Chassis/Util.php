@@ -3,10 +3,10 @@
 namespace Fabricate\Chassis;
 
 use Closure;
-use Fabricate\Contracts\Chassis\ContextualAttribute;
 use ReflectionAttribute;
 use ReflectionNamedType;
 use ReflectionParameter;
+use Fabricate\Contracts\Chassis\ContextualAttribute;
 
 /**
  * @internal

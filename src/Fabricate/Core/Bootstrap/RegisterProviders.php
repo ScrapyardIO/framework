@@ -2,10 +2,10 @@
 
 namespace Fabricate\Core\Bootstrap;
 
-use Fabricate\Contracts\Chassis\BindingResolutionException;
-use Fabricate\Contracts\Chassis\CircularDependencyException;
+use Fabricate\Chassis\Exceptions\BindingResolutionException;
+use Fabricate\Chassis\Exceptions\CircularDependencyException;
 use Fabricate\Contracts\Core\Program;
-use Fabricate\NutsAndBolts\ServiceProvider;
+use Fabricate\Core\DefaultProviders;
 
 class RegisterProviders
 {
@@ -21,7 +21,7 @@ class RegisterProviders
      *
      * @var string|null
      */
-    protected static ?string $bootstrapProviderPath;
+    protected static ?string $bootstrapProviderPath = null;
 
     /**
      * Bootstrap the given application.
@@ -63,7 +63,7 @@ class RegisterProviders
         $program->make('config')->set(
             'machine.providers',
             array_merge(
-                $program->make('config')->get('machine.providers') ?? ServiceProvider::defaultProviders()->toArray(),
+                $program->make('config')->get('machine.providers') ?? DefaultProviders::make()->toArray(),
                 static::$merge,
                 array_values($packageProviders ?? []),
             ),

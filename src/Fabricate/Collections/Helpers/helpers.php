@@ -3,7 +3,7 @@
 
 use Fabricate\NutsAndBolts\Arr;
 use Fabricate\NutsAndBolts\Collection;
-use Fabricate\Contracts\NutsAndBolts\Arrayable;
+use Fabricate\NutsAndBolts\Contracts\Arrayable;
 
 if (! function_exists('collect')) {
     /**

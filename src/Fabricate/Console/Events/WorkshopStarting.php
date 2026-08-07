@@ -3,11 +3,12 @@
 namespace Fabricate\Console\Events;
 
 use Fabricate\Console\ConsoleProgram;
+use Fabricate\Console\WorkshopInstance;
+use Symfony\Component\Console\Application as SymfonyApplication;
 
 class WorkshopStarting
 {
     public function __construct(
-        public ConsoleProgram $workshop
-    ){}
-
+        public WorkshopInstance|ConsoleProgram|SymfonyApplication $workshop
+    ) {}
 }

@@ -3,7 +3,7 @@
 namespace Fabricate\Console\Prompts;
 
 use Closure;
-use Illuminate\Support\Collection;
+use Fabricate\NutsAndBolts\Collection;
 
 if (! function_exists('Fabricate\Console\Prompts\disabled_multiselect')) {
     /**

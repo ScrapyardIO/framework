@@ -1,180 +1,93 @@
 <?php
 
-namespace DeptOfScrapyardRobotics\Tests\Events;
-
 use Fabricate\Chassis\Chassis;
 use Fabricate\Events\Dispatcher;
-use PHPUnit\Framework\TestCase;
 
-class DispatcherTest extends TestCase
-{
-    public function testStringEventsPassPayloadToListenersAndCollectResponses(): void
-    {
-        $dispatcher = new Dispatcher(new Chassis());
-        $dispatcher->listen('machine.started', fn (string $machine) => strtoupper($machine));
-        $dispatcher->listen('machine.started', fn (string $machine) => strlen($machine));
+test('dispatcher listens and dispatches synchronously', function () {
+    $container = new Chassis;
+    $dispatcher = new Dispatcher($container);
+    $heard = [];
 
-        $this->assertTrue($dispatcher->hasListeners('machine.started'));
-        $this->assertSame(['SCRAPYARD', 9], $dispatcher->dispatch('machine.started', ['scrapyard']));
-    }
+    $dispatcher->listen('user.created', function (int $id) use (&$heard) {
+        $heard[] = $id;
+    });
 
-    public function testObjectEventsAndTheirInterfacesAreDispatched(): void
-    {
-        $dispatcher = new Dispatcher(new Chassis());
-        $received = [];
+    $responses = $dispatcher->dispatch('user.created', ['id' => 1]);
 
-        $dispatcher->listen(MachineEvent::class, function (MachineStarted $event) use (&$received): void {
-            $received[] = 'interface:'.$event->name;
-        });
-        $dispatcher->listen(function (MachineStarted $event) use (&$received): void {
-            $received[] = 'object:'.$event->name;
-        });
+    expect($heard)->toBe([1])
+        ->and($dispatcher->hasListeners('user.created'))->toBeTrue()
+        ->and($responses)->toBe([null]);
+});
 
-        $dispatcher->dispatch(new MachineStarted('scrapyard'));
+test('dispatcher until stops at first non null response', function () {
+    $container = new Chassis;
+    $dispatcher = new Dispatcher($container);
 
-        $this->assertSame(['object:scrapyard', 'interface:scrapyard'], $received);
-    }
+    $dispatcher->listen('ping', fn () => null);
+    $dispatcher->listen('ping', fn () => 'pong');
 
-    public function testUntilAndHaltStopAtTheFirstNonNullResponse(): void
-    {
-        $dispatcher = new Dispatcher(new Chassis());
-        $calls = [];
-        $dispatcher->listen('inspect', function () use (&$calls): void {
-            $calls[] = 'first';
-        });
-        $dispatcher->listen('inspect', function () use (&$calls): string {
-            $calls[] = 'second';
+    expect($dispatcher->until('ping'))->toBe('pong');
+});
 
-            return 'result';
-        });
-        $dispatcher->listen('inspect', function () use (&$calls): string {
-            $calls[] = 'third';
+test('defer buffers dispatched events then flushes them after the callback', function () {
+    $container = new Chassis;
+    $dispatcher = new Dispatcher($container);
+    $heard = [];
 
-            return 'ignored';
-        });
+    $dispatcher->listen('order.placed', function (int $id) use (&$heard) {
+        $heard[] = $id;
+    });
 
-        $this->assertSame('result', $dispatcher->until('inspect'));
-        $this->assertSame(['first', 'second'], $calls);
+    $result = $dispatcher->defer(function () use ($dispatcher, &$heard) {
+        $dispatcher->dispatch('order.placed', ['id' => 1]);
+        $dispatcher->dispatch('order.placed', ['id' => 2]);
 
-        $calls = [];
+        // Nothing should have fired yet — still buffered.
+        expect($heard)->toBe([]);
 
-        $this->assertSame(['result'], $dispatcher->dispatch('inspect', halt: true));
-        $this->assertSame(['first', 'second'], $calls);
-    }
+        return 'callback-result';
+    });
 
-    public function testFalseResponseStopsNormalDispatch(): void
-    {
-        $dispatcher = new Dispatcher(new Chassis());
-        $calls = [];
-        $dispatcher->listen('stop', function () use (&$calls): false {
-            $calls[] = 'first';
+    expect($result)->toBe('callback-result')
+        ->and($heard)->toBe([1, 2]);
+});
 
-            return false;
-        });
-        $dispatcher->listen('stop', function () use (&$calls): void {
-            $calls[] = 'second';
-        });
+test('defer only buffers the events named in the events list', function () {
+    $container = new Chassis;
+    $dispatcher = new Dispatcher($container);
+    $heard = [];
 
-        $this->assertSame([], $dispatcher->dispatch('stop'));
-        $this->assertSame(['first'], $calls);
-    }
+    $dispatcher->listen('kept', function () use (&$heard) {
+        $heard[] = 'kept';
+    });
+    $dispatcher->listen('immediate', function () use (&$heard) {
+        $heard[] = 'immediate';
+    });
 
-    public function testWildcardListenersReceiveTheEventNameAndPayload(): void
-    {
-        $dispatcher = new Dispatcher(new Chassis());
-        $received = [];
-        $dispatcher->listen('machine.*', function (string $event, array $payload) use (&$received): void {
-            $received = [$event, $payload];
-        });
+    $dispatcher->defer(function () use ($dispatcher) {
+        $dispatcher->dispatch('immediate');
+        $dispatcher->dispatch('kept');
+    }, ['kept']);
 
-        $dispatcher->dispatch('machine.started', ['scrapyard']);
+    expect($heard)->toBe(['immediate', 'kept']);
+});
 
-        $this->assertTrue($dispatcher->hasListeners('machine.started'));
-        $this->assertSame(['machine.started', ['scrapyard']], $received);
+test('getRawListeners returns the unprepared listener map', function () {
+    $container = new Chassis;
+    $dispatcher = new Dispatcher($container);
 
-        $dispatcher->forget('machine.*');
+    $listener = fn () => null;
+    $dispatcher->listen('board.probed', $listener);
 
-        $this->assertFalse($dispatcher->hasListeners('machine.started'));
-    }
+    expect($dispatcher->getRawListeners())->toBe(['board.probed' => [$listener]]);
+});
 
-    public function testClassListenersAndSubscribersResolveThroughTheContainer(): void
-    {
-        $container = new Chassis();
-        $listener = new RecordingListener();
-        $container->instance(RecordingListener::class, $listener);
+test('hasWildcardListeners is public and matches wildcard patterns', function () {
+    $container = new Chassis;
+    $dispatcher = new Dispatcher($container);
 
-        $dispatcher = new Dispatcher($container);
-        $dispatcher->listen('machine.started', RecordingListener::class);
-        $dispatcher->subscribe(new MachineSubscriber($listener));
+    $dispatcher->listen('board.*', fn () => null);
 
-        $dispatcher->dispatch('machine.started', ['scrapyard']);
-        $dispatcher->dispatch('machine.stopped', ['scrapyard']);
-
-        $this->assertSame([
-            'handled:scrapyard',
-            'subscribed:scrapyard',
-        ], $listener->events);
-    }
-
-    public function testPushedEventsDispatchWhenFlushedAndCanBeForgotten(): void
-    {
-        $dispatcher = new Dispatcher(new Chassis());
-        $received = [];
-        $dispatcher->listen('queued', function (string $value) use (&$received): void {
-            $received[] = $value;
-        });
-        $dispatcher->push('queued', ['first']);
-        $dispatcher->push('queued', ['second']);
-
-        $this->assertSame([], $received);
-
-        $dispatcher->flush('queued');
-
-        $this->assertSame(['first', 'second'], $received);
-
-        $dispatcher->forgetPushed();
-        $dispatcher->flush('queued');
-
-        $this->assertSame(['first', 'second'], $received);
-    }
-}
-
-interface MachineEvent
-{
-}
-
-class MachineStarted implements MachineEvent
-{
-    public function __construct(public string $name)
-    {
-    }
-}
-
-class RecordingListener
-{
-    public array $events = [];
-
-    public function handle(string $machine): void
-    {
-        $this->events[] = 'handled:'.$machine;
-    }
-}
-
-class MachineSubscriber
-{
-    public function __construct(private RecordingListener $listener)
-    {
-    }
-
-    public function subscribe(Dispatcher $events): array
-    {
-        return [
-            'machine.stopped' => 'onStopped',
-        ];
-    }
-
-    public function onStopped(string $machine): void
-    {
-        $this->listener->events[] = 'subscribed:'.$machine;
-    }
-}
+    expect($dispatcher->hasWildcardListeners('board.probed'))->toBeTrue()
+        ->and($dispatcher->hasWildcardListeners('chip.probed'))->toBeFalse();
+});

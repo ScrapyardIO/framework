@@ -2,10 +2,13 @@
 
 namespace Fabricate\Core\Concerns;
 
-
 use Fabricate\NutsAndBolts\Str;
 use Throwable;
 
+/**
+ * @property string $basePath
+ * @property string $compiledViewPath
+ */
 trait ResolvesDumpSource
 {
     /**
@@ -13,7 +16,7 @@ trait ResolvesDumpSource
      *
      * @var array<string, string>
      */
-    protected $editorHrefs = [
+    protected array $editorHrefs = [
         'antigravity' => 'antigravity://file/{file}:{line}',
         'atom' => 'atom://core/open/file?filename={file}&line={line}',
         'cursor' => 'cursor://file/{file}:{line}',
@@ -44,17 +47,20 @@ trait ResolvesDumpSource
      *
      * @var array<string, int>
      */
-    protected static $adjustableTraces = [
+    protected static array $adjustableTraces = [
         'symfony/var-dumper/Resources/functions/dump.php' => 1,
         'Illuminate/Collections/Traits/EnumeratesValues.php' => 4,
+        'Fabricate/Collections/Concerns/EnumeratesValues.php' => 4,
     ];
 
     /**
      * The source resolver.
      *
-     * @var (callable(): (array{0: string, 1: string, 2: int|null}|null))|null|false
+     * `false` disables source resolution; `null` uses the default backtrace.
+     *
+     * @var (callable(): (?array{0: string, 1: string, 2: int|null}))|null|false
      */
-    protected static $dumpSourceResolver;
+    protected static mixed $dumpSourceResolver = null;
 
     /**
      * Resolve the source of the dump call.
@@ -67,8 +73,11 @@ trait ResolvesDumpSource
             return null;
         }
 
-        if (static::$dumpSourceResolver) {
-            return call_user_func(static::$dumpSourceResolver);
+        if (! is_null(static::$dumpSourceResolver)) {
+            /** @var callable(): (?array{0: string, 1: string, 2: int|null}) $resolver */
+            $resolver = static::$dumpSourceResolver;
+
+            return $resolver();
         }
 
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 20);
@@ -103,7 +112,7 @@ trait ResolvesDumpSource
         $line = $trace[$sourceKey]['line'] ?? null;
 
         if (is_null($file) || is_null($line)) {
-            return  null;
+            return null;
         }
 
         $relativeFile = $file;
@@ -121,28 +130,32 @@ trait ResolvesDumpSource
     }
 
     /**
-     * Determine if the given file is a view compiled.
-     *
-     * @param  string  $file
-     * @return bool
+     * Determine if the given file is a compiled view.
      */
-    protected function isCompiledViewFile($file)
+    protected function isCompiledViewFile(string $file): bool
     {
+        if ($this->compiledViewPath === '') {
+            return false;
+        }
+
         return str_starts_with($file, $this->compiledViewPath) && str_ends_with($file, '.php');
     }
 
     /**
-     * Get the original view compiled file by the given compiled file.
-     *
-     * @param  string  $file
-     * @return string
+     * Get the original view file for the given compiled file.
      */
-    protected function getOriginalFileForCompiledView($file)
+    protected function getOriginalFileForCompiledView(string $file): string
     {
-        preg_match('/\/\*\*PATH\s(.*)\sENDPATH/', file_get_contents($file), $matches);
+        $contents = file_get_contents($file);
+
+        if ($contents === false) {
+            return $file;
+        }
+
+        preg_match('/\/\*\*PATH\s(.*)\sENDPATH/', $contents, $matches);
 
         if (isset($matches[1])) {
-            $file = $matches[1];
+            return $matches[1];
         }
 
         return $file;
@@ -150,20 +163,18 @@ trait ResolvesDumpSource
 
     /**
      * Resolve the source href, if possible.
-     *
-     * @param  string  $file
-     * @param  int|null  $line
-     * @return string|null
      */
-    protected function resolveSourceHref($file, $line): ?string
+    protected function resolveSourceHref(string $file, ?int $line): ?string
     {
+        $editor = null;
+
         try {
             $editor = config('app.editor');
         } catch (Throwable) {
-            // ..
+            // Config may not be bound yet during early bootstrap.
         }
 
-        if (! isset($editor)) {
+        if (is_null($editor)) {
             return null;
         }
 
@@ -171,15 +182,19 @@ trait ResolvesDumpSource
             ? $editor['href']
             : ($this->editorHrefs[$editor['name'] ?? $editor] ?? sprintf('%s://open?file={file}&line={line}', $editor['name'] ?? $editor));
 
-        $basePath = $editor['base_path'] ?? false;
+        if (! is_string($href)) {
+            return null;
+        }
 
-        if ($basePath !== false) {
+        $basePath = is_array($editor) ? ($editor['base_path'] ?? false) : false;
+
+        if (is_string($basePath)) {
             $file = Str::replaceStart($this->basePath, $basePath, $file);
         }
 
         return str_replace(
             ['{file}', '{line}'],
-            [$file, is_null($line) ? 1 : $line],
+            [$file, is_null($line) ? '1' : (string) $line],
             $href,
         );
     }
@@ -187,20 +202,17 @@ trait ResolvesDumpSource
     /**
      * Set the resolver that resolves the source of the dump call.
      *
-     * @param  (callable(): (array{0: string, 1: string, 2: int|null}|null))|null  $callable
-     * @return void
+     * @param  (callable(): (?array{0: string, 1: string, 2: int|null}))|null  $callable
      */
-    public static function resolveDumpSourceUsing($callable)
+    public static function resolveDumpSourceUsing(?callable $callable): void
     {
         static::$dumpSourceResolver = $callable;
     }
 
     /**
      * Don't include the location / file of the dump in dumps.
-     *
-     * @return void
      */
-    public static function dontIncludeSource()
+    public static function dontIncludeSource(): void
     {
         static::$dumpSourceResolver = false;
     }

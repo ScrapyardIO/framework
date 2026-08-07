@@ -1,6 +1,6 @@
 <?php
 
-namespace DeptOfScrapyardRobotics\Tests\Redis;
+namespace Tests\Redis;
 
 use Exception;
 use Fabricate\Contracts\Events\Dispatcher;

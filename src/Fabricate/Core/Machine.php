@@ -5,37 +5,38 @@ namespace Fabricate\Core;
 use Closure;
 use Composer\Autoload\ClassLoader;
 use Fabricate\Chassis\Chassis;
-use Fabricate\Contracts\Chassis\BindingResolutionException;
-use Fabricate\Contracts\Chassis\CircularDependencyException;
-use Fabricate\Contracts\Chassis\WireframeServiceContainer;
-use Fabricate\Contracts\Circuits\CircuitFactory;
-use Fabricate\Contracts\Console\ConsoleKernel as ConsoleKernelInterface;
+use Fabricate\Chassis\Contracts\WireframeServiceContainer;
+use Fabricate\Console\WorkshopInstance;
+use Fabricate\Contracts\Chassis\ChassisException;
 use Fabricate\Contracts\Core\CachesConfiguration;
-use Fabricate\Contracts\Core\Program as ProgramContract;
-use Fabricate\Contracts\Filesystem\FileNotFoundException;
+use Fabricate\Contracts\Core\Program;
+use Fabricate\Contracts\Core\ScrapyardIOException;
 use Fabricate\Core\Setup\AssemblyLine;
-use Fabricate\Core\Support\Providers\EventServiceProvider;
 use Fabricate\Events\Dispatcher as EventDispatcher;
 use Fabricate\Filesystem\Filesystem;
+use Fabricate\Log\LogManager;
 use Fabricate\NutsAndBolts\Arr;
 use Fabricate\NutsAndBolts\Collection;
 use Fabricate\NutsAndBolts\Env;
 use Fabricate\NutsAndBolts\ServiceProvider;
 use Fabricate\NutsAndBolts\Str;
-use Laravel\Prompts\Output\ConsoleOutput;
+use Psr\Container\ContainerInterface;
+use Psr\Log\LoggerInterface;
 use ReflectionException;
-use RuntimeException;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\ConsoleOutput;
 use function Fabricate\Filesystem\Helpers\join_paths;
+use Fabricate\Contracts\Console\CLIKernel as ConsoleKernelInterface;
+use Fabricate\Contracts\Sketches\SketchKernel as SketchKernelInterface;
 
-class Machine extends Chassis implements ProgramContract, CachesConfiguration
+class Machine extends Chassis implements Program, CachesConfiguration
 {
     /**
      * The ScrapyardIO framework version.
      *
      * @var string
      */
-    const string VERSION = '0.6.0';
+    const string VERSION = '0.7.0';
 
     /**
      * The array of registered callbacks.
@@ -43,6 +44,84 @@ class Machine extends Chassis implements ProgramContract, CachesConfiguration
      * @var callable[]
      */
     protected array $registeredCallbacks = [];
+
+    /**
+     * The custom bootstrap path defined by the developer.
+     *
+     * @var string
+     */
+    protected string $bootstrapPath = "";
+
+    /**
+     * The custom application path defined by the developer.
+     *
+     * @var string
+     */
+    protected string $appPath = "";
+
+    /**
+     * The custom configuration path defined by the developer.
+     *
+     * @var string
+     */
+    protected string $configPath = "";
+
+    /**
+     * The custom database path defined by the developer.
+     *
+     * @var string
+     */
+    protected string $databasePath = "";
+
+    /**
+     * The custom language path defined by the developer.
+     *
+     * @var string
+     */
+    protected string $langPath = "";
+
+    /**
+     * The custom storage path defined by the developer.
+     *
+     * @var string
+     */
+    protected string $storagePath = "";
+
+    /**
+     * The custom environment path defined by the developer.
+     *
+     * @var string
+     */
+    protected string $environmentPath = "";
+
+    /**
+     * The environment file to load during bootstrapping.
+     *
+     * @var string
+     */
+    protected string $environmentFile = '.env';
+
+    /**
+     * Indicates if the application is running in the console.
+     *
+     * @var bool|null
+     */
+    protected ?bool $isRunningInConsole = null;
+    protected ?bool $isRunningInProduction = null;
+
+    /**
+     * The application namespace.
+     *
+     * @var ?string
+     */
+    protected ?string $namespace = null;
+
+    /**
+     * The prefixes of absolute cache paths for use during normalization.
+     *
+     * @var string[]
+     */
+    protected array $absoluteCachePathPrefixes = ['/', '\\'];
 
     /**
      * Indicates if the application has been bootstrapped before.
@@ -100,94 +179,15 @@ class Machine extends Chassis implements ProgramContract, CachesConfiguration
      */
     protected array $deferredServices = [];
 
-
-    /**
-     * The custom bootstrap path defined by the developer.
-     *
-     * @var string
-     */
-    protected string $bootstrapPath = "";
-
-    /**
-     * The custom application path defined by the developer.
-     *
-     * @var string
-     */
-    protected string $appPath = "";
-
-    /**
-     * The custom configuration path defined by the developer.
-     *
-     * @var string
-     */
-    protected string $configPath = "";
-
-    /**
-     * The custom database path defined by the developer.
-     *
-     * @var string
-     */
-    protected string $databasePath = "";
-
-    /**
-     * The custom storage path defined by the developer.
-     *
-     * @var string
-     */
-    protected string $storagePath = "";
-
-    /**
-     * The custom environment path defined by the developer.
-     *
-     * @var string
-     */
-    protected string $environmentPath = "";
-
-    /**
-     * The environment file to load during bootstrapping.
-     *
-     * @var string
-     */
-    protected string $environmentFile = '.env';
-
-    /**
-     * Indicates if the application is running in the console.
-     *
-     * @var bool|null
-     */
-    protected ?bool $isRunningInConsole = null;
-
-    /**
-     * The application namespace.
-     *
-     * @var ?string
-     */
-    protected ?string $namespace = null;
-
-    /**
-     * Indicates if the framework's base configuration should be merged.
-     *
-     * @var bool
-     */
-    protected bool $mergeFrameworkConfiguration = true;
-
-    /**
-     * The prefixes of absolute cache paths for use during normalization.
-     *
-     * @var string[]
-     */
-    protected array $absoluteCachePathPrefixes = ['/', '\\'];
-
-
     /**
      * Create a new Fabricate application instance.
      *
      * @param string|null $basePath
-     * @throws ReflectionException|CircularDependencyException|BindingResolutionException
+     * @throws ReflectionException|ChassisException
      */
     public function __construct(
         protected ?string $basePath = null
-    ){
+    ) {
         if ($basePath) {
             $this->setBasePath($basePath);
         }
@@ -198,293 +198,46 @@ class Machine extends Chassis implements ProgramContract, CachesConfiguration
     }
 
     /**
-     * @throws ReflectionException
-     * @throws CircularDependencyException
-     * @throws BindingResolutionException
+     * Get the version number of the application.
+     *
+     * @return string
      */
-    protected function registerCoreContainerAliases(): void
+    public function version(): string
     {
-        $this->register(new EventServiceProvider($this));
-        //$this->register(new LogServiceProvider($this));
-        //$this->register(new ContextServiceProvider($this));
+        return static::VERSION;
     }
 
-    protected function registerBaseServiceProviders(): void
+    /**
+     * @throws ChassisException
+     * @throws ReflectionException
+     */
+    public function configurationIsCached(): bool
     {
-        $providers = [
-            'app' => [self::class, \Fabricate\Contracts\Chassis\WireframeServiceContainer::class, \Fabricate\Contracts\Core\Program::class, \Psr\Container\ContainerInterface::class],
-            //'auth' => [\Fabricate\Auth\AuthManager::class, \Fabricate\Contracts\Auth\Factory::class],
-            //'auth.driver' => [\Fabricate\Contracts\Auth\Guard::class],
-            //'auth.password' => [\Fabricate\Auth\Passwords\PasswordBrokerManager::class, \Fabricate\Contracts\Auth\PasswordBrokerFactory::class],
-            //'auth.password.broker' => [\Fabricate\Auth\Passwords\PasswordBroker::class, \Fabricate\Contracts\Auth\PasswordBroker::class],
-            'cache' => [\Fabricate\Cache\CacheManager::class, \Fabricate\Contracts\Cache\CacheFactory::class],
-            'cache.store' => [\Fabricate\Cache\CacheRepository::class, \Fabricate\Contracts\Cache\Repository::class, \Psr\SimpleCache\CacheInterface::class],
-            //'cache.psr6' => [\Symfony\Component\Cache\Adapter\Psr16Adapter::class, \Symfony\Component\Cache\Adapter\AdapterInterface::class, \Psr\Cache\CacheItemPoolInterface::class],
-            'circuit' => [\Fabricate\Contracts\Circuits\CircuitRegistry::class, \Fabricate\Circuits\CircuitRegistry::class],
-            'config' => [\Fabricate\Config\Repository::class, \Fabricate\Contracts\Config\Repository::class],
-            //'db' => [\Fabricate\Database\DatabaseManager::class, \Fabricate\Database\ConnectionResolverInterface::class],
-            //'db.connection' => [\Fabricate\Database\Connection::class, \Fabricate\Database\ConnectionInterface::class],
-            //'db.schema' => [\Fabricate\Database\Schema\Builder::class],
-            'display' => [\Fabricate\Contracts\Displays\DisplayRegistry::class, \Fabricate\Displays\DisplayRegistry::class],
-            //'encrypter' => [\Fabricate\Encryption\Encrypter::class, \Fabricate\Contracts\Encryption\Encrypter::class, \Fabricate\Contracts\Encryption\StringEncrypter::class],
-            'events' => [\Fabricate\Events\Dispatcher::class, \Fabricate\Contracts\Events\Dispatcher::class],
-            'files' => [\Fabricate\Filesystem\Filesystem::class],
-            'filesystem' => [\Fabricate\Filesystem\FilesystemManager::class, \Fabricate\Contracts\Filesystem\FilesystemFactory::class],
-            'filesystem.disk' => [\Fabricate\Contracts\Filesystem\Filesystem::class],
-            'filesystem.cloud' => [\Fabricate\Contracts\Filesystem\Cloud::class],
-            'framebuffer' => [\Fabricate\Framebuffers\FramebufferManager::class, \Fabricate\Contracts\Framebuffers\BufferFactory::class],
-            'gfx' => [\Fabricate\Rendering\RenderManager::class, \Fabricate\Contracts\Rendering\RenderFactory::class],
-            'visual' => [\Fabricate\Core\VisualManager::class],
-            //'hash' => [\Fabricate\Hashing\HashManager::class],
-            //'hash.driver' => [\Fabricate\Contracts\Hashing\Hasher::class],
-            'log' => [\Fabricate\Log\LogManager::class, \Psr\Log\LoggerInterface::class],
-            //'mail.manager' => [\Fabricate\Mail\MailManager::class, \Fabricate\Contracts\Mail\Factory::class],
-            //'mailer' => [\Fabricate\Mail\Mailer::class, \Fabricate\Contracts\Mail\Mailer::class, \Fabricate\Contracts\Mail\MailQueue::class],
-            'queue' => [\Fabricate\Queue\QueueManager::class, \Fabricate\Contracts\Queue\Factory::class, \Fabricate\Contracts\Queue\Monitor::class],
-            'queue.connection' => [\Fabricate\Contracts\Queue\Queue::class],
-            'queue.failer' => [\Fabricate\Queue\Failed\FailedJobProviderInterface::class],
-            'redis' => [\Fabricate\Redis\RedisManager::class, \Fabricate\Contracts\Redis\Factory::class],
-            'redis.connection' => [\Fabricate\Redis\Connections\Connection::class, \Fabricate\Contracts\Redis\Connection::class],
-            //'session' => [\Fabricate\Session\SessionManager::class],
-            //'session.store' => [\Fabricate\Session\Store::class, \Fabricate\Contracts\Session\Session::class],
-            'actuator' => [\Fabricate\Contracts\Actuation\ActuatorRegistry::class, \Fabricate\Actuation\ActuatorRegistry::class],
-            'sensor' => [\Fabricate\Contracts\Sensors\SensorRegistry::class, \Fabricate\Sensors\SensorRegistry::class],
-            'sketch' => [\Fabricate\Contracts\Sketches\SketchRegistry::class, \Fabricate\Sketches\SketchRegistry::class],
-            'sketch.runner' => [\Fabricate\Sketches\SketchRunner::class],
-            //'url' => [\Fabricate\Routing\UrlGenerator::class, \Fabricate\Contracts\Routing\UrlGenerator::class],
-            //'validator' => [\Fabricate\Validation\Factory::class, \Fabricate\Contracts\Validation\Factory::class],
-            //'window' => [\Fabricate\Displays\WindowFactoryManager::class, \Fabricate\Contracts\Displays\WindowFactory::class],
-        ];
-        foreach ($providers as $key => $aliases) {
-            foreach ($aliases as $alias) {
-                $this->alias($key, $alias);
-            }
+        if ($this->bound('config_loaded_from_cache')) {
+            return (bool) $this->make('config_loaded_from_cache');
         }
+
+        return $this->instance('config_loaded_from_cache', is_file($this->getCachedConfigPath()));
     }
 
-    /**
-     * Register the basic bindings into the container.
-     *
-     * @return void
-     * @throws ReflectionException|BindingResolutionException|CircularDependencyException
-     */
-    protected function registerBaseBindings(): void
+    public function getCachedConfigPath(): string
     {
-        static::setInstance($this);
-
-        $this->instance('app', $this);
-
-        $this->instance(Chassis::class, $this);
-
-        $this->singleton('events', fn (Machine $app): EventDispatcher => new EventDispatcher($app));
-        $this->singleton('files', fn (): Filesystem => new Filesystem);
-        //$this->singleton('filesystem', fn (Machine $app): FilesystemManager => new FilesystemManager($app));
-        //$this->singleton('filesystem.disk', fn (Machine $app) => $app['filesystem']->disk());
-        //$this->singleton('filesystem.cloud', fn (Machine $app) => $app->bound('config')
-        //    ? $app['filesystem']->cloud()
-        //    : $app['filesystem']->disk()
-        //);
-        //$this->singleton('queue', fn (Machine $app): QueueManager => new QueueManager($app));
-        //$this->singleton('queue.connection', fn (Machine $app) => $app['queue']->connection());
-        //$this->singleton('queue.failer', fn (): NullFailedJobProvider => new NullFailedJobProvider());
-        //$this->singleton('bus', fn (Machine $app): BusDispatcher => new BusDispatcher(
-        //    $app,
-        //    fn ($connection = null) => $app['queue']->connection($connection)
-        //));
-
-        $this->singleton(PackageManifest::class, fn () => new PackageManifest(
-            new Filesystem, $this->basePath(), $this->getCachedPackagesPath()
-        ));
+        return $this->normalizeCachePath('APP_CONFIG_CACHE', 'cache/config.php');
     }
 
-    /**
-     * Begin configuring a new ScrapyardIO application instance.
-     *
-     * @param string|null $basePath
-     * @return AssemblyLine
-     * @throws ReflectionException|BindingResolutionException|CircularDependencyException
-     */
-    public static function configure(?string $basePath = null): AssemblyLine
+    public function getCachedServicesPath(): string
     {
-        $basePath = match (true) {
-            is_string($basePath) => $basePath,
-            default => static::inferBasePath(),
-        };
-
-        return new AssemblyLine(new static($basePath))
-            ->withKernels()
-            ->withEvents()
-            ->withCommands()
-            ->withProviders()
-            ->withExceptions();
+        return $this->normalizeCachePath('APP_SERVICES_CACHE', 'cache/services.php');
     }
 
     /**
-     * Handle the incoming Artisan command.
-     *
-     * @param InputInterface $input
-     * @return int
-     * @throws BindingResolutionException|CircularDependencyException
-     * @throws ReflectionException
-     */
-    public function handleCommand(InputInterface $input): int
-    {
-        $kernel = $this->make(ConsoleKernelInterface::class);
-
-        $status = $kernel->handle(
-            $input,
-            new ConsoleOutput
-        );
-
-        $kernel->terminate($input, $status);
-
-        return $status;
-    }
-
-    /**
-     * Set the callback which determines the current container environment.
-     *
-     * @param (callable(array<int, string>|string): bool|string)|null $callback
-     * @return void
-     */
-    public function resolveEnvironmentUsing(callable|string|null $callback): void
-    {
-        $this->environmentResolver = $callback;
-    }
-
-    /**
-     * Add an array of services to the application's deferred services.
-     *
-     * @param  array  $services
-     * @return void
-     */
-    public function addDeferredServices(array $services): void
-    {
-        $this->deferredServices = array_merge($this->deferredServices, $services);
-    }
-
-
-    /**
-     * Register a new registered listener.
-     *
-     * @param callable $callback
-     * @return void
-     */
-    public function registered(callable $callback): void
-    {
-        $this->registeredCallbacks[] = $callback;
-    }
-
-    /**
-     * Get the path to the service provider list in the bootstrap directory.
+     * Get the path to the cached packages.php file.
      *
      * @return string
      */
-    public function getBootstrapProvidersPath(): string
+    public function getCachedPackagesPath(): string
     {
-        return $this->bootstrapPath('providers.php');
-    }
-
-    /**
-     * Determine if the application is running with debug mode enabled.
-     *
-     * @return bool
-     */
-    public function hasDebugModeEnabled(): bool
-    {
-        return (bool) $this['config']->get('app.debug');
-    }
-
-    /**
-     * Set the storage directory.
-     *
-     * @param  string  $path
-     * @return $this
-     * @throws BindingResolutionException|CircularDependencyException|ReflectionException
-     */
-    public function useStoragePath(string $path): static
-    {
-        $this->storagePath = $path;
-
-        $this->instance('path.storage', $path);
-
-        return $this;
-    }
-
-    /**
-     * Set the base path for the application.
-     *
-     * @param string $basePath
-     * @return $this
-     * @throws ReflectionException|CircularDependencyException|BindingResolutionException
-     */
-    public function setBasePath(string $basePath): static
-    {
-        $this->basePath = rtrim($basePath, '\/');
-
-        $this->bindPathsInContainer();
-
-        return $this;
-    }
-
-    /**
-     * Determine if the application is in the local environment.
-     *
-     * @return bool
-     */
-    public function isLocal(): bool
-    {
-        return $this['env'] === 'local';
-    }
-
-    /**
-     * Determine if the application is in the production environment.
-     *
-     * @return bool
-     */
-    public function isProduction(): bool
-    {
-        return $this['env'] === 'production';
-    }
-
-
-    /**
-     * Bind every application path into the chassis.
-     *
-     * @return void
-     * @throws ReflectionException|CircularDependencyException|BindingResolutionException
-     */
-    protected function bindPathsInContainer(): void
-    {
-        $this->instance('path', $this->path());
-        $this->instance('path.base', $this->basePath());
-        $this->instance('path.config', $this->configPath());
-        $this->instance('path.database', $this->databasePath());
-        $this->instance('path.storage', $this->storagePath());
-
-        $this->useBootstrapPath(value(function () {
-            return is_dir($directory = $this->basePath('.scrapyard-io'))
-                ? $directory
-                : $this->basePath('bootstrap');
-        }));
-
-        /*
-        $this->useLangPath(value(function () {
-            return is_dir($directory = $this->resourcePath('lang'))
-                ? $directory
-                : $this->basePath('lang');
-        }));*/
-    }
-
-    /**
-     * Get the path to the application "app" directory.
-     *
-     * @param string $path
-     * @return string
-     */
-    public function path(string $path = ''): string
-    {
-        return $this->joinPaths($this->appPath ?: $this->basePath('app'), $path);
+        return $this->normalizeCachePath('APP_PACKAGES_CACHE', 'cache/packages.php');
     }
 
     /**
@@ -509,6 +262,41 @@ class Machine extends Chassis implements ProgramContract, CachesConfiguration
         return $this->joinPaths($this->bootstrapPath, $path);
     }
 
+    /**
+     * Get the path to the service provider list in the bootstrap directory.
+     */
+    public function getBootstrapProvidersPath(): string
+    {
+        return $this->bootstrapPath('providers.php');
+    }
+
+    /**
+     * Set the base path for the application.
+     *
+     * @param string $basePath
+     * @return $this
+     * @throws ReflectionException|ChassisException
+     */
+    public function setBasePath(string $basePath): static
+    {
+        $this->basePath = rtrim($basePath, '\/');
+
+        $this->bindPathsInContainer();
+
+        return $this;
+    }
+
+    /**
+     * Get the path to the application "app" directory.
+     *
+     * @param string $path
+     * @return string
+     */
+    public function path(string $path = ''): string
+    {
+        return $this->joinPaths($this->appPath ?: $this->basePath('app'), $path);
+    }
+
     public function configPath(string $path = ''): string
     {
         return $this->joinPaths($this->configPath ?: $this->basePath('config'), $path);
@@ -517,6 +305,20 @@ class Machine extends Chassis implements ProgramContract, CachesConfiguration
     public function databasePath(string $path = ''): string
     {
         return $this->joinPaths($this->databasePath ?: $this->basePath('database'), $path);
+    }
+
+    public function langPath(string $path = ''): string
+    {
+        return $this->joinPaths($this->langPath ?: $this->path('lang'), $path);
+    }
+
+    public function useLangPath(string $path): static
+    {
+        $this->langPath = $path;
+
+        $this->instance('path.lang', $path);
+
+        return $this;
     }
 
     public function storagePath(string $path = ''): string
@@ -533,6 +335,67 @@ class Machine extends Chassis implements ProgramContract, CachesConfiguration
     }
 
     /**
+     * Set the bootstrap file directory.
+     *
+     * @param string $path
+     * @return $this
+     * @throws ChassisException|ReflectionException
+     */
+    public function useBootstrapPath(string $path): static
+    {
+        $this->bootstrapPath = $path;
+
+        $this->instance('path.bootstrap', $path);
+
+        return $this;
+    }
+
+    /**
+     * Set the storage directory.
+     */
+    public function useStoragePath(string $path): static
+    {
+        $this->storagePath = $path;
+
+        $this->instance('path.storage', $path);
+
+        return $this;
+    }
+
+    protected function normalizeCachePath($key, $default)
+    {
+        if (is_null($env = Env::get($key))) {
+            return $this->bootstrapPath($default);
+        }
+
+        return Str::startsWith($env, $this->absoluteCachePathPrefixes)
+            ? $env
+            : $this->basePath($env);
+    }
+
+    /**
+     * Bind every application path into the chassis.
+     *
+     * @return void
+     * @throws ReflectionException|ChassisException
+     */
+    protected function bindPathsInContainer(): void
+    {
+        $this->instance('path', $this->path());
+        $this->instance('path.base', $this->basePath());
+        $this->instance('path.config', $this->configPath());
+        $this->instance('path.database', $this->databasePath());
+        $this->instance('path.lang', $this->langPath());
+        $this->instance('path.storage', $this->storagePath());
+
+        $this->useBootstrapPath(value(function () {
+            return is_dir($directory = $this->basePath('.scrapyard-io'))
+                ? $directory
+                : $this->basePath('bootstrap');
+        }));
+    }
+
+    /**
      * Register an existing instance as shared in the container.
      *
      * @template TInstance of mixed
@@ -540,7 +403,7 @@ class Machine extends Chassis implements ProgramContract, CachesConfiguration
      * @param  string  $abstract
      * @param  TInstance  $instance
      * @return TInstance
-     * @throws BindingResolutionException|CircularDependencyException
+     * @throws ChassisException|ReflectionException
      */
     public function instance($abstract, $instance): mixed
     {
@@ -562,181 +425,105 @@ class Machine extends Chassis implements ProgramContract, CachesConfiguration
         return $instance;
     }
 
-    /**
-     * Set the bootstrap file directory.
-     *
-     * @param string $path
-     * @return $this
-     * @throws BindingResolutionException|CircularDependencyException
-     */
-    public function useBootstrapPath(string $path): static
+    public function cliMachine(): string
     {
-        $this->bootstrapPath = $path;
-
-        $this->instance('path.bootstrap', $path);
-
-        return $this;
+        return WorkshopInstance::class;
     }
 
     /**
-     * Determine if the given abstract type has been bound.
-     *
-     * @param  string  $abstract
-     * @return bool
-     */
-    public function bound(string $abstract): bool
-    {
-        return $this->isDeferredService($abstract) || parent::bound($abstract);
-    }
-
-    /**
-     * Resolve the given type from the container, loading deferred providers first.
-     *
-     * @template TClass of object
-     *
-     * @param  string|class-string<TClass>  $abstract
-     * @return ($abstract is class-string<TClass> ? TClass : mixed)
-     *
-     * @throws BindingResolutionException
-     * @throws CircularDependencyException
      * @throws ReflectionException
      */
-    public function make(string $abstract, array $parameters = []): mixed
+    protected function registerBaseBindings(): void
     {
-        $this->loadDeferredProviderIfNeeded($abstract = $this->getAlias($abstract));
+        static::setInstance($this);
 
-        return parent::make($abstract, $parameters);
+        $this->instance('app', $this);
+
+        $this->instance(Chassis::class, $this);
+
+        $this->singleton('events', fn (Machine $app): EventDispatcher => new EventDispatcher($app));
+        // Early bind for HandleExceptions (runs before RegisterProviders).
+        $this->singleton('log', fn (Machine $app): LogManager => new LogManager($app));
+        //$this->singleton('files', fn (): Filesystem => new Filesystem);
+        //$this->singleton('filesystem', fn (Machine $app): FilesystemManager => new FilesystemManager($app));
+        //$this->singleton('filesystem.disk', fn (Machine $app) => $app['filesystem']->disk());
+        //$this->singleton('filesystem.cloud', fn (Machine $app) => $app->bound('config')
+        //    ? $app['filesystem']->cloud()
+        //    : $app['filesystem']->disk()
+        //);
+        //$this->singleton('queue', fn (Machine $app): QueueManager => new QueueManager($app));
+        //$this->singleton('queue.connection', fn (Machine $app) => $app['queue']->connection());
+        //$this->singleton('queue.failer', fn (): NullFailedJobProvider => new NullFailedJobProvider());
+        //$this->singleton('bus', fn (Machine $app): BusDispatcher => new BusDispatcher(
+        //    $app,
+        //    fn ($connection = null) => $app['queue']->connection($connection)
+        //));
+
+        $this->singleton(PackageManifest::class, fn () => new PackageManifest(
+            new Filesystem, $this->basePath(), $this->getCachedPackagesPath()
+        ));
     }
 
-    /**
-     * Resolve the given type from the container, loading deferred providers first.
-     *
-     * @template TClass of object
-     *
-     * @param  callable|string|class-string<TClass>  $abstract
-     * @param  array  $parameters
-     * @param  bool  $raiseEvents
-     * @return ($abstract is class-string<TClass> ? TClass : mixed)
-     *
-     * @throws BindingResolutionException
-     * @throws CircularDependencyException
-     * @throws ReflectionException
-     */
-    protected function resolve(callable|string $abstract, array $parameters = [], bool $raiseEvents = true): mixed
+    protected function registerBaseServiceProviders(): void
     {
-        $this->loadDeferredProviderIfNeeded($abstract = $this->getAlias($abstract));
+        $providers = [
+            'app' => [self::class, WireframeServiceContainer::class, Program::class, ContainerInterface::class],
+            'events' => [\Fabricate\Events\Dispatcher::class, \Fabricate\Contracts\Events\Dispatcher::class],
+            'log' => [LogManager::class, LoggerInterface::class],
+            'files' => [\Fabricate\Filesystem\Filesystem::class],
+            'filesystem' => [\Fabricate\Filesystem\FilesystemManager::class, \Fabricate\Contracts\Filesystem\FilesystemFactory::class],
+            'filesystem.disk' => [\Fabricate\Contracts\Filesystem\Filesystem::class],
+            'filesystem.cloud' => [\Fabricate\Contracts\Filesystem\Cloud::class],
+            'config' => [\Fabricate\Config\Repository::class, \Fabricate\Contracts\Config\Repository::class],
+            'cache' => [\Fabricate\Cache\CacheManager::class, \Fabricate\Contracts\Cache\CacheFactory::class, \Fabricate\Contracts\Cache\Factory::class],
+            'cache.store' => [\Fabricate\Cache\CacheRepository::class, \Fabricate\Contracts\Cache\Repository::class, \Psr\SimpleCache\CacheInterface::class],
+            'db' => [\Fabricate\Database\DatabaseManager::class, \Fabricate\Database\ConnectionResolverInterface::class],
+            'db.connection' => [\Fabricate\Database\Connection::class],
+            'db.schema' => [\Fabricate\Database\Schema\Builder::class],
+            'encrypter' => [
+                \Fabricate\Encryption\Encrypter::class,
+                \Fabricate\Contracts\Encryption\Encrypter::class,
+                \Fabricate\Contracts\Encryption\StringEncrypter::class,
+            ],
+            'hash' => [
+                \Fabricate\Hashing\HashManager::class,
+                \Fabricate\Contracts\Hashing\Hasher::class,
+            ],
+            'http' => [\Fabricate\Http\Client\Factory::class],
+            'redis' => [\Fabricate\Redis\RedisManager::class, \Fabricate\Contracts\Redis\Factory::class],
+            'redis.connection' => [\Fabricate\Redis\Connections\Connection::class, \Fabricate\Contracts\Redis\Connection::class],
+            'process' => [\Fabricate\Process\Factory::class],
+            'pipeline' => [\Fabricate\Pipeline\Pipeline::class, \Fabricate\Contracts\Pipeline\Pipeline::class],
+            'bus' => [
+                \Fabricate\Bus\Dispatcher::class,
+                \Fabricate\Contracts\Bus\Dispatcher::class,
+                \Fabricate\Contracts\Bus\QueueingDispatcher::class,
+            ],
+            'queue' => [
+                \Fabricate\Queue\QueueManager::class,
+                \Fabricate\Contracts\Queue\Factory::class,
+                \Fabricate\Contracts\Queue\QueueFactory::class,
+            ],
+            'queue.connection' => [\Fabricate\Contracts\Queue\Queue::class],
+        ];
 
-        return parent::resolve($abstract, $parameters, $raiseEvents);
-    }
-
-    /**
-     * Load the deferred provider if the given type is a deferred service and the instance has not been loaded.
-     *
-     * @param  string  $abstract
-     * @return void
-     */
-    protected function loadDeferredProviderIfNeeded(string $abstract): void
-    {
-        if ($this->isDeferredService($abstract) && ! isset($this->instances[$abstract])) {
-            $this->loadDeferredProvider($abstract);
+        foreach ($providers as $key => $aliases) {
+            foreach ($aliases as $alias) {
+                $this->alias($key, $alias);
+            }
         }
     }
 
-    /**
-     * Determine if the given service is a deferred service.
-     *
-     * @param string $service
-     * @return bool
-     */
-    public function isDeferredService(string $service): bool
+    protected function registerCoreContainerAliases(): void
     {
-        return isset($this->deferredServices[$service]);
+        // EventServiceProvider is registered via AssemblyLine::withEvents() on booting — do not double-register here.
+        // LogServiceProvider is in DefaultProviders (singletonIf; Machine already binds `log` early).
+        //$this->register(new ContextServiceProvider($this));
     }
 
-    public function booting(callable $callback): void
+    public function hasDebugModeEnabled(): bool
     {
-        $this->bootingCallbacks[] = $callback;
-    }
-
-    public function booted(callable $callback): void
-    {
-        $this->bootedCallbacks[] = $callback;
-
-        if ($this->isBooted()) {
-            $callback($this);
-        }
-    }
-
-    /**
-     * Infer the application's base directory from the environment.
-     *
-     * @return string
-     */
-    public static function inferBasePath(): string
-    {
-        return match (true) {
-            isset($_ENV['APP_BASE_PATH']) => $_ENV['APP_BASE_PATH'],
-            isset($_SERVER['APP_BASE_PATH']) => $_SERVER['APP_BASE_PATH'],
-            default => dirname(array_values(array_filter(
-                array_keys(ClassLoader::getRegisteredLoaders()),
-                fn ($path) => ! str_starts_with($path, 'phar://'),
-            ))[0]),
-        };
-    }
-
-    /**
-     * @throws BindingResolutionException
-     * @throws ReflectionException
-     * @throws CircularDependencyException
-     */
-    public function configurationIsCached(): bool
-    {
-        if ($this->bound('config_loaded_from_cache')) {
-            return (bool) $this->make('config_loaded_from_cache');
-        }
-
-        return $this->instance('config_loaded_from_cache', is_file($this->getCachedConfigPath()));
-    }
-
-    public function getCachedConfigPath(): string
-    {
-        return $this->normalizeCachePath('APP_CONFIG_CACHE', 'cache/config.php');
-    }
-
-    protected function normalizeCachePath($key, $default)
-    {
-        if (is_null($env = Env::get($key))) {
-            return $this->bootstrapPath($default);
-        }
-
-        return Str::startsWith($env, $this->absoluteCachePathPrefixes)
-            ? $env
-            : $this->basePath($env);
-    }
-
-    public function getCachedServicesPath(): string
-    {
-        return $this->normalizeCachePath('APP_SERVICES_CACHE', 'cache/services.php');
-    }
-
-    /**
-     * Get the path to the cached packages.php file.
-     *
-     * @return string
-     */
-    public function getCachedPackagesPath(): string
-    {
-        return $this->normalizeCachePath('APP_PACKAGES_CACHE', 'cache/packages.php');
-    }
-
-    /**
-     * Get the version number of the application.
-     *
-     * @return string
-     */
-    public function version(): string
-    {
-        return static::VERSION;
+        return (bool) $this['config']->get('app.debug');
     }
 
     public function environment(...$environments): bool|string
@@ -750,9 +537,14 @@ class Machine extends Chassis implements ProgramContract, CachesConfiguration
         return $this['env'];
     }
 
+    public function runningInProduction(): bool
+    {
+        return env('APP_ENV', 'local') == 'production';
+    }
+
     public function runningInConsole(): bool
     {
-        if ($this->isRunningInConsole === null) {
+        if (is_null($this->isRunningInConsole)) {
             $this->isRunningInConsole = Env::get('APP_RUNNING_IN_CONSOLE') ?? (\PHP_SAPI === 'cli' || \PHP_SAPI === 'phpdbg');
         }
 
@@ -766,8 +558,6 @@ class Machine extends Chassis implements ProgramContract, CachesConfiguration
 
     /**
      * Determine if the application is currently down for maintenance.
-     *
-     * @return bool
      */
     public function isDownForMaintenance(): bool
     {
@@ -775,11 +565,7 @@ class Machine extends Chassis implements ProgramContract, CachesConfiguration
     }
 
     /**
-     * Register every configured provider.
-     *
-     * @return void
-     * @throws BindingResolutionException|CircularDependencyException
-     * @throws FileNotFoundException|ReflectionException
+     * @throws ReflectionException
      */
     public function registerConfiguredProviders(): void
     {
@@ -795,6 +581,17 @@ class Machine extends Chassis implements ProgramContract, CachesConfiguration
     }
 
     /**
+     * Add an array of services to the application's deferred services.
+     *
+     * @param  array<string, class-string>  $services
+     * @return void
+     */
+    public function addDeferredServices(array $services): void
+    {
+        $this->deferredServices = array_merge($this->deferredServices, $services);
+    }
+
+    /**
      * Get the registered service provider instance if it exists.
      *
      * @param string|ServiceProvider $provider
@@ -807,13 +604,9 @@ class Machine extends Chassis implements ProgramContract, CachesConfiguration
         return $this->serviceProviders[$name] ?? null;
     }
 
+
     /**
-     * Register a service provider with the application.
-     *
-     * @param string|ServiceProvider $provider
-     * @param bool $force
-     * @return ServiceProvider
-     * @throws ReflectionException|BindingResolutionException|CircularDependencyException
+     * @throws ReflectionException
      */
     public function register(string|ServiceProvider $provider, bool $force = false): ServiceProvider
     {
@@ -860,50 +653,8 @@ class Machine extends Chassis implements ProgramContract, CachesConfiguration
     }
 
     /**
-     * Mark the given provider as registered.
-     *
-     * @param ServiceProvider $provider
-     * @return void
+     * @throws ReflectionException
      */
-    protected function markAsRegistered(ServiceProvider $provider): void
-    {
-        $class = get_class($provider);
-
-        $this->serviceProviders[$class] = $provider;
-
-        $this->loadedProviders[$class] = true;
-    }
-
-    /**
-     * Determine if the application events are cached.
-     *
-     * @return bool
-     * @throws BindingResolutionException|CircularDependencyException|ReflectionException
-     */
-    public function eventsAreCached(): bool
-    {
-        if ($this->bound('events.cached')) {
-            return (bool) $this->make('events.cached');
-        }
-
-        return $this->instance(
-            'events.cached', $this['files']->exists($this->getCachedEventsPath())
-        );
-    }
-
-    /**
-     * Get the path to the events cache file.
-     *
-     * @return string
-     */
-    public function getCachedEventsPath(): string
-    {
-        return $this->normalizeCachePath('APP_EVENTS_CACHE', 'cache/events.php');
-    }
-
-    /**
-     * @throws ReflectionException|BindingResolutionException|CircularDependencyException
- */
     public function registerDeferredProvider(string $provider, ?string $service = null): void
     {
         // Once the provider that provides the deferred service has been registered we
@@ -928,54 +679,7 @@ class Machine extends Chassis implements ProgramContract, CachesConfiguration
     }
 
     /**
-     * Determine if the application has booted.
-     *
-     * @return bool
-     */
-    public function isBooted(): bool
-    {
-        return $this->booted;
-    }
-
-    /**
-     * Call the booting callbacks for the application.
-     *
-     * @param  callable[]  $callbacks
-     * @return void
-     */
-    protected function fireAppCallbacks(array &$callbacks): void
-    {
-        $index = 0;
-
-        while ($index < count($callbacks)) {
-            $callbacks[$index]($this);
-
-            $index++;
-        }
-    }
-
-    /**
-     * Boot the given service provider.
-     *
-     * @param ServiceProvider $provider
-     * @return void
-     * @throws CircularDependencyException|BindingResolutionException|ReflectionException
-     */
-    protected function bootProvider(ServiceProvider $provider): void
-    {
-        $provider->callBootingCallbacks();
-
-        if (method_exists($provider, 'boot')) {
-            $this->call([$provider, 'boot']);
-        }
-
-        $provider->callBootedCallbacks();
-    }
-
-    /**
      * @throws ReflectionException
-     * @throws CircularDependencyException
-     * @throws BindingResolutionException
      */
     public function boot(): void
     {
@@ -988,7 +692,7 @@ class Machine extends Chassis implements ProgramContract, CachesConfiguration
         // finished. This is useful when ordering the boot-up processes we run.
         $this->fireAppCallbacks($this->bootingCallbacks);
 
-        array_walk( $this->serviceProviders, function ($p) {
+        array_walk(  $this->serviceProviders, function ($p) {
             $this->bootProvider($p);
         });
 
@@ -997,24 +701,45 @@ class Machine extends Chassis implements ProgramContract, CachesConfiguration
         $this->fireAppCallbacks($this->bootedCallbacks);
     }
 
+    public function booting(callable $callback): void
+    {
+        $this->bootingCallbacks[] = $callback;
+    }
+
+    public function booted(callable $callback): void
+    {
+        $this->bootedCallbacks[] = $callback;
+
+        if ($this->isBooted()) {
+            $callback($this);
+        }
+    }
+
     /**
-     * @throws CircularDependencyException
-     * @throws BindingResolutionException|ReflectionException
+     * Determine if the application has booted.
+     *
+     * @return bool
+     */
+    public function isBooted(): bool
+    {
+        return $this->booted;
+    }
+
+    /**
+     * @throws ReflectionException
      */
     public function bootstrapWith(array $bootstrappers): void
     {
         $this->hasBeenBootstrapped = true;
 
         foreach ($bootstrappers as $bootstrapper) {
-            if(isset($this['events']))
-            {
+            if (isset($this['events'])) {
                 $this['events']->dispatch('bootstrapping: '.$bootstrapper, [$this]);
             }
 
             $this->make($bootstrapper)->bootstrap($this);
 
-            if(isset($this['events']))
-            {
+            if (isset($this['events'])) {
                 $this['events']->dispatch('bootstrapped: '.$bootstrapper, [$this]);
             }
         }
@@ -1022,16 +747,14 @@ class Machine extends Chassis implements ProgramContract, CachesConfiguration
 
     public function getLocale(): string
     {
-        return $this['config']->get('machine.locale');
+        return $this['config']->get('machine.locale', 'en');
     }
 
-    /**
-     * Get the application namespace.
-     *
-     * @return string
-     *
-     * @throws RuntimeException
-     */
+    public function getFallbackLocale(): string
+    {
+        return $this['config']->get('machine.fallback_locale', 'en');
+    }
+
     public function getNamespace(): string
     {
         if (! is_null($this->namespace)) {
@@ -1041,14 +764,12 @@ class Machine extends Chassis implements ProgramContract, CachesConfiguration
         $composer = json_decode(file_get_contents($this->basePath('composer.json')), true);
 
         foreach ((array) data_get($composer, 'autoload.psr-4') as $namespace => $path) {
-            foreach ((array) $path as $pathChoice) {
-                if (realpath($this->path()) === realpath($this->basePath($pathChoice))) {
-                    return $this->namespace = $namespace;
-                }
+            if (array_any((array)$path, fn($pathChoice) => realpath($this->path()) === realpath($this->basePath($pathChoice)))) {
+                return $this->namespace = $namespace;
             }
         }
 
-        throw new RuntimeException('Unable to detect application namespace.');
+        throw new ScrapyardIOException('Unable to detect application namespace.');
     }
 
     public function getProviders(string|ServiceProvider $provider): array
@@ -1076,6 +797,54 @@ class Machine extends Chassis implements ProgramContract, CachesConfiguration
     }
 
     /**
+     * Determine if the given abstract type has been bound.
+     */
+    public function bound(string $abstract): bool
+    {
+        return $this->isDeferredService($abstract) || parent::bound($abstract);
+    }
+
+    /**
+     * Resolve the given type from the container, loading deferred providers first.
+     *
+     * @template TClass of object
+     *
+     * @param  string|class-string<TClass>  $abstract
+     * @return ($abstract is class-string<TClass> ? TClass : mixed)
+     */
+    public function make(string $abstract, array $parameters = []): mixed
+    {
+        $this->loadDeferredProviderIfNeeded($abstract = $this->getAlias($abstract));
+
+        return parent::make($abstract, $parameters);
+    }
+
+    /**
+     * Resolve the given type from the container, loading deferred providers first.
+     *
+     * @template TClass of object
+     *
+     * @param  callable|string|class-string<TClass>  $abstract
+     * @return ($abstract is class-string<TClass> ? TClass : mixed)
+     */
+    protected function resolve(callable|string $abstract, array $parameters = [], bool $raiseEvents = true): mixed
+    {
+        $this->loadDeferredProviderIfNeeded($abstract = $this->getAlias($abstract));
+
+        return parent::resolve($abstract, $parameters, $raiseEvents);
+    }
+
+    /**
+     * Load the deferred provider if the given type is a deferred service and the instance has not been loaded.
+     */
+    protected function loadDeferredProviderIfNeeded(string $abstract): void
+    {
+        if ($this->isDeferredService($abstract) && ! isset($this->instances[$abstract])) {
+            $this->loadDeferredProvider($abstract);
+        }
+    }
+
+    /**
      * Load the provider for a deferred service.
      *
      * @param string $service
@@ -1097,29 +866,23 @@ class Machine extends Chassis implements ProgramContract, CachesConfiguration
         }
     }
 
+    /**
+     * Determine if the given service is a deferred service.
+     *
+     * @param string $service
+     * @return bool
+     */
+    public function isDeferredService(string $service): bool
+    {
+        return isset($this->deferredServices[$service]);
+    }
+
+
     public function setLocale(string $locale): void
     {
         $previous = $this['config']->get('machine.locale');
 
         $this['config']->set('machine.locale', $locale);
-
-        /*$this['translator']->setLocale($locale);
-
-        if(isset($this['events']))
-        {
-            //$this['events']->dispatch(new LocaleUpdated($locale, $previous));
-        }
-        */
-    }
-
-    /**
-     * @throws BindingResolutionException
-     * @throws CircularDependencyException|ReflectionException
-     */
-    public function shouldSkipMiddleware(): bool
-    {
-        return $this->bound('middleware.disable') &&
-            $this->make('middleware.disable') === true;
     }
 
     public function terminating(callable|string $callback): WireframeServiceContainer
@@ -1131,8 +894,6 @@ class Machine extends Chassis implements ProgramContract, CachesConfiguration
 
     /**
      * @throws ReflectionException
-     * @throws BindingResolutionException
-     * @throws CircularDependencyException
      */
     public function terminate(): void
     {
@@ -1145,22 +906,11 @@ class Machine extends Chassis implements ProgramContract, CachesConfiguration
         }
     }
 
-    /**
-     * Get the environment file the application is using.
-     *
-     * @return string
-     */
     public function environmentFile(): string
     {
         return $this->environmentFile ?: '.env';
     }
 
-    /**
-     * Set the environment file to be loaded during bootstrapping.
-     *
-     * @param string $file
-     * @return $this
-     */
     public function loadEnvironmentFrom(string $file): static
     {
         $this->environmentFile = $file;
@@ -1168,38 +918,178 @@ class Machine extends Chassis implements ProgramContract, CachesConfiguration
         return $this;
     }
 
-    /**
-     * Get the path to the environment file directory.
-     *
-     * @return string
-     */
     public function environmentPath(): string
     {
         return $this->environmentPath ?: $this->basePath;
     }
 
-    /**
-     * Get the fully qualified path to the environment file.
-     *
-     * @return string
-     */
     public function environmentFilePath(): string
     {
         return $this->environmentPath().DIRECTORY_SEPARATOR.$this->environmentFile();
     }
 
-    /**
-     * Detect the application's current environment.
-     *
-     * @param  Closure  $callback
-     * @return string
-     */
     public function detectEnvironment(Closure $callback): string
     {
-        $args = $this->runningInConsole() && isset($_SERVER['argv'])
+        $args = (!$this->runningInProduction()) && isset($_SERVER['argv'])
             ? $_SERVER['argv']
             : null;
 
         return $this['env'] = (new EnvironmentDetector)->detect($callback, $args);
     }
+
+    /**
+     * Handle the incoming Artisan command.
+     *
+     * @param InputInterface $input
+     * @return int
+     * @throws ChassisException
+     * @throws ReflectionException
+     */
+    public function handleCommand(InputInterface $input): int
+    {
+        $kernel = $this->make(ConsoleKernelInterface::class);
+
+        $status = $kernel->handle(
+            $input,
+            new ConsoleOutput()
+        );
+
+        $kernel->terminate($input, $status);
+
+        return $status;
+    }
+
+    /**
+     * Handle the incoming Runner (sketch) console input.
+     *
+     * @throws ChassisException
+     * @throws ReflectionException
+     */
+    public function handleSketch(InputInterface $input): int
+    {
+        $kernel = $this->make(SketchKernelInterface::class);
+
+        $status = $kernel->handle(
+            $input,
+            new ConsoleOutput()
+        );
+
+        $kernel->terminate($input, $status);
+
+        return $status;
+    }
+
+    /**
+     * Determine if the application events are cached.
+     *
+     * @return bool
+     * @throws ReflectionException|ChassisException
+     */
+    public function eventsAreCached(): bool
+    {
+        if ($this->bound('events.cached')) {
+            return (bool) $this->make('events.cached');
+        }
+
+        return $this->instance(
+            'events.cached', is_file($this->getCachedEventsPath())
+        );
+    }
+
+    /**
+     * Get the path to the events cache file.
+     *
+     * @return string
+     */
+    public function getCachedEventsPath(): string
+    {
+        return $this->normalizeCachePath('APP_EVENTS_CACHE', 'cache/events.php');
+    }
+
+    /**
+     * Call the booting callbacks for the application.
+     *
+     * @param  callable[]  $callbacks
+     * @return void
+     */
+    protected function fireAppCallbacks(array &$callbacks): void
+    {
+        $index = 0;
+
+        while ($index < count($callbacks)) {
+            $callbacks[$index]($this);
+
+            $index++;
+        }
+    }
+
+    /**
+     * Boot the given service provider.
+     *
+     * @param ServiceProvider $provider
+     * @return void
+     * @throws ChassisException|ReflectionException
+     */
+    protected function bootProvider(ServiceProvider $provider): void
+    {
+        $provider->callBootingCallbacks();
+
+        if (method_exists($provider, 'boot')) {
+            $this->call([$provider, 'boot']);
+        }
+
+        $provider->callBootedCallbacks();
+    }
+
+    /**
+     * Mark the given provider as registered.
+     *
+     * @param ServiceProvider $provider
+     * @return void
+     */
+    protected function markAsRegistered(ServiceProvider $provider): void
+    {
+        $class = get_class($provider);
+
+        $this->serviceProviders[$class] = $provider;
+
+        $this->loadedProviders[$class] = true;
+    }
+
+    /**
+     * Infer the application's base directory from the environment.
+     *
+     * @return string
+     */
+    public static function inferBasePath(): string
+    {
+        return match (true) {
+            isset($_ENV['APP_BASE_PATH']) => $_ENV['APP_BASE_PATH'],
+            isset($_SERVER['APP_BASE_PATH']) => $_SERVER['APP_BASE_PATH'],
+            default => dirname(array_values(array_filter(
+                array_keys(ClassLoader::getRegisteredLoaders()),
+                fn ($path) => ! str_starts_with($path, 'phar://'),
+            ))[0]),
+        };
+    }
+
+    /**
+     * @throws ReflectionException
+     */
+    public static function configure(?string $basePath = null): AssemblyLine
+    {
+        $basePath = match (true) {
+            is_string($basePath) => $basePath,
+            default => static::inferBasePath(),
+        };
+
+        return new AssemblyLine(new static($basePath))
+            ->withKernels()
+            ->withEvents()
+            ->withCommands()
+            ->withProviders()
+            ->withExceptions();
+    }
+
+
 }

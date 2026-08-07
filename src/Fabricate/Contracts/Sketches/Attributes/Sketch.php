@@ -8,7 +8,7 @@ use Attribute;
 class Sketch
 {
     /**
-     * @param  non-empty-string  $name  Registration key used with SketchRegistry / workshop sketch.
+     * @param  non-empty-string  $name  Registration key used with SketchRegistry / php runner.
      */
     public function __construct(public string $name) {}
 }

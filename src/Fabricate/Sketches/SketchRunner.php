@@ -4,7 +4,9 @@ namespace Fabricate\Sketches;
 
 use Fabricate\Contracts\Sketches\Sketch;
 use Fabricate\Contracts\Sketches\SketchExitStatus;
-use Fabricate\Contracts\Sketches\SketchLoopResult;
+use Fabricate\Sketches\Flow\BootSketchNode;
+use Fabricate\Sketches\Flow\Flow;
+use Fabricate\Sketches\Flow\TickSketchNode;
 use Throwable;
 
 class SketchRunner
@@ -20,7 +22,7 @@ class SketchRunner
     protected bool $shutdownInvoked = false;
 
     /**
-     * Run a Sketch through boot → loop → shutdown orchestration.
+     * Run a Sketch through a lifecycle Flow (boot → tick self-loop).
      *
      * @throws Throwable
      */
@@ -31,14 +33,20 @@ class SketchRunner
 
         $this->listenForSignals();
 
-        try {
-            $sketch->boot();
+        $shared = [
+            'runner' => $this,
+            'sketch' => $sketch,
+        ];
 
-            while (! $this->shouldStop) {
-                if ($sketch->loop() === SketchLoopResult::STOP) {
-                    break;
-                }
-            }
+        $boot = new BootSketchNode;
+        $tick = new TickSketchNode;
+        $boot->next($tick);
+        $tick->next($tick, 'continue');
+
+        $flow = new Flow($boot);
+
+        try {
+            $flow->run($shared);
 
             return SketchExitStatus::SUCCESS->value;
         } finally {

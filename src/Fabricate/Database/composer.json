@@ -1,0 +1,49 @@
+{
+    "name": "fabricate/database",
+    "description": "The Fabricate Database package.",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Angel Gonzalez",
+            "email": "angel@projectsaturnstudios.com"
+        },
+        {
+            "name": "Taylor Otwell"
+        }
+    ],
+    "homepage": "https://scrapyard-io.projectsaturnstudios.com",
+    "support": {
+        "issues": "https://github.com/ScrapyardIO/framework/issues",
+        "source": "https://github.com/ScrapyardIO/framework"
+    },
+    "require": {
+        "php": "^8.4|^8.5|^8.6",
+        "ext-pdo": "*",
+        "fabricate/chassis": "^0.7.0",
+        "fabricate/collections": "^0.7.0",
+        "fabricate/contracts": "^0.7.0",
+        "fabricate/events": "^0.7.0",
+        "fabricate/filesystem": "^0.7.0",
+        "fabricate/nuts-and-bolts": "^0.7.0",
+        "nesbot/carbon": "^3.8.4"
+    },
+    "suggest": {
+        "ext-pdo_sqlite": "Required to use the SQLite driver.",
+        "ext-pdo_mysql": "Required to use the MySQL / MariaDB driver.",
+        "ext-pdo_pgsql": "Required to use the PostgreSQL driver."
+    },
+    "minimum-stability": "dev",
+    "autoload": {
+        "psr-4": {
+            "Fabricate\\Database\\": ""
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "0.7.x-dev"
+        }
+    }
+}

@@ -2,47 +2,46 @@
 
 namespace Fabricate\Sketches;
 
-use Fabricate\Contracts\Core\Program;
-use Fabricate\Contracts\NutsAndBolts\DeferrableProvider;
+use Fabricate\Contracts\Sketches\SketchKernel as SketchKernelContract;
 use Fabricate\Contracts\Sketches\SketchRegistry as SketchRegistryContract;
+use Fabricate\NutsAndBolts\Contracts\DeferrableProvider;
 use Fabricate\NutsAndBolts\ServiceProvider;
-use Fabricate\Sketches\Console\SketchCommand;
-use Fabricate\Sketches\Console\SketchListCommand;
+use Fabricate\Sketches\Runner\SketchKernel;
 
 class SketchesServiceProvider extends ServiceProvider implements DeferrableProvider
 {
     /**
-     * The application base class used for conventional discovery.
+     * Application base class used for conventional discovery under app/Runner/Sketches.
      */
-    protected string $appSketchBaseClass = \App\Sketches\Sketch::class;
+    protected string $appSketchBaseClass = \App\Runner\Sketches\Sketch::class;
 
     public function register(): void
     {
-        $this->program->singleton(SketchRegistry::class, function (Program $program) {
-            return new SketchRegistry($program);
+        $this->container->singleton(SketchRegistry::class, function ($app) {
+            return new SketchRegistry($app);
         });
 
-        $this->program->singleton(SketchRegistryContract::class, function (Program $program) {
-            return $program->make(SketchRegistry::class);
+        $this->container->singleton(SketchRegistryContract::class, function ($app) {
+            return $app->make(SketchRegistry::class);
         });
 
-        $this->program->singleton('sketch', function (Program $program) {
-            return $program->make(SketchRegistry::class);
+        $this->container->singleton('sketch', function ($app) {
+            return $app->make(SketchRegistry::class);
         });
 
-        $this->program->singleton(SketchRunner::class, fn () => new SketchRunner);
+        $this->container->singleton(SketchRunner::class, fn () => new SketchRunner);
 
-        $this->program->singleton('sketch.runner', function (Program $program) {
-            return $program->make(SketchRunner::class);
+        $this->container->singleton('sketch.runner', function ($app) {
+            return $app->make(SketchRunner::class);
         });
 
-        $this->program->singleton(SketchCommand::class);
-        $this->program->singleton(SketchListCommand::class);
+        $this->container->singleton(SketchKernel::class, function ($app) {
+            return new SketchKernel($app);
+        });
 
-        $this->commands([
-            SketchCommand::class,
-            SketchListCommand::class,
-        ]);
+        $this->container->singleton(SketchKernelContract::class, function ($app) {
+            return $app->make(SketchKernel::class);
+        });
     }
 
     public function boot(): void
@@ -52,20 +51,24 @@ class SketchesServiceProvider extends ServiceProvider implements DeferrableProvi
     }
 
     /**
-     * Scan app/Sketches for concrete subclasses of the application Sketch base.
+     * Scan app/Runner/Sketches for concrete subclasses of the application Sketch base.
      */
     protected function discoverAppSketches(): void
     {
-        $path = app_path('Sketches');
+        $path = app_path('Runner/Sketches');
 
         if (! is_dir($path)) {
             return;
         }
 
         /** @var SketchRegistry $registry */
-        $registry = $this->program->make(SketchRegistry::class);
+        $registry = $this->container->make(SketchRegistry::class);
 
-        foreach (DiscoverSketches::within($path, $this->program->basePath(), $this->appSketchBaseClass) as $name => $class) {
+        $basePath = method_exists($this->container, 'basePath')
+            ? $this->container->basePath()
+            : base_path();
+
+        foreach (DiscoverSketches::within($path, $basePath, $this->appSketchBaseClass) as $name => $class) {
             $registry->registerConvention($name, $class);
         }
     }
@@ -82,7 +85,7 @@ class SketchesServiceProvider extends ServiceProvider implements DeferrableProvi
         }
 
         /** @var SketchRegistry $registry */
-        $registry = $this->program->make(SketchRegistry::class);
+        $registry = $this->container->make(SketchRegistry::class);
 
         foreach ($classes as $class) {
             if (! is_string($class) || $class === '') {
@@ -104,8 +107,8 @@ class SketchesServiceProvider extends ServiceProvider implements DeferrableProvi
             SketchRegistry::class,
             SketchRegistryContract::class,
             SketchRunner::class,
-            SketchCommand::class,
-            SketchListCommand::class,
+            SketchKernel::class,
+            SketchKernelContract::class,
         ];
     }
 }

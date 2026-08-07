@@ -2,7 +2,6 @@
 
 namespace Fabricate\Console\Scheduling;
 
-use Fabricate\Cache\DynamoDbStore;
 use Fabricate\Contracts\Cache\Factory as Cache;
 use Fabricate\Contracts\Cache\LockProvider;
 use Fabricate\Contracts\Cache\Store;
@@ -96,7 +95,7 @@ class CacheEventMutex implements EventMutex, CacheAware
      */
     protected function shouldUseLocks($store)
     {
-        return $store instanceof LockProvider && ! $store instanceof DynamoDbStore;
+        return $store instanceof LockProvider;
     }
 
     /**

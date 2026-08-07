@@ -6,9 +6,12 @@ use BadMethodCallException;
 use Closure;
 use DateTimeInterface;
 use Fabricate\Bus\UniqueLock;
+use Fabricate\Chassis\Chassis;
+use Fabricate\Chassis\Exceptions\BindingResolutionException;
+use Fabricate\Console\WorkshopInstance;
 use Fabricate\Contracts\Bus\Dispatcher;
 use Fabricate\Contracts\Cache\Repository as Cache;
-use Fabricate\Contracts\Chassis\BindingResolutionException;
+use Fabricate\Contracts\Core\Program;
 use Fabricate\Contracts\Queue\ShouldBeUnique;
 use Fabricate\Contracts\Queue\ShouldQueue;
 use Fabricate\Queue\CallQueuedClosure;
@@ -28,20 +31,6 @@ class Schedule
     use Macroable {
         __call as macroCall;
     }
-
-    const SUNDAY = 0;
-
-    const MONDAY = 1;
-
-    const TUESDAY = 2;
-
-    const WEDNESDAY = 3;
-
-    const THURSDAY = 4;
-
-    const FRIDAY = 5;
-
-    const SATURDAY = 6;
 
     /**
      * All of the events on the schedule.
@@ -124,13 +113,7 @@ class Schedule
     {
         $this->timezone = $timezone;
 
-        if (! class_exists(Container::class)) {
-            throw new RuntimeException(
-                'A container implementation is required to use the scheduler. Please install the illuminate/container package.'
-            );
-        }
-
-        $container = Container::getInstance();
+        $container = Chassis::getInstance();
 
         $this->eventMutex = $container->bound(EventMutex::class)
             ? $container->make(EventMutex::class)
@@ -171,23 +154,23 @@ class Schedule
         if ($command instanceof SymfonyCommand) {
             $command = get_class($command);
 
-            $command = Container::getInstance()->make($command);
+            $command = Chassis::getInstance()->make($command);
 
             return $this->exec(
-                Application::formatCommandString($command->getName()), $parameters,
+                WorkshopInstance::formatCommandString($command->getName()), $parameters,
             )->description($command->getDescription());
         }
 
         if (class_exists($command)) {
-            $command = Container::getInstance()->make($command);
+            $command = Chassis::getInstance()->make($command);
 
             return $this->exec(
-                Application::formatCommandString($command->getName()), $parameters,
+                WorkshopInstance::formatCommandString($command->getName()), $parameters,
             )->description($command->getDescription());
         }
 
         return $this->exec(
-            Application::formatCommandString($command), $parameters
+            WorkshopInstance::formatCommandString($command), $parameters
         );
     }
 
@@ -214,7 +197,7 @@ class Schedule
 
         $this->events[] = $event = new CallbackEvent(
             $this->eventMutex, function () use ($job, $queue, $connection) {
-            $job = is_string($job) ? Container::getInstance()->make($job) : $job;
+            $job = is_string($job) ? Chassis::getInstance()->make($job) : $job;
 
             if ($job instanceof ShouldQueue) {
                 $this->dispatchToQueue($job, $queue ?? $job->queue, $connection ?? $job->connection);
@@ -274,11 +257,11 @@ class Schedule
      */
     protected function dispatchUniqueJobToQueue($job, $queue, $connection)
     {
-        if (! Container::getInstance()->bound(Cache::class)) {
+        if (! Chassis::getInstance()->bound(Cache::class)) {
             throw new RuntimeException('Cache driver not available. Scheduling unique jobs not supported.');
         }
 
-        if (! (new UniqueLock(Container::getInstance()->make(Cache::class)))->acquire($job)) {
+        if (! (new UniqueLock(Chassis::getInstance()->make(Cache::class)))->acquire($job)) {
             return;
         }
 
@@ -425,10 +408,10 @@ class Schedule
     /**
      * Get all of the events on the schedule that are due.
      *
-     * @param  \Fabricate\Contracts\Foundation\Application  $app
-     * @return \Fabricate\Support\Collection
+     * @param  Program  $app
+     * @return \Fabricate\NutsAndBolts\Collection<int, Event>
      */
-    public function dueEvents($app)
+    public function dueEvents(Program $app)
     {
         return (new Collection($this->events))->filter->isDue($app);
     }
@@ -489,7 +472,7 @@ class Schedule
     {
         if ($this->dispatcher === null) {
             try {
-                $this->dispatcher = Container::getInstance()->make(Dispatcher::class);
+                $this->dispatcher = Chassis::getInstance()->make(Dispatcher::class);
             } catch (BindingResolutionException $e) {
                 throw new RuntimeException(
                     'Unable to resolve the dispatcher from the service container. Please bind it or install the illuminate/bus package.',

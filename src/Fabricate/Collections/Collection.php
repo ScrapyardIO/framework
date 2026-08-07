@@ -2,19 +2,21 @@
 
 namespace Fabricate\NutsAndBolts;
 
-use Fabricate\NutsAndBolts\Exceptions\MultipleItemsFoundException;
 use stdClass;
+use Stringable;
 use Traversable;
 use ArrayAccess;
 use ArrayIterator;
-use CachingIterator;
+use SortDirection;
 use InvalidArgumentException;
 use Fabricate\NutsAndBolts\Concerns\Macroable;
-use Fabricate\Contracts\NutsAndBolts\Arrayable;
+use Fabricate\NutsAndBolts\Contracts\Arrayable;
 use Fabricate\NutsAndBolts\Contracts\Enumerable;
 use Fabricate\NutsAndBolts\Concerns\EnumeratesValues;
+use function Fabricate\NutsAndBolts\Helpers\enum_value;
 use Fabricate\NutsAndBolts\Exceptions\ItemNotFoundException;
-use Fabricate\Contracts\NutsAndBolts\CanBeEscapedWhenCastToString;
+use Fabricate\NutsAndBolts\Exceptions\MultipleItemsFoundException;
+use Fabricate\NutsAndBolts\Contracts\CanBeEscapedWhenCastToString;
 use Fabricate\NutsAndBolts\Concerns\TransformsToResourceCollection;
 
 /**
@@ -908,7 +910,7 @@ class Collection implements ArrayAccess, CanBeEscapedWhenCastToString, Enumerabl
      * @param  int  $multiplier
      * @return static
      */
-    public function multiply(int $multiplier)
+    public function multiply(int $multiplier): static
     {
         $new = $this->newInstance();
 
@@ -1425,7 +1427,7 @@ class Collection implements ArrayAccess, CanBeEscapedWhenCastToString, Enumerabl
             throw new InvalidArgumentException('Number of groups must be at least 1.');
         }
 
-        return $this->chunk((int) ceil($this->count() / $numberOfGroups));
+        return $this->chunk((int) ceil($this->count() / $numberOfGroups), false);
     }
 
     /**
@@ -1747,12 +1749,12 @@ class Collection implements ArrayAccess, CanBeEscapedWhenCastToString, Enumerabl
     /**
      * Splice a portion of the underlying collection array.
      *
-     * @param  int  $offset
-     * @param  int|null  $length
-     * @param  array<array-key, TValue>  $replacement
+     * @param int $offset
+     * @param int|null $length
+     * @param array<array-key, TValue> $replacement
      * @return static
      */
-    public function splice($offset, $length = null, $replacement = []): static
+    public function splice(int $offset, ?int $length = null, array $replacement = []): static
     {
         if (func_num_args() === 1) {
             return $this->newInstance(array_splice($this->items, $offset));
@@ -1818,10 +1820,10 @@ class Collection implements ArrayAccess, CanBeEscapedWhenCastToString, Enumerabl
     /**
      * Flatten a multi-dimensional associative array with dots.
      *
-     * @param  int  $depth
+     * @param float|int $depth
      * @return static
      */
-    public function dot($depth = INF): static
+    public function dot(float|int $depth = INF): static
     {
         return $this->newInstance(Arr::dot($this->all(), '', $depth));
     }
@@ -1859,6 +1861,8 @@ class Collection implements ArrayAccess, CanBeEscapedWhenCastToString, Enumerabl
             }
 
             $exists[] = $id;
+
+            return null;
         });
     }
 

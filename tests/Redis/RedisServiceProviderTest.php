@@ -1,6 +1,6 @@
 <?php
 
-namespace DeptOfScrapyardRobotics\Tests\Redis;
+namespace Tests\Redis;
 
 use Fabricate\Config\Repository;
 use Fabricate\Contracts\Redis\Factory;

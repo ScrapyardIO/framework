@@ -21,7 +21,7 @@ class SketchMakeCommand extends GeneratorCommand
      *
      * @var string
      */
-    protected string $description = 'Create a new Sketch class';
+    protected string $description = 'Create a new Sketch class under app/Runner/Sketches';
 
     /**
      * The type of class being generated.
@@ -32,8 +32,6 @@ class SketchMakeCommand extends GeneratorCommand
 
     /**
      * Get the stub file for the generator.
-     *
-     * @return string
      */
     protected function getStub(): string
     {
@@ -42,9 +40,6 @@ class SketchMakeCommand extends GeneratorCommand
 
     /**
      * Resolve the fully-qualified path to the stub.
-     *
-     * @param  string  $stub
-     * @return string
      */
     protected function resolveStubPath(string $stub): string
     {
@@ -57,11 +52,10 @@ class SketchMakeCommand extends GeneratorCommand
      * Get the default namespace for the class.
      *
      * @param  string  $rootNamespace
-     * @return string
      */
     protected function getDefaultNamespace($rootNamespace)
     {
-        return $rootNamespace.'\Sketches';
+        return $rootNamespace.'\Runner\Sketches';
     }
 
     /**

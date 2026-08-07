@@ -3,13 +3,14 @@
 namespace Fabricate\Redis;
 
 use Closure;
+use Fabricate\Contracts\Core\Program;
 use Fabricate\Contracts\Redis\Factory;
+use Fabricate\Redis\Concerns\RebindsCallbacksToSelf;
 use Fabricate\Redis\Connections\Connection;
 use Fabricate\Redis\Connectors\PhpRedisConnector;
 use Fabricate\Redis\Connectors\PredisConnector;
+use Fabricate\Redis\Support\ConfigurationUrlParser;
 use Fabricate\NutsAndBolts\Arr;
-use Fabricate\NutsAndBolts\ConfigurationUrlParser;
-use Fabricate\NutsAndBolts\RebindsCallbacksToSelf;
 use InvalidArgumentException;
 use ReflectionException;
 use RuntimeException;
@@ -26,7 +27,7 @@ class RedisManager implements Factory
     /**
      * The application instance.
      *
-     * @var \Fabricate\Contracts\Core\Machine
+     * @var \Fabricate\Contracts\Core\Program
      */
     protected $app;
 
@@ -68,7 +69,7 @@ class RedisManager implements Factory
     /**
      * Create a new Redis manager instance.
      *
-     * @param  \Fabricate\Contracts\Core\Machine  $app
+     * @param  \Fabricate\Contracts\Core\Program  $app
      * @param  string  $driver
      * @param  array  $config
      */

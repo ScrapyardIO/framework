@@ -13,10 +13,10 @@ use IteratorAggregate;
 use DateTimeImmutable;
 use InvalidArgumentException;
 use Fabricate\NutsAndBolts\Concerns\Macroable;
-use Fabricate\Contracts\NutsAndBolts\Arrayable;
+use Fabricate\NutsAndBolts\Contracts\Arrayable;
 use Fabricate\NutsAndBolts\Contracts\Enumerable;
 use Fabricate\NutsAndBolts\Concerns\EnumeratesValues;
-use Fabricate\Contracts\NutsAndBolts\CanBeEscapedWhenCastToString;
+use Fabricate\NutsAndBolts\Contracts\CanBeEscapedWhenCastToString;
 
 /**
  * @template TKey of array-key

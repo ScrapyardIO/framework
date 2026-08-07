@@ -7,7 +7,7 @@ use Fabricate\Console\View\Components\Factory;
 use Fabricate\NutsAndBolts\Str;
 use Fabricate\Console\OutputStyle;
 use Fabricate\Console\CommandInput;
-use Fabricate\Contracts\NutsAndBolts\Arrayable;
+use Fabricate\NutsAndBolts\Contracts\Arrayable;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Helper\Table;

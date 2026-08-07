@@ -5,7 +5,7 @@ namespace Fabricate\Queue;
 use Closure;
 use Fabricate\Contracts\Queue\Factory as FactoryContract;
 use Fabricate\Contracts\Queue\Monitor as MonitorContract;
-use Fabricate\NutsAndBolts\Queue\Concerns\ResolvesQueueRoutes;
+use Fabricate\Queue\Concerns\ResolvesQueueRoutes;
 use InvalidArgumentException;
 
 use function Fabricate\NutsAndBolts\Helpers\enum_value;

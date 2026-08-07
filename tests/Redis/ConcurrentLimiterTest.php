@@ -1,10 +1,10 @@
 <?php
 
-namespace DeptOfScrapyardRobotics\Tests\Redis;
+namespace Tests\Redis;
 
 use Error;
 use Fabricate\Contracts\Redis\LimiterTimeoutException;
-use DeptOfScrapyardRobotics\Tests\Redis\Concerns\InteractsWithRedis;
+use Tests\Redis\Concerns\InteractsWithRedis;
 use Fabricate\Redis\Limiters\ConcurrencyLimiter;
 use PHPUnit\Framework\TestCase;
 use Throwable;

@@ -28,8 +28,9 @@ class PackageDiscoverCommand extends Command
     /**
      * Execute the console command.
      *
-     * @param PackageManifest $manifest
+     * @param  PackageManifest  $manifest
      * @return void
+     *
      * @throws Exception
      */
     public function handle(PackageManifest $manifest): void

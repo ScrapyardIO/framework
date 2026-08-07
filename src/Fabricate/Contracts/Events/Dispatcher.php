@@ -24,6 +24,14 @@ interface Dispatcher
     public function hasListeners(string $eventName): bool;
 
     /**
+     * Determine if the given event has wildcard listeners.
+     *
+     * @param string $eventName
+     * @return bool
+     */
+    public function hasWildcardListeners(string $eventName): bool;
+
+    /**
      * Register an event subscriber with the dispatcher.
      *
      * @param object|string $subscriber
@@ -81,4 +89,20 @@ interface Dispatcher
      * @return void
      */
     public function forgetPushed(): void;
+
+    /**
+     * Execute the given callback while deferring events, then dispatch all deferred events.
+     *
+     * @param callable $callback
+     * @param array<int, string>|null $events
+     * @return mixed
+     */
+    public function defer(callable $callback, ?array $events = null): mixed;
+
+    /**
+     * Get the raw, unprepared listeners.
+     *
+     * @return array<string, array<int, callable|array|string|null>>
+     */
+    public function getRawListeners(): array;
 }

@@ -3,8 +3,9 @@
 namespace Fabricate\Contracts\Core;
 
 use Closure;
-use Fabricate\Contracts\Chassis\WireframeServiceContainer;
+use RuntimeException;
 use Fabricate\NutsAndBolts\ServiceProvider;
+use Fabricate\Chassis\Contracts\WireframeServiceContainer;
 
 interface Program extends WireframeServiceContainer
 {
@@ -32,19 +33,19 @@ interface Program extends WireframeServiceContainer
     public function bootstrapPath(string $path = ''): string;
 
     /**
+     * Get the path to the service provider list in the bootstrap directory.
+     *
+     * @return string
+     */
+    public function getBootstrapProvidersPath(): string;
+
+    /**
      * Get the path to the application configuration files.
      *
      * @param string $path
      * @return string
      */
     public function configPath(string $path = ''): string;
-
-    /**
-     * Determine if the application is running with debug mode enabled.
-     *
-     * @return bool
-     */
-    public function hasDebugModeEnabled(): bool;
 
     /**
      * Get the path to the database directory.
@@ -75,7 +76,7 @@ interface Program extends WireframeServiceContainer
      *
      * @return bool
      */
-    public function runningInConsole(): bool;
+    public function runningInProduction(): bool;
 
     /**
      * Determine if the application is running unit tests.
@@ -92,13 +93,12 @@ interface Program extends WireframeServiceContainer
     public function registerConfiguredProviders(): void;
 
     /**
-     * Register a service provider with the application.
+     * Add an array of services to the application's deferred services.
      *
-     * @param string|ServiceProvider $provider
-     * @param bool $force
-     * @return ServiceProvider
+     * @param  array<string, class-string>  $services
+     * @return void
      */
-    public function register(string|ServiceProvider $provider, bool $force = false): ServiceProvider;
+    public function addDeferredServices(array $services): void;
 
     /**
      * Register a deferred provider and service.
@@ -108,14 +108,6 @@ interface Program extends WireframeServiceContainer
      * @return void
      */
     public function registerDeferredProvider(string $provider, ?string $service = null): void;
-
-    /**
-     * Resolve a service provider instance from the class name.
-     *
-     * @param string $provider
-     * @return ServiceProvider
-     */
-    public function resolveProvider(string $provider): ServiceProvider;
 
     /**
      * Boot the application's service providers.
@@ -147,6 +139,28 @@ interface Program extends WireframeServiceContainer
      * @return void
      */
     public function bootstrapWith(array $bootstrappers): void;
+
+    /**
+     * Get the path to the application "app" directory.
+     *
+     * @param string $path
+     * @return string
+     */
+    public function path(string $path = ''): string;
+
+    /**
+     * Determine if the application events are cached.
+     *
+     * @return bool
+     */
+    public function eventsAreCached(): bool;
+
+    /**
+     * Get the path to the events cache file.
+     *
+     * @return string
+     */
+    public function getCachedEventsPath(): string;
 
     /**
      * Get the current application locale.
@@ -193,13 +207,6 @@ interface Program extends WireframeServiceContainer
      * @return void
      */
     public function setLocale(string $locale): void;
-
-    /**
-     * Determine if middleware has been disabled for the application.
-     *
-     * @return bool
-     */
-    public function shouldSkipMiddleware(): bool;
 
     /**
      * Register a terminating callback with the application.

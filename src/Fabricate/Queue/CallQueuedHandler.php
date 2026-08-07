@@ -10,12 +10,12 @@ use Fabricate\Bus\UniqueLock;
 use Fabricate\Contracts\Bus\Dispatcher;
 use Fabricate\Contracts\Cache\CacheFactory;
 use Fabricate\Contracts\Cache\Repository as Cache;
-use Fabricate\Contracts\Chassis\WireframeServiceContainer;
+use Fabricate\Chassis\Contracts\WireframeServiceContainer;
 use Fabricate\Contracts\Encryption\Encrypter;
 use Fabricate\Contracts\Queue\Job;
 use Fabricate\Contracts\Queue\ShouldBeUnique;
 use Fabricate\Contracts\Queue\ShouldBeUniqueUntilProcessing;
-use Fabricate\Database\Eloquent\ModelNotFoundException;
+use Fabricate\Database\Polisher\ModelNotFoundException;
 use Fabricate\Events\CallQueuedListener;
 use Fabricate\Log\Context\Repository as ContextRepository;
 use Fabricate\Pipeline\Pipeline;
@@ -34,7 +34,7 @@ class CallQueuedHandler
     /**
      * The container instance.
      *
-     * @var \Fabricate\Contracts\Chassis\WireframeServiceContainer
+     * @var \Fabricate\Chassis\Contracts\WireframeServiceContainer
      */
     protected $container;
 
@@ -49,7 +49,7 @@ class CallQueuedHandler
      * Create a new handler instance.
      *
      * @param  \Fabricate\Contracts\Bus\Dispatcher  $dispatcher
-     * @param  \Fabricate\Contracts\Chassis\WireframeServiceContainer  $container
+     * @param  \Fabricate\Chassis\Contracts\WireframeServiceContainer  $container
      */
     public function __construct(Dispatcher $dispatcher, WireframeServiceContainer $container)
     {

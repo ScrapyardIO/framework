@@ -79,7 +79,7 @@ class FakeProcessResult implements ProcessResultContract
      *
      * @return string
      */
-    public function command(): string
+    public function command()
     {
         return $this->command;
     }
@@ -100,7 +100,7 @@ class FakeProcessResult implements ProcessResultContract
      *
      * @return bool
      */
-    public function successful(): bool
+    public function successful()
     {
         return $this->exitCode === 0;
     }
@@ -110,7 +110,7 @@ class FakeProcessResult implements ProcessResultContract
      *
      * @return bool
      */
-    public function failed(): bool
+    public function failed()
     {
         return ! $this->successful();
     }
@@ -120,7 +120,7 @@ class FakeProcessResult implements ProcessResultContract
      *
      * @return int
      */
-    public function exitCode(): ?int
+    public function exitCode()
     {
         return $this->exitCode;
     }
@@ -130,7 +130,7 @@ class FakeProcessResult implements ProcessResultContract
      *
      * @return string
      */
-    public function output(): string
+    public function output()
     {
         return $this->output;
     }
@@ -141,7 +141,7 @@ class FakeProcessResult implements ProcessResultContract
      * @param  string  $output
      * @return bool
      */
-    public function seeInOutput(string $output): bool
+    public function seeInOutput(string $output)
     {
         return str_contains($this->output(), $output);
     }
@@ -151,7 +151,7 @@ class FakeProcessResult implements ProcessResultContract
      *
      * @return string
      */
-    public function errorOutput(): string
+    public function errorOutput()
     {
         return $this->errorOutput;
     }
@@ -162,7 +162,7 @@ class FakeProcessResult implements ProcessResultContract
      * @param  string  $output
      * @return bool
      */
-    public function seeInErrorOutput(string $output): bool
+    public function seeInErrorOutput(string $output)
     {
         return str_contains($this->errorOutput(), $output);
     }
@@ -175,7 +175,7 @@ class FakeProcessResult implements ProcessResultContract
      *
      * @throws \Fabricate\Process\Exceptions\ProcessFailedException
      */
-    public function throw(?callable $callback = null): static
+    public function throw(?callable $callback = null)
     {
         if ($this->successful()) {
             return $this;
@@ -199,7 +199,7 @@ class FakeProcessResult implements ProcessResultContract
      *
      * @throws \Throwable
      */
-    public function throwIf(bool $condition, ?callable $callback = null): static
+    public function throwIf(bool $condition, ?callable $callback = null)
     {
         if ($condition) {
             return $this->throw($callback);

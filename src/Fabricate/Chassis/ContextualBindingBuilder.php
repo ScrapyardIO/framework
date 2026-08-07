@@ -2,7 +2,7 @@
 
 namespace Fabricate\Chassis;
 
-use Fabricate\Contracts\Chassis\WireframeServiceContainer;
+use Fabricate\Chassis\Contracts\WireframeServiceContainer;
 use Fabricate\Contracts\Chassis\ContextualBindingBuilder as ContextualBindingBuilderContract;
 
 class ContextualBindingBuilder implements ContextualBindingBuilderContract
@@ -15,11 +15,11 @@ class ContextualBindingBuilder implements ContextualBindingBuilderContract
     protected WireframeServiceContainer $container;
 
     /**
-     * The concrete instance.
+     * The concrete instance(s).
      *
-     * @var string|array
+     * @var array<int, string>|string
      */
-    protected string|array $concrete;
+    protected array|string $concrete;
 
     /**
      * The abstract target.
@@ -32,7 +32,7 @@ class ContextualBindingBuilder implements ContextualBindingBuilderContract
      * Create a new contextual binding builder.
      *
      * @param WireframeServiceContainer $container
-     * @param array|string $concrete
+     * @param array<int, string>|string $concrete
      */
     public function __construct(WireframeServiceContainer $container, array|string $concrete)
     {
@@ -56,10 +56,10 @@ class ContextualBindingBuilder implements ContextualBindingBuilderContract
     /**
      * Define the implementation for the contextual binding.
      *
-     * @param  \Closure|string|array  $implementation
+     * @param array|callable|string $implementation
      * @return $this
      */
-    public function give($implementation): static
+    public function give(array|callable|string $implementation): static
     {
         foreach (Util::arrayWrap($this->concrete) as $concrete) {
             $this->container->addContextualBinding($concrete, $this->needs, $implementation);
@@ -76,7 +76,7 @@ class ContextualBindingBuilder implements ContextualBindingBuilderContract
      */
     public function giveTagged(string $tag): static
     {
-        return $this->give(function ($container) use ($tag) {
+        return $this->give(function (WireframeServiceContainer $container) use ($tag): array {
             $taggedServices = $container->tagged($tag);
 
             return is_array($taggedServices) ? $taggedServices : iterator_to_array($taggedServices);
@@ -92,6 +92,8 @@ class ContextualBindingBuilder implements ContextualBindingBuilderContract
      */
     public function giveConfig(string $key, mixed $default = null): static
     {
-        return $this->give(fn ($container) => $container->get('config')->get($key, $default));
+        return $this->give(
+            fn (WireframeServiceContainer $container): mixed => $container->get('config')->get($key, $default)
+        );
     }
 }

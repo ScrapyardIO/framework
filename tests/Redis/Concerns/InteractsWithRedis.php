@@ -1,6 +1,6 @@
 <?php
 
-namespace DeptOfScrapyardRobotics\Tests\Redis\Concerns;
+namespace Tests\Redis\Concerns;
 
 use Exception;
 use Fabricate\Chassis\Chassis;
@@ -9,40 +9,30 @@ use Fabricate\Redis\RedisManager;
 
 trait InteractsWithRedis
 {
-    /**
-     * Indicate connection failed if redis is not available.
-     *
-     * @var bool
-     */
-    private static $connectionFailedOnceWithDefaultsSkip = false;
+    private static bool $connectionFailedOnceWithDefaultsSkip = false;
 
     /**
-     * Redis manager instances keyed by driver.
-     *
-     * @var array<string, \Fabricate\Redis\RedisManager>
+     * @var array<string, \Fabricate\Redis\RedisManager>|null
      */
-    private $redis;
+    private ?array $redis = null;
 
-    /**
-     * Setup redis connection.
-     *
-     * @return void
-     */
-    public function setUpRedis()
+    public function setUpRedis(): void
     {
-        if (! extension_loaded('redis')) {
-            $this->markTestSkipped('The redis extension is not installed. Please install the extension to enable '.__CLASS__);
-        }
-
         if (static::$connectionFailedOnceWithDefaultsSkip) {
             $this->markTestSkipped('Trying default host/port failed, please set environment variable REDIS_HOST & REDIS_PORT to enable '.__CLASS__);
+        }
+
+        $drivers = static::redisDriverProvider();
+
+        if ($drivers === []) {
+            $this->markTestSkipped('No Redis client available. Install ext-redis and/or predis/predis to enable '.__CLASS__);
         }
 
         $app = $this->app ?? new Chassis;
         $host = Env::get('REDIS_HOST', '127.0.0.1');
         $port = Env::get('REDIS_PORT', 6379);
 
-        foreach (static::redisDriverProvider() as $driver) {
+        foreach ($drivers as $driver) {
             if (Env::get('REDIS_CLUSTER_HOSTS_AND_PORTS')) {
                 $config = [
                     'options' => [
@@ -55,7 +45,7 @@ trait InteractsWithRedis
                                 'host' => explode(':', $hostAndPort)[0],
                                 'port' => explode(':', $hostAndPort)[1],
                             ],
-                            explode(',', Env::get('REDIS_CLUSTER_HOSTS_AND_PORTS')),
+                            explode(',', (string) Env::get('REDIS_CLUSTER_HOSTS_AND_PORTS')),
                         ),
                     ],
                 ];
@@ -83,7 +73,7 @@ trait InteractsWithRedis
             $this->redis[$driver[0]] = new RedisManager($app, $driver[0], $config);
         }
 
-        $defaultDriver = Env::get('REDIS_CLIENT', 'phpredis');
+        $defaultDriver = Env::get('REDIS_CLIENT', extension_loaded('redis') ? 'phpredis' : 'predis');
 
         if (! isset($this->redis[$defaultDriver])) {
             $defaultDriver = array_key_first($this->redis);
@@ -102,14 +92,9 @@ trait InteractsWithRedis
         $app->instance('redis', $this->redis[$defaultDriver]);
     }
 
-    /**
-     * Teardown redis connection.
-     *
-     * @return void
-     */
-    public function tearDownRedis()
+    public function tearDownRedis(): void
     {
-        if (static::$connectionFailedOnceWithDefaultsSkip === true) {
+        if (static::$connectionFailedOnceWithDefaultsSkip === true || is_null($this->redis)) {
             return;
         }
 
@@ -125,11 +110,9 @@ trait InteractsWithRedis
     }
 
     /**
-     * Get redis driver provider.
-     *
-     * @return array
+     * @return array<int, array{0: string}>
      */
-    public static function redisDriverProvider()
+    public static function redisDriverProvider(): array
     {
         $drivers = [];
 
@@ -144,13 +127,7 @@ trait InteractsWithRedis
         return $drivers;
     }
 
-    /**
-     * Run test if redis is available.
-     *
-     * @param  callable  $callback
-     * @return void
-     */
-    public function ifRedisAvailable($callback)
+    public function ifRedisAvailable(callable $callback): void
     {
         $this->setUpRedis();
 

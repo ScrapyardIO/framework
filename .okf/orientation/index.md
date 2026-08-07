@@ -1,6 +1,5 @@
 # Orientation
 
-* [Framework package](framework.md)
-* [Hardware stack layers](stack-layers.md) - Typical conceptual stack (not every app's exact path).
-* [Ownership boundaries](ownership.md)
-* [Sketch mental model](sketch-mental-model.md)
+* [Package (0.7)](package.md) - Umbrella reconstituting Fabricate components + config.
+* [NutsAndBolts namespace packaging](nuts-and-bolts-composition.md) - Shared `Fabricate\NutsAndBolts\` among some support components.
+* [Relation to 0.6](relation-to-0.6.md) - **deprecated** framing.

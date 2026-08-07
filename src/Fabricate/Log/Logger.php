@@ -4,8 +4,8 @@ namespace Fabricate\Log;
 
 use Closure;
 use Fabricate\Contracts\Events\Dispatcher;
-use Fabricate\Contracts\NutsAndBolts\Arrayable;
-use Fabricate\Contracts\NutsAndBolts\Jsonable;
+use Fabricate\NutsAndBolts\Contracts\Arrayable;
+use Fabricate\NutsAndBolts\Contracts\Jsonable;
 use Fabricate\Log\Events\MessageLogged;
 use Fabricate\NutsAndBolts\Concerns\Conditionable;
 use Psr\Log\LoggerInterface;

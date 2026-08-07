@@ -3,14 +3,12 @@
 namespace Fabricate\NutsAndBolts;
 
 use Closure;
-use PhpOption\Option;
 use PhpOption\Some;
 use RuntimeException;
-use Fabricate\Filesystem\Filesystem;
+use PhpOption\Option;
 use Dotenv\Repository\RepositoryBuilder;
 use Dotenv\Repository\RepositoryInterface;
 use Dotenv\Repository\Adapter\PutenvAdapter;
-use Fabricate\Contracts\Filesystem\FileNotFoundException;
 
 class Env
 {
@@ -120,131 +118,183 @@ class Env
         return self::getOption($key)->getOrThrow(new RuntimeException("Environment variable [$key] has no value."));
     }
 
-    /**
-     * Write an array of key-value pairs to the environment file.
-     *
-     * @param  array<string, mixed>  $variables
-     * @param  string  $pathToFile
-     * @param  bool  $overwrite
-     * @return void
-     *
-     * @throws RuntimeException
-     * @throws FileNotFoundException
-     */
-    public static function writeVariables(array $variables, string $pathToFile, bool $overwrite = false): void
-    {
-        $filesystem = new Filesystem;
+    /*
+     |--------------------------------------------------------------------------
+     | Flagged for relocation — .env file writers (Filesystem)
+     |--------------------------------------------------------------------------
+     |
+     | Nab must not depend on Filesystem (moons only). These writers are kept
+     | commented as donor code for Broadcasting (websockets install) and/or
+     | Core Workshop commands, which may peer with Filesystem.
+     |
+     | See: .okf/conventions/dependency-direction.md  →  "Env write ownership"
+     | Also: .okf/components/nuts-and-bolts.md  →  Known violations
+     |
+     | Relocate with composition (e.g. Broadcasting EnvFile + Filesystem), not
+     | by re-enabling a Nab → Filesystem edge.
+     |
+     | Formerly required:
+     |   use Fabricate\Filesystem\Filesystem;
+     |   use Fabricate\Contracts\Filesystem\FileNotFoundException;
+     |
+    */
 
-        if ($filesystem->missing($pathToFile)) {
-            throw new RuntimeException("The file [{$pathToFile}] does not exist.");
-        }
+    // /**
+    //  * Write an array of key-value pairs to the environment file.
+    //  *
+    //  * @param  array<string, mixed>  $variables
+    //  * @param  string  $pathToFile
+    //  * @param  bool  $overwrite
+    //  * @return void
+    //  *
+    //  * @throws RuntimeException
+    //  * @throws FileNotFoundException
+    //  */
+    // public static function writeVariables(array $variables, string $pathToFile, bool $overwrite = false): void
+    // {
+    //     $filesystem = new Filesystem;
+    //
+    //     if ($filesystem->missing($pathToFile)) {
+    //         throw new RuntimeException("The file [{$pathToFile}] does not exist.");
+    //     }
+    //
+    //     $lines = explode(PHP_EOL, $filesystem->get($pathToFile));
+    //
+    //     foreach ($variables as $key => $value) {
+    //         $lines = self::addVariableToEnvContents($key, $value, $lines, $overwrite);
+    //     }
+    //
+    //     $filesystem->put($pathToFile, implode(PHP_EOL, $lines));
+    // }
 
-        $lines = explode(PHP_EOL, $filesystem->get($pathToFile));
+    // /**
+    //  * Write a single key-value pair to the environment file.
+    //  *
+    //  * @param  string  $key
+    //  * @param  mixed  $value
+    //  * @param  string  $pathToFile
+    //  * @param  bool  $overwrite
+    //  * @return void
+    //  *
+    //  * @throws \RuntimeException
+    //  * @throws FileNotFoundException
+    //  */
+    // public static function writeVariable(string $key, mixed $value, string $pathToFile, bool $overwrite = false): void
+    // {
+    //     $filesystem = new Filesystem;
+    //
+    //     if ($filesystem->missing($pathToFile)) {
+    //         throw new RuntimeException("The file [{$pathToFile}] does not exist.");
+    //     }
+    //
+    //     $envContent = $filesystem->get($pathToFile);
+    //
+    //     $lines = explode(PHP_EOL, $envContent);
+    //     $lines = self::addVariableToEnvContents($key, $value, $lines, $overwrite);
+    //
+    //     $filesystem->put($pathToFile, implode(PHP_EOL, $lines));
+    // }
 
-        foreach ($variables as $key => $value) {
-            $lines = self::addVariableToEnvContents($key, $value, $lines, $overwrite);
-        }
+    // /**
+    //  * Add a variable to the environment file contents.
+    //  *
+    //  * @param  string  $key
+    //  * @param  mixed  $value
+    //  * @param  array<int, string>  $envLines
+    //  * @param  bool  $overwrite
+    //  * @return array<int, string>
+    //  */
+    // protected static function addVariableToEnvContents(string $key, mixed $value, array $envLines, bool $overwrite): array
+    // {
+    //     $prefix = explode('_', $key)[0].'_';
+    //     $lastPrefixIndex = -1;
+    //
+    //     $shouldQuote = preg_match('/^[a-zA-Z0-9]+$/', $value) === 0;
+    //
+    //     $lineToAddVariations = [
+    //         $key.'='.(is_string($value) ? self::prepareQuotedValue($value) : $value),
+    //         $key.'='.$value,
+    //     ];
+    //
+    //     $lineToAdd = $shouldQuote ? $lineToAddVariations[0] : $lineToAddVariations[1];
+    //
+    //     if ($value === '') {
+    //         $lineToAdd = $key.'=';
+    //     }
+    //
+    //     foreach ($envLines as $index => $line) {
+    //         if (str_starts_with($line, $prefix)) {
+    //             $lastPrefixIndex = $index;
+    //         }
+    //
+    //         if (in_array($line, $lineToAddVariations)) {
+    //             // This exact line already exists, so we don't need to add it again.
+    //             return $envLines;
+    //         }
+    //
+    //         if ($line === $key.'=') {
+    //             // If the value is empty, we can replace it with the new value.
+    //             $envLines[$index] = $lineToAdd;
+    //
+    //             return $envLines;
+    //         }
+    //
+    //         if (str_starts_with($line, $key.'=')) {
+    //             if (! $overwrite) {
+    //                 return $envLines;
+    //             }
+    //
+    //             $envLines[$index] = $lineToAdd;
+    //
+    //             return $envLines;
+    //         }
+    //     }
+    //
+    //     if ($lastPrefixIndex === -1) {
+    //         if (count($envLines) && $envLines[count($envLines) - 1] !== '') {
+    //             $envLines[] = '';
+    //         }
+    //
+    //         return array_merge($envLines, [$lineToAdd]);
+    //     }
+    //
+    //     return array_merge(
+    //         array_slice($envLines, 0, $lastPrefixIndex + 1),
+    //         [$lineToAdd],
+    //         array_slice($envLines, $lastPrefixIndex + 1)
+    //     );
+    // }
 
-        $filesystem->put($pathToFile, implode(PHP_EOL, $lines));
-    }
+    // /**
+    //  * Wrap a string in quotes, choosing double or single quotes.
+    //  *
+    //  * @param  string  $input
+    //  * @return string
+    //  */
+    // protected static function prepareQuotedValue(string $input): string
+    // {
+    //     return str_contains($input, '"')
+    //         ? "'".self::addSlashesExceptFor($input, ['"'])."'"
+    //         : '"'.self::addSlashesExceptFor($input, ["'"]).'"';
+    // }
 
-    /**
-     * Write a single key-value pair to the environment file.
-     *
-     * @param  string  $key
-     * @param  mixed  $value
-     * @param  string  $pathToFile
-     * @param  bool  $overwrite
-     * @return void
-     *
-     * @throws \RuntimeException
-     * @throws FileNotFoundException
-     */
-    public static function writeVariable(string $key, mixed $value, string $pathToFile, bool $overwrite = false): void
-    {
-        $filesystem = new Filesystem;
-
-        if ($filesystem->missing($pathToFile)) {
-            throw new RuntimeException("The file [{$pathToFile}] does not exist.");
-        }
-
-        $envContent = $filesystem->get($pathToFile);
-
-        $lines = explode(PHP_EOL, $envContent);
-        $lines = self::addVariableToEnvContents($key, $value, $lines, $overwrite);
-
-        $filesystem->put($pathToFile, implode(PHP_EOL, $lines));
-    }
-
-    /**
-     * Add a variable to the environment file contents.
-     *
-     * @param  string  $key
-     * @param  mixed  $value
-     * @param  array<int, string>  $envLines
-     * @param  bool  $overwrite
-     * @return array<int, string>
-     */
-    protected static function addVariableToEnvContents(string $key, mixed $value, array $envLines, bool $overwrite): array
-    {
-        $prefix = explode('_', $key)[0].'_';
-        $lastPrefixIndex = -1;
-
-        $shouldQuote = preg_match('/^[a-zA-Z0-9]+$/', $value) === 0;
-
-        $lineToAddVariations = [
-            $key.'='.(is_string($value) ? self::prepareQuotedValue($value) : $value),
-            $key.'='.$value,
-        ];
-
-        $lineToAdd = $shouldQuote ? $lineToAddVariations[0] : $lineToAddVariations[1];
-
-        if ($value === '') {
-            $lineToAdd = $key.'=';
-        }
-
-        foreach ($envLines as $index => $line) {
-            if (str_starts_with($line, $prefix)) {
-                $lastPrefixIndex = $index;
-            }
-
-            if (in_array($line, $lineToAddVariations)) {
-                // This exact line already exists, so we don't need to add it again.
-                return $envLines;
-            }
-
-            if ($line === $key.'=') {
-                // If the value is empty, we can replace it with the new value.
-                $envLines[$index] = $lineToAdd;
-
-                return $envLines;
-            }
-
-            if (str_starts_with($line, $key.'=')) {
-                if (! $overwrite) {
-                    return $envLines;
-                }
-
-                $envLines[$index] = $lineToAdd;
-
-                return $envLines;
-            }
-        }
-
-        if ($lastPrefixIndex === -1) {
-            if (count($envLines) && $envLines[count($envLines) - 1] !== '') {
-                $envLines[] = '';
-            }
-
-            return array_merge($envLines, [$lineToAdd]);
-        }
-
-        return array_merge(
-            array_slice($envLines, 0, $lastPrefixIndex + 1),
-            [$lineToAdd],
-            array_slice($envLines, $lastPrefixIndex + 1)
-        );
-    }
+    // /**
+    //  * Escape a string using addslashes, excluding the specified characters from being escaped.
+    //  *
+    //  * @param  string  $value
+    //  * @param  array<string>  $except
+    //  * @return string
+    //  */
+    // protected static function addSlashesExceptFor(string $value, array $except = []): string
+    // {
+    //     $escaped = addslashes($value);
+    //
+    //     foreach ($except as $character) {
+    //         $escaped = str_replace('\\'.$character, $character, $escaped);
+    //     }
+    //
+    //     return $escaped;
+    // }
 
     /**
      * Get the possible option for this environment variable.
@@ -277,36 +327,5 @@ class Env
 
                 return $value;
             });
-    }
-
-    /**
-     * Wrap a string in quotes, choosing double or single quotes.
-     *
-     * @param  string  $input
-     * @return string
-     */
-    protected static function prepareQuotedValue(string $input): string
-    {
-        return str_contains($input, '"')
-            ? "'".self::addSlashesExceptFor($input, ['"'])."'"
-            : '"'.self::addSlashesExceptFor($input, ["'"]).'"';
-    }
-
-    /**
-     * Escape a string using addslashes, excluding the specified characters from being escaped.
-     *
-     * @param  string  $value
-     * @param  array<string>  $except
-     * @return string
-     */
-    protected static function addSlashesExceptFor(string $value, array $except = []): string
-    {
-        $escaped = addslashes($value);
-
-        foreach ($except as $character) {
-            $escaped = str_replace('\\'.$character, $character, $escaped);
-        }
-
-        return $escaped;
     }
 }

@@ -9,7 +9,7 @@ use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 
-#[AsCommand(name: 'make:command')]
+#[AsCommand(name: 'make:console')]
 class ConsoleMakeCommand extends GeneratorCommand
 {
     use CreatesMatchingTest;
@@ -19,7 +19,7 @@ class ConsoleMakeCommand extends GeneratorCommand
      *
      * @var string
      */
-    protected string $name = 'make:command';
+    protected string $name = 'make:console';
 
     /**
      * The console command description.

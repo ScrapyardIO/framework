@@ -5,10 +5,10 @@ namespace Fabricate\NutsAndBolts\Concerns;
 use Carbon\CarbonInterval;
 use Carbon\Unit;
 use Fabricate\NutsAndBolts\Arr;
+use Fabricate\NutsAndBolts\Carbon;
 use Fabricate\NutsAndBolts\Collection;
-use Fabricate\NutsAndBolts\MagicAliases\Date;
 use Fabricate\NutsAndBolts\Number;
-use Fabricate\NutsAndBolts\Str;
+use Fabricate\NutsAndBolts\Stringable;
 use stdClass;
 
 use function Fabricate\NutsAndBolts\Helpers\enum_value;
@@ -55,13 +55,7 @@ trait InteractsWithData
 
         $data = $this->all();
 
-        foreach ($keys as $value) {
-            if (! Arr::has($data, $value)) {
-                return false;
-            }
-        }
-
-        return true;
+        return array_all($keys, fn ($value) => Arr::has($data, $value));
     }
 
     /**
@@ -113,13 +107,7 @@ trait InteractsWithData
     {
         $keys = is_array($key) ? $key : func_get_args();
 
-        foreach ($keys as $value) {
-            if ($this->isEmptyString($value)) {
-                return false;
-            }
-        }
-
-        return true;
+        return array_all($keys, fn ($value) => ! $this->isEmptyString($value));
     }
 
     /**
@@ -132,13 +120,7 @@ trait InteractsWithData
     {
         $keys = is_array($key) ? $key : func_get_args();
 
-        foreach ($keys as $value) {
-            if (! $this->isEmptyString($value)) {
-                return false;
-            }
-        }
-
-        return true;
+        return array_all($keys, fn ($value) => $this->isEmptyString($value));
     }
 
     /**
@@ -151,13 +133,7 @@ trait InteractsWithData
     {
         $keys = is_array($keys) ? $keys : func_get_args();
 
-        foreach ($keys as $key) {
-            if ($this->filled($key)) {
-                return true;
-            }
-        }
-
-        return false;
+        return array_any($keys, fn ($key) => $this->filled($key));
     }
 
     /**
@@ -285,7 +261,7 @@ trait InteractsWithData
      */
     public function string($key, $default = null)
     {
-        return Str::of($this->data($key, $default));
+        return new Stringable($this->data($key, $default));
     }
 
     /**
@@ -359,10 +335,10 @@ trait InteractsWithData
         }
 
         if (is_null($format)) {
-            return Date::parse($this->data($key), $tz);
+            return Carbon::parse($this->data($key), $tz);
         }
 
-        return Date::createFromFormat($format, $this->data($key), $tz);
+        return Carbon::createFromFormat($format, $this->data($key), $tz);
     }
 
     /**

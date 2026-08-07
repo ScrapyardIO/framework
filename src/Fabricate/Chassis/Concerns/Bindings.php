@@ -3,17 +3,18 @@
 namespace Fabricate\Chassis\Concerns;
 
 use Closure;
+use Fabricate\Chassis\Attributes\Bind;
 use Fabricate\Chassis\ContextualBindingBuilder;
+use Fabricate\Chassis\Exceptions\BindingResolutionException;
+use Fabricate\Chassis\Exceptions\CircularDependencyException;
 use Fabricate\Chassis\RewindableGenerator;
 use Fabricate\Chassis\Util;
-use TypeError;
-use ReflectionClass;
-use ReflectionFunction;
-use ReflectionException;
-use Fabricate\Chassis\Attributes\Bind;
+use Fabricate\Contracts\Chassis\ContextualBindingBuilder as ContextualBindingBuilderContract;
 use Fabricate\Contracts\Chassis\SelfBuilding;
-use Fabricate\Contracts\Chassis\BindingResolutionException;
-use Fabricate\Contracts\Chassis\CircularDependencyException;
+use ReflectionClass;
+use ReflectionException;
+use ReflectionFunction;
+use TypeError;
 
 trait Bindings
 {
@@ -25,13 +26,6 @@ trait Bindings
     protected array $bindings = [];
 
     /**
-     * The container's method bindings.
-     *
-     * @var Closure[]
-     */
-    protected array $methodBindings = [];
-
-    /**
      * The contextual binding map.
      *
      * @var array[]
@@ -41,9 +35,16 @@ trait Bindings
     /**
      * The contextual attribute handlers.
      *
-     * @var array[]
+     * @var array<class-string, callable>
      */
     public array $contextualAttributes = [];
+
+    /**
+     * The container's method bindings.
+     *
+     * @var array<string, callable>
+     */
+    protected array $methodBindings = [];
 
     /**
      * Whether an abstract class has already had its attributes checked for bindings.
@@ -58,6 +59,96 @@ trait Bindings
      * @var array<class-string, "scoped"|"singleton"|null>
      */
     protected array $checkedForSingletonOrScopedAttributes = [];
+
+    /**
+     * Register a binding with the container.
+     *
+     * @param callable|string $abstract
+     * @param callable|string|null $concrete
+     * @param bool $shared
+     * @return void
+     *
+     * @throws TypeError
+     * @throws ReflectionException|BindingResolutionException|CircularDependencyException
+     */
+    public function bind(callable|string $abstract, callable|string|null $concrete = null, bool $shared = false): void
+    {
+        if ($abstract instanceof Closure) {
+            $this->bindBasedOnClosureReturnTypes(
+                $abstract, $concrete, $shared
+            );
+            return;
+        }
+
+        $this->dropStaleInstances($abstract);
+
+        // If no concrete type was given, we will simply set the concrete type to the
+        // abstract type. After that, the concrete type to be registered as shared
+        // without being forced to state their classes in both of the parameters.
+        if (is_null($concrete)) {
+            $concrete = $abstract;
+        }
+
+        // If the factory is not a Closure, it means it is just a class name which is
+        // bound into this container to the abstract type and we will just wrap it
+        // up inside its own Closure to give us more convenience when extending.
+        if (! $concrete instanceof Closure) {
+            if (! is_string($concrete)) {
+                throw new TypeError(self::class.'::bind(): Argument #2 ($concrete) must be of type Closure|string|null');
+            }
+
+            $concrete = $this->getClosure($abstract, $concrete);
+        }
+
+        $this->bindings[$abstract] = ['concrete' => $concrete, 'shared' => $shared];
+
+        // If the abstract type was already resolved in this container we'll fire the
+        // rebound listener so that any objects which have already gotten resolved
+        // can have their copy of the object updated via the listener callbacks.
+        if ($this->resolved($abstract)) {
+            $this->rebound($abstract);
+        }
+    }
+
+    /**
+     * Register a binding with the container based on the given Closure's return types.
+     *
+     * @param Closure|string $abstract
+     * @param Closure|string|null $concrete
+     * @param bool $shared
+     * @return void
+     * @throws ReflectionException|BindingResolutionException|CircularDependencyException
+     */
+    protected function bindBasedOnClosureReturnTypes(Closure|string $abstract, Closure|string|null $concrete = null, bool $shared = false): void
+    {
+        $abstracts = $this->closureReturnTypes($abstract);
+
+        $concrete = $abstract;
+
+        foreach ($abstracts as $abstract) {
+            $this->bind($abstract, $concrete, $shared);
+        }
+    }
+
+    /**
+     * Get the Closure to be used when building a type.
+     *
+     * @param string $abstract
+     * @param string $concrete
+     * @return Closure
+     */
+    protected function getClosure(string $abstract, string $concrete): Closure
+    {
+        return function ($container, $parameters = []) use ($abstract, $concrete) {
+            if ($abstract == $concrete) {
+                return $container->build($concrete);
+            }
+
+            return $container->resolve(
+                $concrete, $parameters, raiseEvents: false
+            );
+        };
+    }
 
     /**
      * Get the contextual concrete binding for the given abstract.
@@ -96,18 +187,6 @@ trait Bindings
     protected function findInContextualBindings(callable|string $abstract): callable|string|null
     {
         return $this->contextual[end($this->buildStack)][$abstract] ?? null;
-    }
-
-    /**
-     * Determine if the given concrete is buildable.
-     *
-     * @param  mixed  $concrete
-     * @param string $abstract
-     * @return bool
-     */
-    protected function isBuildable(mixed $concrete, string $abstract): bool
-    {
-        return $concrete === $abstract || $concrete instanceof Closure;
     }
 
     /**
@@ -193,93 +272,94 @@ trait Bindings
     }
 
     /**
-     * Register a binding with the container.
+     * Determine if the given concrete is buildable.
      *
-     * @param callable|string $abstract
-     * @param callable|string|null $concrete
-     * @param bool $shared
-     * @return void
-     *
-     * @throws TypeError
-     * @throws ReflectionException|BindingResolutionException|CircularDependencyException
-     */
-    public function bind(callable|string $abstract, callable|string|null $concrete = null, bool $shared = false): void
-    {
-        if ($abstract instanceof Closure) {
-            $this->bindBasedOnClosureReturnTypes(
-                $abstract, $concrete, $shared
-            );
-            return;
-        }
-
-        $this->dropStaleInstances($abstract);
-
-        // If no concrete type was given, we will simply set the concrete type to the
-        // abstract type. After that, the concrete type to be registered as shared
-        // without being forced to state their classes in both of the parameters.
-        if (is_null($concrete)) {
-            $concrete = $abstract;
-        }
-
-        // If the factory is not a Closure, it means it is just a class name which is
-        // bound into this container to the abstract type and we will just wrap it
-        // up inside its own Closure to give us more convenience when extending.
-        if (! $concrete instanceof Closure) {
-            if (! is_string($concrete)) {
-                throw new TypeError(self::class.'::bind(): Argument #2 ($concrete) must be of type Closure|string|null');
-            }
-
-            $concrete = $this->getClosure($abstract, $concrete);
-        }
-
-        $this->bindings[$abstract] = ['concrete' => $concrete, 'shared' => $shared];
-
-        // If the abstract type was already resolved in this container we'll fire the
-        // rebound listener so that any objects which have already gotten resolved
-        // can have their copy of the object updated via the listener callbacks.
-        if ($this->resolved($abstract)) {
-            $this->rebound($abstract);
-        }
-    }
-
-    /**
-     * Get the Closure to be used when building a type.
-     *
+     * @param  mixed  $concrete
      * @param string $abstract
-     * @param string $concrete
-     * @return Closure
+     * @return bool
      */
-    protected function getClosure(string $abstract, string $concrete): Closure
+    protected function isBuildable(mixed $concrete, string $abstract): bool
     {
-        return function ($container, $parameters = []) use ($abstract, $concrete) {
-            if ($abstract == $concrete) {
-                return $container->build($concrete);
-            }
-
-            return $container->resolve(
-                $concrete, $parameters, raiseEvents: false
-            );
-        };
+        return $concrete === $abstract || $concrete instanceof Closure;
     }
 
     /**
-     * Register a binding with the container based on the given Closure's return types.
+     * Throw an exception that the concrete is not instantiable.
      *
-     * @param Closure|string $abstract
-     * @param Closure|string|null $concrete
-     * @param bool $shared
-     * @return void
-     * @throws ReflectionException|BindingResolutionException|CircularDependencyException
+     * @param string $concrete
+     * @return never
+     *
+     * @throws BindingResolutionException
      */
-    protected function bindBasedOnClosureReturnTypes(Closure|string $abstract, Closure|string|null $concrete = null, bool $shared = false): void
+    protected function notInstantiable(string $concrete): never
     {
-        $abstracts = $this->closureReturnTypes($abstract);
+        if (! empty($this->buildStack)) {
+            $previous = implode(', ', $this->buildStack);
 
-        $concrete = $abstract;
-
-        foreach ($abstracts as $abstract) {
-            $this->bind($abstract, $concrete, $shared);
+            $message = "Target [$concrete] is not instantiable while building [$previous].";
+        } else {
+            $message = "Target [$concrete] is not instantiable.";
         }
+
+        throw new BindingResolutionException($message);
+    }
+
+    /**
+     * Get the class name for the given callback, if one can be determined.
+     *
+     * @param callable|string $callback
+     * @return string|false
+     * @throws ReflectionException
+     */
+    protected function getClassForCallable(callable|string $callback): false|string
+    {
+        if (is_callable($callback) &&
+            ! ($reflector = new ReflectionFunction($callback(...)))->isAnonymous()) {
+            return $reflector->getClosureScopeClass()->name ?? false;
+        }
+
+        return false;
+    }
+
+    /**
+     * Determine if the container has a method binding.
+     *
+     * @param string $method
+     * @return bool
+     */
+    public function hasMethodBinding(string $method): bool
+    {
+        return isset($this->methodBindings[$method]);
+    }
+
+    /**
+     * Instantiate a concrete instance of the given self building type.
+     *
+     * @template TClass of object
+     *
+     * @param object{'newInstance': Closure(static, array): TClass|class-string<TClass>} $concrete
+     * @param ReflectionClass $reflector
+     * @return TClass
+     *
+     * @throws BindingResolutionException|CircularDependencyException|ReflectionException
+     */
+    protected function buildSelfBuildingInstance(object $concrete, ReflectionClass $reflector): object
+    {
+        if (! method_exists($concrete, 'newInstance')) {
+            throw new BindingResolutionException("No newInstance method exists for [$concrete].");
+        }
+
+        $this->buildStack[] = $concrete;
+
+        $instance = $this->call([$concrete, 'newInstance']);
+
+        array_pop($this->buildStack);
+
+        $this->fireAfterResolvingAttributeCallbacks(
+            $reflector->getAttributes(), $instance
+        );
+
+        return $instance;
     }
 
     /**
@@ -361,73 +441,6 @@ trait Bindings
         return $instance;
     }
 
-    /**
-     * Instantiate a concrete instance of the given self building type.
-     *
-     * @template TClass of object
-     *
-     * @param object{'newInstance': Closure(static, array): TClass|class-string<TClass>} $concrete
-     * @param ReflectionClass $reflector
-     * @return TClass
-     *
-     * @throws BindingResolutionException|CircularDependencyException|ReflectionException
-     */
-    protected function buildSelfBuildingInstance(object $concrete, ReflectionClass $reflector): object
-    {
-        if (! method_exists($concrete, 'newInstance')) {
-            throw new BindingResolutionException("No newInstance method exists for [$concrete].");
-        }
-
-        $this->buildStack[] = $concrete;
-
-        $instance = $this->call([$concrete, 'newInstance']);
-
-        array_pop($this->buildStack);
-
-        $this->fireAfterResolvingAttributeCallbacks(
-            $reflector->getAttributes(), $instance
-        );
-
-        return $instance;
-    }
-
-    /**
-     * Throw an exception that the concrete is not instantiable.
-     *
-     * @param string $concrete
-     * @return never
-     *
-     * @throws BindingResolutionException
-     */
-    protected function notInstantiable(string $concrete): never
-    {
-        if (! empty($this->buildStack)) {
-            $previous = implode(', ', $this->buildStack);
-
-            $message = "Target [$concrete] is not instantiable while building [$previous].";
-        } else {
-            $message = "Target [$concrete] is not instantiable.";
-        }
-
-        throw new BindingResolutionException($message);
-    }
-
-    /**
-     * Get the class name for the given callback, if one can be determined.
-     *
-     * @param callable|string $callback
-     * @return string|false
-     * @throws ReflectionException
-     */
-    protected function getClassForCallable(callable|string $callback): false|string
-    {
-        if (is_callable($callback) &&
-            ! ($reflector = new ReflectionFunction($callback(...)))->isAnonymous()) {
-            return $reflector->getClosureScopeClass()->name ?? false;
-        }
-
-        return false;
-    }
 
     /**
      * Determine if a given type is shared.
@@ -465,13 +478,15 @@ trait Bindings
     /**
      * Assign a set of tags to a given binding.
      *
-     * @param array|string $abstracts
-     * @param  mixed  ...$tags
+     * @param array<int, string>|string $abstracts
+     * @param mixed ...$tags
      * @return void
      */
-    public function tag(array|string $abstracts, ...$tags): void
+    public function tag(array|string $abstracts, mixed ...$tags): void
     {
-        $tags = is_array($tags) ? $tags : array_slice(func_get_args(), 1);
+        $tags = (count($tags) === 1 && is_array($tags[0]))
+            ? $tags[0]
+            : $tags;
 
         foreach ($tags as $tag) {
             if (! isset($this->tags[$tag])) {
@@ -488,7 +503,7 @@ trait Bindings
      * Resolve every binding for a given tag.
      *
      * @param string $tag
-     * @return iterable
+     * @return iterable<int, mixed>
      */
     public function tagged(string $tag): iterable
     {
@@ -506,11 +521,11 @@ trait Bindings
     /**
      * Bind a callback to resolve with Chassis::call.
      *
-     * @param array|string $method
-     * @param  Closure  $callback
+     * @param array{0: class-string|object, 1: string}|string $method
+     * @param callable $callback
      * @return void
      */
-    public function bindMethod(array|string $method, $callback): void
+    public function bindMethod(array|string $method, callable $callback): void
     {
         $this->methodBindings[$this->parseBindMethod($method)] = $callback;
     }
@@ -518,7 +533,7 @@ trait Bindings
     /**
      * Get the method to be bound in class@method format.
      *
-     * @param array|string $method
+     * @param array{0: class-string|object, 1: string}|string $method
      * @return string
      */
     protected function parseBindMethod(array|string $method): string
@@ -533,13 +548,17 @@ trait Bindings
     /**
      * Register a binding if it hasn't already been registered.
      *
-     * @param Closure|string $abstract
-     * @param Closure|string|null $concrete
+     * @param callable|string $abstract
+     * @param callable|string|null $concrete
      * @param bool $shared
      * @return void
-     * @throws ReflectionException|CircularDependencyException|BindingResolutionException
+     *
+     * @throws BindingResolutionException
+     * @throws CircularDependencyException
+     * @throws ReflectionException
+     * @throws TypeError
      */
-    public function bindIf($abstract, $concrete = null, bool $shared = false): void
+    public function bindIf(callable|string $abstract, callable|string|null $concrete = null, bool $shared = false): void
     {
         if (! $this->bound($abstract)) {
             $this->bind($abstract, $concrete, $shared);
@@ -550,22 +569,24 @@ trait Bindings
      * Add a contextual binding to the container.
      *
      * @param string $concrete
-     * @param  Closure|string  $abstract
-     * @param  Closure|string  $implementation
+     * @param callable|string $abstract
+     * @param array|callable|string $implementation
      * @return void
      */
-    public function addContextualBinding(string $concrete, $abstract, $implementation): void
+    public function addContextualBinding(string $concrete, callable|string $abstract, array|callable|string $implementation): void
     {
-        $this->contextual[$concrete][$this->getAlias($abstract)] = $implementation;
+        $key = is_string($abstract) ? $this->getAlias($abstract) : $abstract;
+
+        $this->contextual[$concrete][$key] = $implementation;
     }
 
     /**
      * Define a contextual binding.
      *
-     * @param array|string $concrete
-     * @return ContextualBindingBuilder
+     * @param array<int, string>|string $concrete
+     * @return ContextualBindingBuilderContract
      */
-    public function when(array|string $concrete): ContextualBindingBuilder
+    public function when(array|string $concrete): ContextualBindingBuilderContract
     {
         $aliases = [];
 

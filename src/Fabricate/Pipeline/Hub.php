@@ -3,8 +3,8 @@
 namespace Fabricate\Pipeline;
 
 use Closure;
+use Fabricate\Chassis\Contracts\WireframeServiceContainer;
 use Fabricate\Contracts\Pipeline\Hub as HubContract;
-use Fabricate\Contracts\Chassis\WireframeServiceContainer;
 
 class Hub implements HubContract
 {
@@ -58,8 +58,8 @@ class Hub implements HubContract
     /**
      * Send an object through one of the available pipelines.
      *
-     * @param mixed $object
-     * @param string|null $pipeline
+     * @param  mixed  $object
+     * @param  string|null  $pipeline
      * @return mixed
      */
     public function pipe(mixed $object, ?string $pipeline = null): mixed
@@ -74,9 +74,9 @@ class Hub implements HubContract
     /**
      * Get the container instance used by the hub.
      *
-     * @return WireframeServiceContainer
+     * @return WireframeServiceContainer|null
      */
-    public function getContainer()
+    public function getContainer(): ?WireframeServiceContainer
     {
         return $this->container;
     }
@@ -87,7 +87,7 @@ class Hub implements HubContract
      * @param  WireframeServiceContainer  $container
      * @return $this
      */
-    public function setContainer(Container $container)
+    public function setContainer(WireframeServiceContainer $container): static
     {
         $this->container = $container;
 

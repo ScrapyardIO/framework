@@ -1,6 +1,6 @@
 <?php
 
-namespace DeptOfScrapyardRobotics\Tests\Sketches\Fixtures;
+namespace Tests\Sketches\Fixtures;
 
 use Fabricate\Contracts\Sketches\SketchLoopResult;
 use Fabricate\Sketches\Sketch;
@@ -12,12 +12,7 @@ class CountingSketch extends Sketch
 
     public int $loops = 0;
 
-    public int $stopAfter;
-
-    public function __construct(int $stopAfter = 1)
-    {
-        $this->stopAfter = $stopAfter;
-    }
+    public function __construct(public int $stopAfter = 1) {}
 
     public function boot(): void
     {

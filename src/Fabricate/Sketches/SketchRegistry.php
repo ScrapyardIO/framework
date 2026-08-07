@@ -2,7 +2,7 @@
 
 namespace Fabricate\Sketches;
 
-use Fabricate\Contracts\Chassis\WireframeServiceContainer;
+use Fabricate\Contracts\Chassis\ServiceContainer;
 use Fabricate\Contracts\Sketches\Attributes\Sketch as SketchAttribute;
 use Fabricate\Contracts\Sketches\Sketch as SketchContract;
 use Fabricate\Contracts\Sketches\SketchException;
@@ -20,12 +20,10 @@ class SketchRegistry implements SketchRegistryContract
     protected array $sketches = [];
 
     public function __construct(
-        protected WireframeServiceContainer $container,
+        protected ServiceContainer $container,
     ) {}
 
     /**
-     * Register an attributed Sketch class (package or config-loaded).
-     *
      * @param  class-string  $class
      *
      * @throws SketchException
@@ -44,8 +42,6 @@ class SketchRegistry implements SketchRegistryContract
     }
 
     /**
-     * Register a conventionally discovered app Sketch under an explicit name.
-     *
      * @param  class-string  $class
      *
      * @throws SketchException
@@ -57,8 +53,6 @@ class SketchRegistry implements SketchRegistryContract
     }
 
     /**
-     * Resolve a registered Sketch through the container.
-     *
      * @throws SketchException
      */
     public function resolve(string $name): SketchContract
@@ -80,9 +74,6 @@ class SketchRegistry implements SketchRegistryContract
         return $sketch;
     }
 
-    /**
-     * Determine whether a sketch name is registered.
-     */
     public function has(string $name): bool
     {
         return isset($this->sketches[$this->normalize($name)]);
@@ -156,7 +147,7 @@ class SketchRegistry implements SketchRegistryContract
 
         if ($attributes === []) {
             throw new SketchException(
-                'Sketch ['.$reflection->getName().'] must declare the #['.SketchAttribute::class.'] attribute.'
+                'Sketch ['.$reflection->getName().'] must declare the #['.class_basename(SketchAttribute::class).'] attribute.'
             );
         }
 

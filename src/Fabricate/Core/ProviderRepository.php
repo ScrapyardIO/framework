@@ -3,54 +3,33 @@
 namespace Fabricate\Core;
 
 use Exception;
+use Fabricate\Chassis\Exceptions\BindingResolutionException;
+use Fabricate\Contracts\Core\Program;
+use Fabricate\Contracts\Filesystem\FileNotFoundException;
 use Fabricate\Filesystem\Filesystem;
 use Fabricate\NutsAndBolts\ServiceProvider;
-use Fabricate\Contracts\Filesystem\FileNotFoundException;
-use Fabricate\Contracts\Core\Program as MachineInterface;
-use Fabricate\Contracts\Chassis\BindingResolutionException;
 
 class ProviderRepository
 {
     /**
-     * The application implementation.
-     *
-     * @var MachineInterface
-     */
-    protected MachineInterface $machine;
-
-    /**
-     * The filesystem instance.
-     *
-     * @var Filesystem
-     */
-    protected Filesystem $files;
-
-    /**
-     * The path to the manifest file.
-     *
-     * @var string
-     */
-    protected string $manifestPath;
-
-    /**
      * Create a new service repository instance.
      *
-     * @param  MachineInterface  $machine
-     * @param Filesystem $files
+     * @param  Program  $machine
+     * @param  Filesystem  $files
      * @param  string  $manifestPath
      */
-    public function __construct(MachineInterface $machine, Filesystem $files, $manifestPath)
-    {
-        $this->machine = $machine;
-        $this->files = $files;
-        $this->manifestPath = $manifestPath;
-    }
+    public function __construct(
+        protected Program $machine,
+        protected Filesystem $files,
+        protected string $manifestPath,
+    ) {}
 
     /**
      * Register the application service providers.
      *
-     * @param array $providers
+     * @param  array<int, class-string>  $providers
      * @return void
+     *
      * @throws BindingResolutionException
      * @throws Exception
      */
@@ -86,11 +65,12 @@ class ProviderRepository
      * Load the service provider manifest JSON file.
      *
      * @return array|null
+     *
      * @throws FileNotFoundException
      */
     public function loadManifest(): ?array
     {
-        // The service manifest is a file containing a JSON representation of every
+        // The service manifest is a file containing a PHP representation of every
         // service provided by the application and whether its provider is using
         // deferred loading or should be eagerly loaded on each request to us.
         if ($this->files->exists($this->manifestPath)) {
@@ -107,8 +87,8 @@ class ProviderRepository
     /**
      * Determine if the manifest should be compiled.
      *
-     * @param ?array $manifest
-     * @param array $providers
+     * @param  array|null  $manifest
+     * @param  array  $providers
      * @return bool
      */
     public function shouldRecompile(?array $manifest, array $providers): bool
@@ -119,9 +99,10 @@ class ProviderRepository
     /**
      * Register the load events for the given provider.
      *
-     * @param string $provider
-     * @param array $events
+     * @param  string  $provider
+     * @param  array  $events
      * @return void
+     *
      * @throws BindingResolutionException
      */
     protected function registerLoadEvents(string $provider, array $events): void
@@ -136,8 +117,9 @@ class ProviderRepository
     /**
      * Compile the application service manifest file.
      *
-     * @param array $providers
+     * @param  array  $providers
      * @return array
+     *
      * @throws Exception
      */
     protected function compileManifest(array $providers): array
@@ -186,14 +168,18 @@ class ProviderRepository
     /**
      * Write the service manifest file to disk.
      *
-     * @param array $manifest
+     * @param  array  $manifest
      * @return array
      *
      * @throws Exception
      */
     public function writeManifest(array $manifest): array
     {
-        if (! is_writable($dirname = dirname($this->manifestPath))) {
+        $dirname = dirname($this->manifestPath);
+
+        $this->files->ensureDirectoryExists($dirname);
+
+        if (! is_writable($dirname)) {
             throw new Exception("The {$dirname} directory must be present and writable.");
         }
 
@@ -207,7 +193,7 @@ class ProviderRepository
     /**
      * Create a new provider instance.
      *
-     * @param string $provider
+     * @param  class-string  $provider
      * @return ServiceProvider
      */
     public function createProvider(string $provider): ServiceProvider

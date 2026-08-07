@@ -3,9 +3,9 @@
 namespace Fabricate\Console\Scheduling;
 
 use DateTimeInterface;
-use Fabricate\Cache\DynamoDbStore;
 use Fabricate\Contracts\Cache\Factory as Cache;
 use Fabricate\Contracts\Cache\LockProvider;
+use Fabricate\Contracts\Cache\Store;
 
 class CacheSchedulingMutex implements SchedulingMutex, CacheAware
 {
@@ -40,7 +40,7 @@ class CacheSchedulingMutex implements SchedulingMutex, CacheAware
      * @param  \DateTimeInterface  $time
      * @return bool
      */
-    public function create(Event $event, DateTimeInterface $time)
+    public function create(Event $event, DateTimeInterface $time): bool
     {
         $mutexName = $event->mutexName().$time->format('Hi');
 
@@ -62,7 +62,7 @@ class CacheSchedulingMutex implements SchedulingMutex, CacheAware
      * @param  \DateTimeInterface  $time
      * @return bool
      */
-    public function exists(Event $event, DateTimeInterface $time)
+    public function exists(Event $event, DateTimeInterface $time): bool
     {
         $mutexName = $event->mutexName().$time->format('Hi');
 
@@ -81,18 +81,15 @@ class CacheSchedulingMutex implements SchedulingMutex, CacheAware
      * @param  \Fabricate\Contracts\Cache\Store  $store
      * @return bool
      */
-    protected function shouldUseLocks($store)
+    protected function shouldUseLocks(Store $store): bool
     {
-        return $store instanceof LockProvider && ! $store instanceof DynamoDbStore;
+        return $store instanceof LockProvider;
     }
 
     /**
      * Specify the cache store that should be used.
-     *
-     * @param  string  $store
-     * @return $this
      */
-    public function useStore($store)
+    public function useStore($store): static
     {
         $this->store = $store;
 

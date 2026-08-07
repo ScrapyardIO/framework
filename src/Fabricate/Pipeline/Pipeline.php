@@ -3,8 +3,8 @@
 namespace Fabricate\Pipeline;
 
 use Closure;
+use Fabricate\Chassis\Contracts\WireframeServiceContainer;
 use Fabricate\Contracts\Chassis\BindingResolutionException;
-use Fabricate\Contracts\Chassis\WireframeServiceContainer;
 use Fabricate\Contracts\Pipeline\Pipeline as PipelineContract;
 use Fabricate\NutsAndBolts\Concerns\Conditionable;
 use Fabricate\NutsAndBolts\Concerns\Macroable;
@@ -50,7 +50,7 @@ class Pipeline implements PipelineContract
      *
      * @var Closure|null
      */
-    protected ?Closure $finally;
+    protected ?Closure $finally = null;
 
     /**
      * Indicates whether to wrap the pipeline in a database transaction.

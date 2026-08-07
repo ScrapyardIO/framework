@@ -3,10 +3,11 @@
 namespace Fabricate\Bus;
 
 use Closure;
+use Fabricate\Chassis\Contracts\WireframeServiceContainer;
 use Fabricate\Contracts\Bus\QueueingDispatcher;
-use Fabricate\Contracts\Chassis\WireframeServiceContainer;
 use Fabricate\Contracts\Queue\Factory as QueueFactory;
 use Fabricate\Contracts\Queue\Queue as QueueContract;
+use Fabricate\Contracts\Queue\ShouldQueue;
 use Fabricate\NutsAndBolts\Collection;
 use RuntimeException;
 
@@ -129,7 +130,13 @@ class Dispatcher implements QueueingDispatcher
 
     protected function commandShouldBeQueued(mixed $command): bool
     {
-        return is_object($command) && property_exists($command, 'shouldQueue') && (bool) $command->shouldQueue;
+        if ($command instanceof ShouldQueue) {
+            return true;
+        }
+
+        return is_object($command)
+            && property_exists($command, 'shouldQueue')
+            && (bool) $command->shouldQueue;
     }
 
     protected function resolveQueue(): QueueContract

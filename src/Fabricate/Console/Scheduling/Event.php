@@ -9,12 +9,11 @@ use GuzzleHttp\Client as HttpClient;
 use GuzzleHttp\ClientInterface as HttpClientInterface;
 use GuzzleHttp\Exception\TransferException;
 use Fabricate\Console\ConsoleProgram as Application;
-use Fabricate\Contracts\Chassis\WireframeServiceContainer as Container;
+use Fabricate\Chassis\Contracts\WireframeServiceContainer as Container;
 use Fabricate\Contracts\Debug\ExceptionHandler;
 use Fabricate\Contracts\Mail\Mailer;
 use Fabricate\Log\Context\Repository;
 use Fabricate\NutsAndBolts\Arr;
-use Fabricate\NutsAndBolts\MagicAliases\Date;
 use Fabricate\NutsAndBolts\Stringable;
 use Fabricate\NutsAndBolts\Concerns\Macroable;
 use Fabricate\NutsAndBolts\Concerns\ReflectsClosures;
@@ -216,11 +215,7 @@ class Event
 
         return Process::fromShellCommandline(
             $this->buildCommand(), base_path(), ['__LARAVEL_CONTEXT' => $context], null, null
-        )->run(
-            laravel_cloud()
-                ? fn ($type, $line) => fwrite($type === 'out' ? STDOUT : STDERR, $line)
-                : fn () => true
-        );
+        )->run(fn () => true);
     }
 
     /**
@@ -320,7 +315,7 @@ class Event
      */
     protected function expressionPasses()
     {
-        $date = Date::now();
+        $date = Carbon::now();
 
         if ($this->timezone) {
             $date = $date->setTimezone($this->timezone);
@@ -348,7 +343,7 @@ class Event
      */
     public function filtersPass($app)
     {
-        $this->lastChecked = Date::now();
+        $this->lastChecked = Carbon::now();
 
         foreach ($this->filters as $callback) {
             if (! $this->callEventCallback($app, $callback)) {
@@ -836,7 +831,7 @@ class Event
      */
     public function nextRunDate($currentTime = 'now', $nth = 0, $allowCurrentDate = false)
     {
-        return Date::instance((new CronExpression($this->getExpression()))
+        return Carbon::instance((new CronExpression($this->getExpression()))
             ->getNextRunDate($currentTime, $nth, $allowCurrentDate, $this->timezone));
     }
 
@@ -939,10 +934,10 @@ class Event
     {
         return str_replace([
             Application::phpBinary(),
-            Application::artisanBinary(),
+            Application::workshopBinary(),
         ], [
             'php',
-            preg_replace("#['\"]#", '', Application::artisanBinary()),
+            preg_replace("#['\"]#", '', Application::workshopBinary()),
         ], $command);
     }
 }

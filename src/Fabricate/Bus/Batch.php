@@ -10,7 +10,7 @@ use Fabricate\Bus\Events\BatchStarted;
 use Fabricate\Chassis\Chassis;
 use Fabricate\Contracts\Events\Dispatcher;
 use Fabricate\Contracts\Queue\Factory as QueueFactory;
-use Fabricate\Contracts\NutsAndBolts\Arrayable;
+use Fabricate\NutsAndBolts\Contracts\Arrayable;
 use Fabricate\Queue\CallQueuedClosure;
 use Fabricate\NutsAndBolts\Arr;
 use Fabricate\NutsAndBolts\Collection;

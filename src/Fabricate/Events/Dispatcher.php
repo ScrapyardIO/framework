@@ -3,7 +3,7 @@
 namespace Fabricate\Events;
 
 use Closure;
-use Fabricate\Chassis\Chassis;
+use Fabricate\Contracts\Chassis\ServiceContainer;
 use Fabricate\Contracts\Events\Dispatcher as DispatcherContract;
 use Fabricate\NutsAndBolts\Arr;
 use Fabricate\NutsAndBolts\Collection;
@@ -16,7 +16,7 @@ class Dispatcher implements DispatcherContract
     use Macroable;
     use ReflectsClosures;
 
-    protected Chassis $container;
+    protected ServiceContainer $container;
 
     /**
      * @var array<string, array<int, callable|array|string|null>>
@@ -33,6 +33,25 @@ class Dispatcher implements DispatcherContract
      */
     protected array $wildcardsCache = [];
 
+    /**
+     * The events that have been deferred while `defer()` is buffering.
+     *
+     * @var array<int, array<int, mixed>>
+     */
+    protected array $deferredEvents = [];
+
+    /**
+     * Whether events are currently being deferred instead of dispatched.
+     */
+    protected bool $deferringEvents = false;
+
+    /**
+     * The specific events to defer, or null to defer all events.
+     *
+     * @var array<int, string>|null
+     */
+    protected ?array $eventsToDefer = null;
+
     // Queue / broadcast scaffolding intentionally kept visible for staged enablement:
     // - Queue-aware handlers (ShouldQueue, ShouldQueueAfterCommit)
     // - Listener job wrapping (CallQueuedListener)
@@ -42,9 +61,9 @@ class Dispatcher implements DispatcherContract
     // These paths are currently disabled to keep core events stable while
     // queue/broadcast layers are still being brought online.
 
-    public function __construct(?Chassis $container = null)
+    public function __construct(ServiceContainer $container)
     {
-        $this->container = $container ?: Chassis::getInstance();
+        $this->container = $container;
     }
 
     public function listen(array|Closure|string $events, array|Closure|string|null $listener = null): void
@@ -82,7 +101,7 @@ class Dispatcher implements DispatcherContract
             || $this->hasWildcardListeners($eventName);
     }
 
-    protected function hasWildcardListeners(string $eventName): bool
+    public function hasWildcardListeners(string $eventName): bool
     {
         foreach ($this->wildcards as $key => $listeners) {
             if (Str::is($key, $eventName)) {
@@ -142,6 +161,12 @@ class Dispatcher implements DispatcherContract
     public function dispatch(object|string $event, mixed $payload = [], bool $halt = false): ?array
     {
         [$eventName, $parsedPayload] = $this->parseEventAndPayload($event, $payload);
+
+        if ($this->shouldDeferEvent($eventName)) {
+            $this->deferredEvents[] = func_get_args();
+
+            return null;
+        }
 
         // Future queue/broadcast hookpoint:
         // if ($this->shouldBroadcast($parsedPayload)) { ... }
@@ -330,5 +355,53 @@ class Dispatcher implements DispatcherContract
                 $this->forget($key);
             }
         }
+    }
+
+    /**
+     * Execute the given callback while deferring events, then dispatch all deferred events.
+     */
+    public function defer(callable $callback, ?array $events = null): mixed
+    {
+        $wasDeferring = $this->deferringEvents;
+        $previousDeferredEvents = $this->deferredEvents;
+        $previousEventsToDefer = $this->eventsToDefer;
+
+        $this->deferringEvents = true;
+        $this->deferredEvents = [];
+        $this->eventsToDefer = $events;
+
+        try {
+            $result = $callback();
+
+            $this->deferringEvents = false;
+
+            foreach ($this->deferredEvents as $args) {
+                $this->dispatch(...$args);
+            }
+
+            return $result;
+        } finally {
+            $this->deferringEvents = $wasDeferring;
+            $this->deferredEvents = $previousDeferredEvents;
+            $this->eventsToDefer = $previousEventsToDefer;
+        }
+    }
+
+    /**
+     * Determine if the given event should be deferred.
+     */
+    protected function shouldDeferEvent(string $event): bool
+    {
+        return $this->deferringEvents && (is_null($this->eventsToDefer) || in_array($event, $this->eventsToDefer));
+    }
+
+    /**
+     * Get the raw, unprepared listeners.
+     *
+     * @return array<string, array<int, callable|array|string|null>>
+     */
+    public function getRawListeners(): array
+    {
+        return $this->listeners;
     }
 }
