@@ -34,6 +34,17 @@ class RunSketchCommand extends Command
         $this->setDescription($sketchDescription !== '' ? $sketchDescription : "Run the [{$sketchName}] sketch");
     }
 
+    protected function configure(): void
+    {
+        parent::configure();
+
+        $sketch = $this->registry->resolve($this->sketchName);
+
+        if ($sketch instanceof Sketch) {
+            $sketch->configureCommand($this);
+        }
+    }
+
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $sketch = $this->registry->resolve($this->sketchName);

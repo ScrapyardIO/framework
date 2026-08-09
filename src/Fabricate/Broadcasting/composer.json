@@ -1,6 +1,6 @@
 {
-    "name": "fabricate/config",
-    "description": "The Fabricate Config package.",
+    "name": "fabricate/broadcasting",
+    "description": "The Fabricate Broadcasting package (channel helpers; broadcaster stack deferred).",
     "license": "MIT",
     "authors": [
         {
@@ -18,13 +18,12 @@
     },
     "require": {
         "php": "^8.4|^8.5|^8.6",
-        "fabricate/collections": "^0.7.0",
         "fabricate/contracts": "^0.7.0"
     },
     "minimum-stability": "dev",
     "autoload": {
         "psr-4": {
-            "Fabricate\\Config\\": ""
+            "Fabricate\\Broadcasting\\": ""
         }
     },
     "config": {

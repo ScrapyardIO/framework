@@ -82,9 +82,9 @@ ScrapyardIO:
 1. Nab `Env.php` — `writeVariable(s)` + Filesystem helpers are **commented out** in-source with a relocation flag pointing here; restore into Broadcasting/Core + Filesystem when those land (do not re-enable on Nab).[^env]
 2. Nab `Helpers/functions.php`: `defer()` → `app()`, `workshop_binary()` — move to Core.[^nab]
 
-# 0.6 donor note (Broadcasting / websockets)
+# 0.7 note (Broadcasting / websockets)
 
-0.6 kitchen-sink has **hooks, not a component**: commented `BroadcastServiceProvider` in `DefaultProviders`, commented MagicAlias, Events `Dispatcher` scaffolding comments for `ShouldBroadcast`. No `src/Fabricate/Broadcasting/` tree yet — restore/build when websockets are in scope.
+`src/Fabricate/Broadcasting/` ships as packaged `fabricate/broadcasting` with **channel helpers only** (`Channel`, `PrivateChannel`, `InteractsWithSockets`). Broadcaster manager/drivers, Core `BroadcastServiceProvider` / MagicAlias, and `.env` install writers remain deferred — see [broadcasting](../components/broadcasting.md). 0.6 donor still has Events scaffolding comments for `ShouldBroadcast`.
 
 # Related
 

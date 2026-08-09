@@ -47,7 +47,7 @@ Component manifests describe a richer / older packaging world than the umbrella 
 
 ## branch aliases
 
-Several components still declare `extra.branch-alias` for `0.5.x-dev` / `0.6.x-dev` while the umbrella is `0.7.0`.
+Component `extra.branch-alias` `dev-master` values should be `0.7.x-dev` (aligned with umbrella `0.7.0`). Historical drift to `0.5.x-dev` / `0.6.x-dev` was corrected 2026-08-07.
 
 # Agent guidance
 

@@ -36,6 +36,7 @@ sources:
 | `fabricate/conditionable` | `src/Fabricate/Conditionable/`[^conditionable] |
 | `fabricate/macroable` | `src/Fabricate/Macroable/`[^macroable] |
 | `fabricate/reflection` | `src/Fabricate/Reflection/`[^reflection] |
+| `fabricate/broadcasting` | `src/Fabricate/Broadcasting/` |
 | `fabricate/bus` | `src/Fabricate/Bus/` |
 | `fabricate/encryption` | `src/Fabricate/Encryption/` |
 | `fabricate/hashing` | `src/Fabricate/Hashing/` |

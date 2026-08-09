@@ -1,7 +1,13 @@
 # Directory Update Log
 
+## 2026-08-09
+
+* **Update**: [sketches](components/sketches.md) — `Sketch::configureCommand(Command)` hooked from `RunSketchCommand::configure()` so sketches can declare CLI arguments/options.
+
 ## 2026-08-07
 
+* **Update**: Component `extra.branch-alias` `dev-master` → `0.7.x-dev` for Contracts, Config, Chassis, Collections, Reflection, Macroable (were `0.6.x-dev`) and NutsAndBolts (was `0.5.x-dev`). Updated [component-composer-drift](traps/component-composer-drift.md).
+* **Creation**: Packaged [broadcasting](components/broadcasting.md) as `fabricate/broadcasting` — `composer.json` / `LICENSE.md` / `.gitattributes`, umbrella `replace`, channel helpers only (drivers/provider deferred). Guide + SDK pages on docs site. Concept `draft`.
 * **Update**: [redis](components/redis.md) — `PredisConnection` now wraps `scan`/`zscan`/`hscan`/`sscan` (null cursor → `0`) for Redis 7.4 + CI parity with `PhpRedisConnection`. Flipped concept back to `draft` until re-verified. Fixes Actions failure (`ERR invalid cursor` in `RedisConnectionTest`).
 * **Verification**: Angel marked all non-deprecated OKF concepts `status: stable` for 0.7.x publish prep (`verified` by `human:Angel Gonzalez (projectsaturnstudios)`). Index + components index markers updated; `deprecated` concepts unchanged. Smoke tests added for Broadcasting / Pagination / Reflection; GHA tests workflow now runs Redis service + `ext-redis` (+ `predis/predis` require-dev).
 * **Update**: [sketches](components/sketches.md) — Nodes/Flows are a general orchestration API (not sketch-only); recommended for sketch workflows + AI assistant step graphs; points at website Guide **Nodes & Flows**.
@@ -72,3 +78,5 @@
 * **Correction**: Angel rejected the hollow-snapshot OKF framing. Components, config, and component completeness are being restored this session; 0.6 kitchen-sink is a **donor**, not forbidden. Marked [component-composer-drift](traps/component-composer-drift.md) and [do-not-copy-0.6-okf](traps/do-not-copy-0.6-okf.md) deprecated; rewrote root [index](index.md) + [AGENTS.md](../AGENTS.md) for reconstitution. Full rewrite deferred until restore slice is chosen.
 * **Initialization**: Created OKF v0.2 bundle for `scrapyard-io/framework` **0.7.0** (orientation, components, conventions, traps, playbooks). That pass assumed a permanent slim NutsAndBolts-only surface — **superseded** by the correction above.
 * **Creation**: Package-root [AGENTS.md](../AGENTS.md) first updated for 0.7 OKF workflow, then corrected for reconstitution.
+
+* **Update**: Sketch::configureCommand hooked from RunSketchCommand::configure() so metal-canvas (and peers) can declare driver/title/size CLI args.

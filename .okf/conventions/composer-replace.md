@@ -19,6 +19,7 @@ Root `composer.json` `replace`:[^composer]
 
 | Package | Version |
 |---------|---------|
+| `fabricate/broadcasting` | `self.version` |
 | `fabricate/bus` | `self.version` |
 | `fabricate/cache` | `self.version` |
 | `fabricate/chassis` | `self.version` |

@@ -6,7 +6,7 @@
         "scrapyard-io"
     ],
     "license": "MIT",
-    "version": "0.7.0",
+    "version": "0.7.1",
     "homepage": "https://scrapyard-io.projectsaturnstudios.com",
     "support": {
         "issues": "https://github.com/scrapyard-io/framework/issues",
@@ -64,6 +64,7 @@
         "laudis/neo4j-php-client": "Required to use fabricate/graph Neo4j connections (^3.3)."
     },
     "replace": {
+        "fabricate/broadcasting": "self.version",
         "fabricate/bus": "self.version",
         "fabricate/cache": "self.version",
         "fabricate/chassis": "self.version",

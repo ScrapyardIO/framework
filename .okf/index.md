@@ -33,6 +33,7 @@ Read this index first; open only the concepts needed for the task.
 * [contracts](components/contracts.md) - Public swap surfaces (`ServiceContainer`, `CLIKernel`, `Events\Dispatcher`, …). (`stable`)
 * [core](components/core.md) - Machine, AssemblyLine, ConsoleKernel → Workshop. (`stable`)
 * [events](components/events.md) - Sync Dispatcher + defer/NullDispatcher/EventFake; Core owns Event alias / ESP / event:* / Dispatchable. (`stable`)
+* [broadcasting](components/broadcasting.md) - Channel / PrivateChannel / InteractsWithSockets; broadcaster drivers deferred. (`draft`)
 * [log](components/log.md) - LogManager / Logger (Monolog); Core owns Log alias / LogServiceProvider. Context deferred. (`stable`)
 * [cache](components/cache.md) - CacheManager; public stores file+redis; Core owns Cache alias / CacheServiceProvider. (`stable`)
 * [redis](components/redis.md) - RedisManager; phpredis/predis; Core owns Redis alias / RedisServiceProvider. (`draft`)
@@ -54,12 +55,12 @@ Read this index first; open only the concepts needed for the task.
 
 # Conventions
 
-* [Component dependency direction](conventions/dependency-direction.md) - Core may know all; Nab → moons + contracts; Broadcasting↔Filesystem OK for `.env` writes. (`stable`)
+* [Component dependency direction](conventions/dependency-direction.md) - Core may know all; Nab → moons + contracts; Broadcasting↔Filesystem OK for `.env` writes. (`draft`)
 * [MagicAlias and provider ownership](conventions/magic-aliases.md) - Domains stay pure; Core owns concrete aliases + service providers. (`stable`)
 * [AWS is not first-class](conventions/aws-not-first-class.md) - Local/edge only; no public SQS/Dynamo/S3 surface. (`stable`)
 * [Fabricate / NutsAndBolts namespace](conventions/namespace-fabricate-nuts-and-bolts.md) - Root PSR-4 maps.
-* [Composer replace](conventions/composer-replace.md) - Current `fabricate/*` replaces (grows as components return).
-* [Component packages](conventions/component-packages.md) - Split `fabricate/*` vs umbrella.
+* [Composer replace](conventions/composer-replace.md) - Current `fabricate/*` replaces (grows as components return). (`draft`)
+* [Component packages](conventions/component-packages.md) - Split `fabricate/*` vs umbrella. (`draft`)
 
 # Traps
 

@@ -6,6 +6,7 @@ use Fabricate\Console\Concerns\InteractsWithIO;
 use Fabricate\Console\OutputStyle;
 use Fabricate\Contracts\Sketches\Sketch as SketchContract;
 use Fabricate\Contracts\Sketches\SketchLoopResult;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 
 abstract class Sketch implements SketchContract
@@ -33,6 +34,14 @@ abstract class Sketch implements SketchContract
     {
         $this->input = $input;
         $this->output = $output;
+    }
+
+    /**
+     * Register sketch-specific CLI arguments / options on the runner command.
+     */
+    public function configureCommand(Command $command): void
+    {
+        //
     }
 
     /**

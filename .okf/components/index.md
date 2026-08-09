@@ -14,6 +14,7 @@ Fabricate components live under `src/Fabricate/*` and are documented here. Each 
 * [console](console.md) - Workshop CLI + scheduling. (`stable`)
 * [filesystem](filesystem.md) - Native Filesystem + Flysystem. (`stable`)
 * [events](events.md) - Sync Dispatcher. (`stable`)
+* [broadcasting](broadcasting.md) - Channel helpers; broadcaster stack deferred. (`draft`)
 * [log](log.md) - LogManager / Monolog. (`stable`)
 * [cache](cache.md) - CacheManager; file+redis public stores. (`stable`)
 * [redis](redis.md) - RedisManager. (`draft`)
