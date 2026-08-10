@@ -2,6 +2,7 @@
 
 ## 2026-08-09
 
+* **Update**: [sketches](components/sketches.md) — `SketchRegistry::replace` / `replaceAs` for companion packages to overwrite a package smoke sketch name (UX → tubes `canvas-window-demo`).
 * **Update**: [sketches](components/sketches.md) — `Sketch::configureCommand(Command)` hooked from `RunSketchCommand::configure()` so sketches can declare CLI arguments/options.
 
 ## 2026-08-07

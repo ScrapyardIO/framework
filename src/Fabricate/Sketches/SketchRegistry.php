@@ -53,6 +53,35 @@ class SketchRegistry implements SketchRegistryContract
     }
 
     /**
+     * @param  class-string  $class
+     *
+     * @throws SketchException
+     */
+    public function replace(string $class): void
+    {
+        $reflection = $this->reflectSketchClass($class);
+        $attribute = $this->requireSketchAttribute($reflection);
+        $name = trim($attribute->name);
+
+        if ($name === '') {
+            throw new SketchException("Sketch [{$class}] attribute name must not be empty.");
+        }
+
+        $this->rebind($name, $class);
+    }
+
+    /**
+     * @param  class-string  $class
+     *
+     * @throws SketchException
+     */
+    public function replaceAs(string $name, string $class): void
+    {
+        $this->reflectSketchClass($class);
+        $this->rebind($name, $class);
+    }
+
+    /**
      * @throws SketchException
      */
     public function resolve(string $name): SketchContract
@@ -104,6 +133,22 @@ class SketchRegistry implements SketchRegistryContract
             throw new SketchException(
                 "Sketch [{$normalized}] is already registered as [{$this->sketches[$normalized]}]."
             );
+        }
+
+        $this->sketches[$normalized] = $class;
+    }
+
+    /**
+     * @param  class-string  $class
+     *
+     * @throws SketchException
+     */
+    protected function rebind(string $name, string $class): void
+    {
+        $normalized = $this->normalize($name);
+
+        if ($normalized === '') {
+            throw new SketchException("Sketch name for [{$class}] must not be empty.");
         }
 
         $this->sketches[$normalized] = $class;

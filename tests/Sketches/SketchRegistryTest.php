@@ -49,3 +49,47 @@ test('registry rejects duplicate names', function () {
         destroyTempMachinePath($basePath);
     }
 });
+
+#[SketchAttribute('replace-fixture')]
+class ReplaceFixtureSketch extends Sketch
+{
+    public function loop(): SketchLoopResult
+    {
+        return SketchLoopResult::STOP;
+    }
+}
+
+test('registry replace overwrites an existing sketch name', function () {
+    $basePath = sys_get_temp_dir().'/scrapyard-io-sketch-registry-replace-'.uniqid();
+    mkdir($basePath.'/config', 0777, true);
+
+    try {
+        $app = new Machine($basePath);
+        $registry = new SketchRegistry($app);
+
+        $registry->registerConvention('replace-fixture', AttributedFixtureSketch::class);
+        $registry->replace(ReplaceFixtureSketch::class);
+
+        expect($registry->all()['replace-fixture'])->toBe(ReplaceFixtureSketch::class)
+            ->and($registry->resolve('replace-fixture'))->toBeInstanceOf(ReplaceFixtureSketch::class);
+    } finally {
+        destroyTempMachinePath($basePath);
+    }
+});
+
+test('registry replaceAs binds under an explicit name', function () {
+    $basePath = sys_get_temp_dir().'/scrapyard-io-sketch-registry-replace-as-'.uniqid();
+    mkdir($basePath.'/config', 0777, true);
+
+    try {
+        $app = new Machine($basePath);
+        $registry = new SketchRegistry($app);
+
+        $registry->registerConvention('canvas-window-demo', AttributedFixtureSketch::class);
+        $registry->replaceAs('canvas-window-demo', ReplaceFixtureSketch::class);
+
+        expect($registry->all()['canvas-window-demo'])->toBe(ReplaceFixtureSketch::class);
+    } finally {
+        destroyTempMachinePath($basePath);
+    }
+});

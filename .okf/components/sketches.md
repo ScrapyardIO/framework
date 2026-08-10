@@ -52,8 +52,9 @@ sources:
 3. **Flow:** Decision-based Logic Orchestration — boot node → tick self-loop (`continue`/`stop`); `try/finally` shutdown once. `Node`/`Flow` also run **outside** sketches (Workshop, packages, AI step routers); recommended for sketch decision workflows. App nodes live in `app/Workflows`. Guide: website Digging Deeper **Nodes & Flows**.
 4. **AsyncNode:** Uses Concurrency (`sketches.concurrency` default `fiber`; optional `pokio` via suggested `nunomaduro/pokio`).
 5. **Discovery:** Convention `app/Runner/Sketches` subclasses of `App\Runner\Sketches\Sketch`; config `sketches.load` + `#[Sketch('name')]`.
-6. **CLI args:** Override `Sketch::configureCommand(Command $command)` to add Symfony arguments/options; `RunSketchCommand` calls it from `configure()`. Read values via InteractsWithIO (`argument()` / `option()`) after `configureIO`.
-7. **Generators:** `workshop make:sketch`, `workshop make:middleware` (Runner namespaces); `workshop make:node` / `make:node --async` → `app/Workflows`.
+6. **Replace:** `SketchRegistry::replace($class)` / `replaceAs($name, $class)` overwrite a sketch name (companions upgrading a package smoke — e.g. `scrapyard-io/ux` takes over tubes `canvas-window-demo`). Plain `register` still rejects duplicates.
+7. **CLI args:** Override `Sketch::configureCommand(Command $command)` to add Symfony arguments/options; `RunSketchCommand` calls it from `configure()`. Read values via InteractsWithIO (`argument()` / `option()`) after `configureIO`.
+8. **Generators:** `workshop make:sketch`, `workshop make:middleware` (Runner namespaces); `workshop make:node` / `make:node --async` → `app/Workflows`.
 
 Pest: `tests/Sketches/*`, `tests/Concurrency/FiberAndPokioDriverTest.php`.
 
