@@ -1,5 +1,10 @@
 # Directory Update Log
 
+## 2026-08-10
+
+* **Update**: Packagist `0.7.3` was missing Nab `Manager` + `Concerns\Splices16Bits` that workspace already had — `scrapyard-io/gpio-framework` `PWMAdapterManager` (and sibling protocol managers) fatal during `workshop package:discover`. Synced into Official git tree and bumping to **0.7.4** for release.
+* **Update**: [nuts-and-bolts](components/nuts-and-bolts.md) — restored `Manager` + `Concerns\Splices16Bits` so companion packages (`scrapyard-io/gpio-framework`) can plug into 0.7. `Manager` types `Fabricate\Chassis\Contracts\WireframeServiceContainer` and uses `Concerns\RebindsCallbacksToSelf`. Corrected exception note: `ScrapyardIOException` is on `Fabricate\Contracts\Core`, not Nab root.
+
 ## 2026-08-09
 
 * **Update**: [sketches](components/sketches.md) — `SketchRegistry::replace` / `replaceAs` for companion packages to overwrite a package smoke sketch name (UX → tubes `canvas-window-demo`).
