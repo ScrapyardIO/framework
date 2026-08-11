@@ -4,16 +4,19 @@ title: nuts-and-bolts
 description: fabricate/nuts-and-bolts — lowest Fabricate support component; contracts, utilities, helpers; must not depend on satellites or Core.
 resource: src/Fabricate/NutsAndBolts/
 tags: [component, nuts-and-bolts, support]
-generated: { by: cursor-agent/grok-4.5, at: "2026-08-06T21:16:00Z" }
-verified: { by: "human:Angel Gonzalez (projectsaturnstudios)", at: "2026-08-07T07:50:00Z" }
-status: stable
+generated: { by: cursor-agent/grok-4.5, at: "2026-08-10T20:40:00Z" }
+verified: { by: null, at: null }
+status: draft
 sources:
   - id: composer
     resource: src/Fabricate/NutsAndBolts/composer.json
     title: fabricate/nuts-and-bolts manifest
-  - id: exception
-    resource: src/Fabricate/NutsAndBolts/ScrapyardIOException.php
-    title: ScrapyardIOException
+  - id: manager
+    resource: src/Fabricate/NutsAndBolts/Manager.php
+    title: Manager (driver resolver)
+  - id: splices16
+    resource: src/Fabricate/NutsAndBolts/Concerns/Splices16Bits.php
+    title: Splices16Bits concern
   - id: contracts
     resource: src/Fabricate/NutsAndBolts/Contracts/
     title: Contract interfaces
@@ -51,10 +54,10 @@ NutsAndBolts is the **pure support** floor: types and helpers that remain meanin
 
 | Area | Examples |
 |------|----------|
-| Contracts | `Arrayable`, `Jsonable`, `CanBeEscapedWhenCastToString`[^contracts] |
-| Exception | `ScrapyardIOException`[^exception] |
-| Utilities | `Str`, `Bytes`, `Carbon`, … |
-| Concerns | e.g. `Dumpable` |
+| Contracts | `Arrayable`, `Jsonable`, `CanBeEscapedWhenCastToString`, `DeferrableProvider`[^contracts] |
+| Exception | `ScrapyardIOException` lives on `Fabricate\Contracts\Core` (not Nab root) — companions should import that FQCN |
+| Utilities | `Str`, `Bytes`, `Carbon`, `Manager` (driver manager; Chassis `WireframeServiceContainer`), `MultipleInstanceManager`, … |
+| Concerns | e.g. `Dumpable`, `RebindsCallbacksToSelf`, `Splices16Bits`, `Splices4Bits` |
 | Defer types | `Defer\DeferredCallback`, `Defer\DeferredCallbackCollection`[^defer] |
 | Helpers | `helpers.php` (`tap`, `env`, `with`, …), `bytes.php`, `time.php`, `functions.php`[^helpers] |
 
