@@ -1,0 +1,38 @@
+{
+    "name": "gpio/contracts",
+    "description": "The GeneralPurposeIO Contracts package.",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Angel Gonzalez",
+            "email": "angel@projectsaturnstudios.com"
+        }
+    ],
+    "homepage": "https://scrapyard-io.projectsaturnstudios.com",
+    "support": {
+        "issues": "https://github.com/scrapyard-io/framework/issues",
+        "source": "https://github.com/scrapyard-io/framework"
+    },
+    "require": {
+        "php": "^8.4|^8.5|^8.6",
+        "venusian-voyager/contracts": "^0.8.0",
+        "venusian-voyager/io-pools": "^0.8.0"
+    },
+    "suggest": {
+        "microscrap/gpio": "^0.8.0 - GPIOLineRequest type used by DigitalIODriver"
+    },
+    "minimum-stability": "dev",
+    "autoload": {
+        "psr-4": {
+            "GeneralPurposeIO\\Contracts\\": ""
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "0.8.x-dev"
+        }
+    }
+}

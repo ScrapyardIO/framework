@@ -5,3 +5,4 @@
 .DS_Store
 composer.lock
 .idea/workspace.xml
+/.superpowers/
