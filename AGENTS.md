@@ -8,27 +8,28 @@ Do **not** create `.okf` folders under `src/GeneralPurposeIO/*` — knowledge fo
 
 ## Where this package sits
 
-`ext-posi` / `ext-ftdi` (1:1 syscalls) → `microscrap/*` (libgpiod / libmpsse / spidev / termios in PHP) → **`scrapyard-io/framework`** (protocol managers, buses, Circuits, the `gpio` dock resource) → `dept-of-scrapyard-robotics/*` (chip drivers) → `venusian/surface` EmbeddedPanels.
+`ext-posi` / `ext-ftdi` (1:1 syscalls) → `microscrap/*` (libgpiod / libmpsse / spidev / termios in PHP) → `microscrap/scrapyard-linux` (`native`) / `microscrap/scrapyard-usb` (`usb`) adapters → **`scrapyard-io/framework`** (protocol managers, transports, `none` drivers, the `gpio` dock resource) → `dept-of-scrapyard-robotics/*` (chip drivers) → `venusian/surface` EmbeddedPanels.
 
 First-class module beside Surface. Same house rules.
 
 ## Package rules (quick) — 0.8.x
 
 - Composer: `scrapyard-io/framework` **0.8.0**. PHP `^8.4|^8.5|^8.6`. Requires `venusian/framework ^0.8.0`. Namespace `GeneralPurposeIO\` → `src/GeneralPurposeIO/`.
-- **Split packages.** `gpio/analog`, `gpio/circuits`, `gpio/common`, `gpio/contracts`, `gpio/digital`, `gpio/i2c`, `gpio/pwm`, `gpio/spi`, `gpio/uart` — each with `composer.json`, `.gitattributes`, `LICENSE` under `src/GeneralPurposeIO/*`, each in the root `replace` map. `Core` is not split: it holds the aggregate provider, the `GPIO` / `Circuit` aliases and the dock resource, and ships only with the umbrella.
-- **Dependency direction.** Contracts import `Voyager\Contracts`, the concrete `Voyager\IOPools\Presumption`, and microscrap DTOs. Components import Contracts, Common, NutsAndBolts, MagicAliases, microscrap. Nothing below Core imports Core. Protocol providers reach the `gpio` manager through `$this->app->bound('gpio')`, never through the alias class.
-- **Microscrap is `suggest`, never `require`** on a component. A posix-only install must not drag `ext-ftdi`.
+- **Split packages.** `gpio/contracts`, `gpio/digital`, `gpio/i2c`, `gpio/spi`, `gpio/uart`, `gpio/pwm`, `gpio/integrated-circuits`, `gpio/nuts-and-bolts` — each with its own `composer.json` under `src/GeneralPurposeIO/*`, each in the root `replace` map. `Core` is not split: it holds the aggregate provider, the `GPIO` alias and the dock resource, and ships only with the umbrella.
+- **Protocol shape.** Each protocol = MagicAlias (`I2C`, `SPI`, `UART`, `DigitalIO`, `PWM`) → `gpio.<protocol>` `Manager` (default from `gpio.protocols.<key>.default`, built-in `none` driver) → abstract `*ConnectionDriver` (`connectTo()`, `register()`, `device()`) → abstract `*ConnectionFactory` → transport. Adapters `extend()` the managers from their own providers; the framework holds no hardware code.
+- **Dependency direction.** Contracts import `Voyager\Contracts` and the concrete `Voyager\IOPools\Presumption`. Components import Contracts, NutsAndBolts and Voyager split components. Nothing below Core imports Core.
+- **No microscrap here.** Framework code never calls `microscrap/*`; hardware lives in the adapter packages.
 - **Exceptions** descend from `GeneralPurposeIO\Contracts\Core\GPIOLevelException`.
-- **Framework calls microscrap helpers only** (`gpiod_*`, `i2c_*`, `spi_*`, `uart_*`, `mpsse_*`, `posix_*`). Never `Posi\System` or `Ftdi\FTDI`.
-- **Dock.** One `gpio` resource (`Core\IOPools\GPIOResourceDriver`), registered at provider boot when `config('gpio.io_pools.enabled')`. `tick()` never waits. ICs opt in per call (`watch`, `receive`, `defer`); blocking IO stays as it is. See `.okf/dock-resource.md`.
-- Discovery: `extra.venusian.providers` → `ScrapyardIOServiceProvider`; aliases `GPIO`, `Circuit`.
+- **Dock.** One `gpio` resource (`Core\IOPools\GPIOResourceDriver`), registered at provider boot when `config('gpio.io_pools.enabled')`. `tick()` never waits. ICs opt in per call (`watch`, `receive`, `defer`, `every`, `stream`); blocking IO stays as it is. See `.okf/dock-resource.md`.
+- Discovery: `extra.venusian.providers` → `ScrapyardIOServiceProvider`; aliases `GPIO`, `I2C`, `SPI`, `UART`, `DigitalIO`, `PWM`. Publish tag `gpio-config`.
+- **Docs reach the framework through MagicAliases**, never `app('gpio.*')`.
 - Enums int- or string-backed, FULLY UPPERCASE cases. No class constants. `is_null($x)` over `$x === null`.
-- Chip drivers do not live here. Analog is scaffold; PWM ships `enabled => false`.
+- Chip drivers do not live here.
 
 ## Verification
 
 ```bash
-vendor/bin/pest            # Mac: fakes only; hardware tests skip
+vendor/bin/pest            # fake drivers and transports; no hardware
 php -l <file>
 ```
 

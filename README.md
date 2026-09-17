@@ -1,127 +1,297 @@
-# scrapyard-io/framework (0.8)
+# scrapyard-io/framework
 
 [![Tests](https://github.com/scrapyard-io/framework/actions/workflows/tests.yml/badge.svg)](https://github.com/scrapyard-io/framework/actions/workflows/tests.yml)
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/scrapyard-io/framework.svg)](https://packagist.org/packages/scrapyard-io/framework)
-[![Total Downloads](https://img.shields.io/packagist/dt/scrapyard-io/framework.svg)](https://packagist.org/packages/scrapyard-io/framework)
 [![License](https://img.shields.io/packagist/l/scrapyard-io/framework.svg)](LICENSE)
 [![Docs](https://img.shields.io/badge/docs-ScrapyardIO-0ea5e9?logo=readthedocs&logoColor=white)](https://scrapyard-io.projectsaturnstudios.com/ecosystem/scrapyard-io/framework/0.8.x/overview)
 
-GPIO protocol adapters + **Circuits** registry for ScrapyardIO framework **0.8**, on `venusian/framework`.
+Talk to hardware from a Venusian app: I2C, SPI, UART, digital pins and PWM behind one API, whether the bus is a Raspberry Pi's own or an FTDI USB board.
 
-## Install
+`scrapyard-io/framework` gives each protocol a connection manager and a MagicAlias, and defines the transports chip drivers are written against. Adapter packages plug the actual hardware in. A `gpio` resource on the Venusian IOPool dock lets drivers watch pins, receive serial bytes and run bus work on the app's tick instead of blocking.
 
-```bash
-composer require scrapyard-io/framework:^0.8.0
-php workshop vendor:publish --tag=gpio-config
+```
+ext-posi / ext-ftdi            1:1 system and libftdi calls
+  → microscrap/*               libgpiod, i2c-dev, spidev, termios, libmpsse in PHP
+    → microscrap/scrapyard-*   adapters: the `native` and `usb` drivers
+      → scrapyard-io/framework protocol managers, transports, the gpio dock   ← this package
+        → dept-of-scrapyard-robotics/*   chip drivers
 ```
 
-Discovery registers `ScrapyardIOServiceProvider` and MagicAliases `GPIO` / `Circuit`.
+## Requirements
 
-## Basics
+- PHP 8.4 or newer
+- A Venusian application on `venusian/framework` 0.8
+- At least one adapter:
 
-**Protocol connection**
+| Adapter | Driver name | Protocols | Hardware |
+|---|---|---|---|
+| `microscrap/scrapyard-linux` | `native` | I2C, SPI, UART, digital, PWM | Linux `i2c-dev`, `spidev`, serial ports, `libgpiod`, sysfs PWM; needs `ext-posi` |
+| `microscrap/scrapyard-usb` | `usb` | I2C, SPI, UART, digital | FTDI boards such as the FT232H, over MPSSE; needs `ext-ftdi` |
+
+Without an adapter, every protocol uses the built-in `none` driver, which throws as soon as you try to connect.
+
+## Installation
+
+```bash
+composer require scrapyard-io/framework 
+```
+
+Both service providers are discovered automatically. The framework registers the protocol managers and the MagicAliases `I2C`, `SPI`, `UART`, `DigitalIO`, `PWM` and `GPIO`. Each adapter registers its driver name on every manager it supports.
+
+To choose default drivers, publish the config:
+
+```bash
+php computer vendor:publish --tag=gpio-config
+```
 
 ```php
-use GeneralPurposeIO\Core\MagicAliases\GPIO;
+// config/gpio.php
+return [
+    'protocols' => [
+        'i2c' => ['default' => 'native'],
+        'spi' => ['default' => 'native'],
+        'uart' => ['default' => 'native'],
+        'digital-in' => ['default' => 'native'],   // the DigitalIO default
+        'digital-out' => ['default' => 'native'],
+        'pwm' => ['default' => 'native'],
+    ],
+    'io_pools' => [
+        'enabled' => true,          // register the gpio dock resource
+        'defer_per_tick' => null,   // cap deferred jobs per tick; null runs them all
+    ],
+];
+```
+
+`I2C::driver()` with no name uses the default. Naming the driver, as the examples below do, works whatever the defaults are.
+
+## Quick start
+
+Read a register from a device at `0x21` on a Raspberry Pi's `i2c-1`:
+
+```php
 use GeneralPurposeIO\I2C\I2C;
 
-$slave = I2C::adapter('posix')->device(1)->bus()->slave(0x3C);
-// or via GPIO::protocol('i2c') when configuring adapters from gpio.php
+$device = I2C::driver('native')
+    ->connectTo(1)       // open /dev/i2c-1
+    ->register()         // keep the connection on the driver
+    ->device(1, 0x21);   // a transport for one address on it
+
+$device->probe();                           // true when something answers
+$bytes = $device->writeRead([0xFC], 1);     // select register 0xFC, read one byte
 ```
 
-**Circuit bootstrap**
+## Connecting
+
+Every protocol follows the same four steps:
+
+1. `driver($name)` picks an adapter.
+2. `connectTo($device)` starts a connection. For SPI and UART, set the bus options here.
+3. `register()` opens the connection and stores it on the driver. The driver hands out transports from it until the app ends.
+4. `device(...)` returns a transport for one address, chip select, port, pin or channel. It returns `null` if that device was never registered.
+
+Connecting the same device twice throws. Register a bus once, then call `device()` as often as you need.
+
+### I2C
 
 ```php
-use GeneralPurposeIO\Core\MagicAliases\Circuit;
+use GeneralPurposeIO\I2C\I2C;
 
-Circuit::addCircuit('aht20', \DeptOfScrapyardRobotics\Sensors\AHTx0\AHT20\AHT20::class);
+$bus = I2C::driver('native')->connectTo(1)->register();
+$display = $bus->device(1, 0x3C);
+$fan = $bus->device(1, 0x21);
 
-$sensor = Circuit::ic('aht20')
-    ->protocol('i2c')
-    ->driver('posix')
-    ->device(1)
-    ->slave(0x38)
-    ->make();
-
-// or a named profile from config/circuits.php
-$sensor = Circuit::profile('climate_lab');
+$ft232h = I2C::driver('usb')->connectTo('ft232h')->register()->device('ft232h', 0x53);
 ```
 
-Scaffold profiles from `#[Pinout]`:
+Transports on the same bus share one connection. Each call addresses its own device.
 
-```bash
-php workshop circuit:make-profile
-```
-
-Workshop `about` lists **GPIO** adapter availability and **Integrated Circuits** catalog options (not profiles).
-
-## Dock
-
-0.7 works. Blocking IO through Digital / I2C / SPI / UART / PWM stays as
-is. 0.8 adds one `gpio` resource on the `venusian/framework` IOPool dock
-so ICs can opt into next-tick delivery — a call to `watch`, `receive`, or
-`defer` opts an IC in per call; an IC that does not call one stays
-blocking.
+### SPI
 
 ```php
-// blocking — unchanged from 0.7
-$slave = I2C::adapter('posix')->device(1)->bus()->slave(0x38);
-$bytes = $slave->read(7);
+use GeneralPurposeIO\SPI\SPI;
 
-// dock — new, opt-in per IC
+$panel = SPI::driver('native')
+    ->connectTo(0)              // /dev/spidev0.*
+    ->mode(0)                   // SPIMode case or 0–3
+    ->speed(8_000_000)          // Hz
+    ->register()
+    ->device(0, 0);             // chip select 0
+```
+
+`endianness()` and `chipSelect()` are also available. On the `usb` driver, set the bus speed with `clockRate()`, which takes an `MPSSEClockRate`, because that factory ignores `speed()`:
+
+```php
+use Microscrap\Bindings\MPSSE\Enums\MPSSEClockRate;
+
+$panel = SPI::driver('usb')->connectTo('ft232h')->mode(0)->clockRate(MPSSEClockRate::TEN_MHZ)->register()->device('ft232h', 0);
+```
+
+### UART
+
+```php
+use GeneralPurposeIO\Contracts\UART\Parity;
+use GeneralPurposeIO\UART\UART;
+
+$gps = UART::driver('native')
+    ->connectTo('/dev/ttyAMA0')
+    ->baud(9600)
+    ->parity(Parity::NONE)
+    ->register()
+    ->device('/dev/ttyAMA0');
+```
+
+`stopBits()`, `dataBits()` and `flowControl()` take their enums or the matching integers. The defaults are 9600 baud, 8 data bits, no parity, 1 stop bit and no flow control.
+
+### Digital pins
+
+```php
+use GeneralPurposeIO\Contracts\Digital\LineBias;
+use GeneralPurposeIO\Digital\DigitalIO;
+
+$pins = DigitalIO::driver('native')->connectTo(0)->register();   // gpiochip0
+$led = $pins->output(0, 17);
+$button = $pins->input(0, 27, LineBias::PULL_UP);
+
+$led->high();
+$pressed = ! $button->read();
+```
+
+`input()` also takes `active_low`, which inverts the level the pin reports.
+
+On an FTDI board, the I2C or SPI connection already registers the device, so its GPIOL pins are available straight away:
+
+```php
+$dc = DigitalIO::driver('usb')->output('ft232h', 1);
+```
+
+### PWM
+
+```php
+use GeneralPurposeIO\PWM\PWM;
+
+$servo = PWM::driver('native')->connectTo(0)->register()->device(0, 0);   // pwmchip0, channel 0
+
+$servo->setPeriod(20_000_000);      // nanoseconds
+$servo->setDutyCycle(1_500_000);
+$servo->setEnable(true);
+```
+
+Only the `native` driver provides PWM.
+
+## Transports
+
+Chip drivers depend on these contracts from `GeneralPurposeIO\Contracts`, not on any adapter. Every transport also has `close()`.
+
+| Contract | Methods |
+|---|---|
+| `I2C\I2CTransport` | `probe()`, `read($len)`, `write($data)`, `writeRead($data, $len)`, `bulkWrite($messages)` |
+| `SPI\SPITransport` | `read($len)`, `write($data)`, `transfer($data)` |
+| `UART\UARTTransport` | `read($len)`, `write($data)`, `flush()`, `path()`, `pollBytes($max)` |
+| `Digital\DigitalOutTransport` | `low()`, `high()`, `read()`, `write($state)` |
+| `Digital\DigitalInTransport` | `read()`, `pollEdges($rising, $falling)`, `listen($timeout_ms, $rising, $falling)` |
+| `PWM\PWMTransport` | `get`/`set` for `Period`, `DutyCycle`, `Enable` and `Polarity` |
+
+Writes take a byte array or a binary string, and reads return a byte array, or `false` when the bus refuses. `listen()` blocks for up to `$timeout_ms` and returns one `DigitalEdgeEvent` or `null`. `pollEdges()` never waits.
+
+A bus transport is a view on a connection its driver owns. Closing a chip driver shouldn't close the bus other devices share.
+
+## The gpio dock
+
+Plain transport calls block. When the Venusian IOPool dock is in the app and `gpio.io_pools.enabled` is true, the framework also registers a `gpio` resource on it. Each dock tick polls, runs and sends what drivers handed it, without waiting. Reach it through `GPIO::` or `IOPool::gpio()`.
+
+| Call | What happens on each tick | Mail pushed |
+|---|---|---|
+| `watch($pin, rising: true, falling: false)` | polls an input pin for edges | `DigitalEdgeOccurrence` per edge |
+| `receive($port, max_bytes: 4096)` | polls a UART port for buffered bytes | `UARTBytesOccurrence` |
+| `defer($name, $work, $envelope = null)` | runs `$work` once, on the next tick | `TransferCompletion`; the returned `Presumption` settles with it |
+| `every($name, $work, ticks: 1)` | runs `$work` every `$ticks` ticks until the `Recurrence` is stopped | `TransferCompletion` per run |
+| `stream($name, $write, $bytes, $chunk)` | hands `$write` one `$chunk` of `$bytes` per tick | `TransferCompletion` with the bytes sent; progress on the `Presumption` |
+
+`unwatch()`, `stopReceiving()`, `inFlight($name)`, `recurring($name)` and `streaming($name)` undo or look up each one. A name can have only one job in flight at a time.
+
+```php
+use GeneralPurposeIO\Contracts\Core\Mail\TransferCompletion;
+use Voyager\IOPools\MagicAliases\IOPool;
+
 $gpio = IOPool::gpio();
-$gpio->watch($button, rising: true);                       // DigitalEdgeOccurrence next pump
-$gpio->receive($gps_port);                                 // UARTBytesOccurrence next pump
-$gpio->defer('aht20.measure', fn () => $slave->read(7))    // TransferCompletion next pump
-    ->onSuccess(fn (TransferCompletion $c) => $climate->ingest($c->result));
 
-// loop — $app->tick() / $app->events() are Surface's LiveApplication API;
-// a sketch without Surface pumps the dock with IOPool::pump() and reads
-// mail back with IOPool::drain() instead.
-$app->tick(16);
-foreach ($app->events() as $mail) { ... }
+$gpio->watch($button, rising: false, falling: true);
+
+$gpio->defer('fan.temp', fn (): array => $fan->writeRead([0xFC], 1))
+    ->onSuccess(fn (TransferCompletion $done) => printf("%d °C\n", $done->result[0]))
+    ->onFail(fn (TransferCompletion $done) => error_log($done->error->getMessage()));
+
+$poll = $gpio->every('fan.poll', fn () => $fan->writeRead([0xFC], 1), ticks: 30);
+
+while (true) {
+    IOPool::pump();                    // one tick of every dock resource
+    foreach (IOPool::drain() as $mail) {
+        // DigitalEdgeOccurrence, TransferCompletion, …
+    }
+    usleep(10_000);
+}
+
+$poll->stop();
 ```
 
-## Where this package sits
+In a Surface `LiveApplication`, `$app->tick()` pumps the dock and `$app->events()` drains it.
 
-`ext-posi` / `ext-ftdi` (1:1 syscalls) → `microscrap/*` (libgpiod / libmpsse / spidev / termios in PHP) → **`scrapyard-io/framework`** (protocol managers, buses, Circuits, the `gpio` dock resource) → `dept-of-scrapyard-robotics/*` (chip drivers) → `venusian/surface` EmbeddedPanels.
+Two rules keep the tick predictable:
 
-## Component splits
+- **Work that blocks spends the tick.** The dock never waits, but a closure that does holds up everything after it.
+- **Failures become mail.** A pin, port or recurrence that throws produces a `SourceFaultOccurrence` and stays registered. A deferred job or stream that throws settles its `TransferCompletion` with the error, and `ok()` returns `false`.
 
-This umbrella replaces the nine `src/GeneralPurposeIO/*` subtree packages at `self.version`:
+Work registered during a tick runs on the next one.
 
-| Composer | Component |
+## Writing chip drivers
+
+`dept-of-scrapyard-robotics/*` packages build on these pieces:
+
+| Class | Use |
 |---|---|
-| `gpio/analog` | `src/GeneralPurposeIO/Analog` |
-| `gpio/circuits` | `src/GeneralPurposeIO/Circuits` |
-| `gpio/common` | `src/GeneralPurposeIO/Common` |
-| `gpio/contracts` | `src/GeneralPurposeIO/Contracts` |
-| `gpio/digital` | `src/GeneralPurposeIO/Digital` |
-| `gpio/i2c` | `src/GeneralPurposeIO/I2C` |
-| `gpio/pwm` | `src/GeneralPurposeIO/PWM` |
-| `gpio/spi` | `src/GeneralPurposeIO/SPI` |
-| `gpio/uart` | `src/GeneralPurposeIO/UART` |
+| `IntegratedCircuits\Bootable` | base chip with `boot()` / `hasBooted()`; boots in the constructor when asked |
+| `IntegratedCircuits\DataRegister` | readonly register breakout: `toBits()`, `toByte()`, `fromByte()`, `none()` |
+| `Contracts\IntegratedCircuits\Sensor`, `Actuator`, `DisplayPanel` | what kind of chip it is |
+| `Contracts\IntegratedCircuits\ReadWriter` | `read($register, $length)` / `write($register, $data)` for a chip transport |
+| `Contracts\NutsAndBolts\Splices16Bits` | split 16-bit registers into bytes, and decode signed little-endian values |
+| `Contracts\IntegratedCircuits\CircuitException` | base for a chip's exceptions |
 
-`Core` (`src/GeneralPurposeIO/Core`) is not split — the aggregate provider, the `GPIO` / `Circuit` aliases, and the `gpio` dock resource ship only with the umbrella.
+The global helpers `array2bytes()`, `bytes2array()`, `byte2bits()` and `bits2byte()` convert between byte arrays, binary strings and bits.
 
-Prefer requiring **`scrapyard-io/framework`**. Each `gpio/*` package installs alone from its own `composer.json` for anyone who wants one protocol without the rest.
+## Errors
 
-## Carriers
+Every exception descends from `GeneralPurposeIO\Contracts\Core\GPIOLevelException`. Each protocol has its own, such as `I2CException` or `SPIException`. The `none` driver throws one that names the config key to set:
 
-| Path | Packages |
+```
+No I2C connection driver is configured. Set gpio.protocols.i2c.default to an installed adapter.
+```
+
+## Split packages
+
+The framework is also published as components, for drivers that should depend on less than the whole framework. `scrapyard-io/framework` replaces them all.
+
+| Package | Contents |
 |---|---|
-| Native | `microscrap/posix` + `gpio` / `i2c` / `spi` / `uart` + `ext-posi` |
-| USB | `microscrap/ftdi` → `mpsse` + `ext-ftdi` |
+| `gpio/contracts` | transports, protocol enums, exceptions, the dock resource contract and its mail |
+| `gpio/digital` | `DigitalIO` and its connection classes |
+| `gpio/i2c` | `I2C` and its connection classes |
+| `gpio/spi` | `SPI` and its connection classes |
+| `gpio/uart` | `UART` and its connection classes |
+| `gpio/pwm` | `PWM` and its connection classes |
+| `gpio/integrated-circuits` | `Bootable` and `DataRegister` |
+| `gpio/nuts-and-bolts` | the byte helpers |
 
-All `^0.8.0`. Every microscrap package is `suggest`, never `require` — a posix-only install must not drag `ext-ftdi`.
+The aggregate service provider, the `GPIO` alias and the dock resource are part of `scrapyard-io/framework` only.
 
-## Tests
+## Testing
 
 ```bash
-composer update
+composer install
 vendor/bin/pest
 ```
 
+The suite uses fake drivers and transports, so it runs without hardware or the PHP extensions.
+
 ## License
 
-MIT
+MIT. See [LICENSE](LICENSE).
