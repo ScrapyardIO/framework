@@ -16,11 +16,13 @@ final class FakeEdgeSource implements EdgeSource
 
     public ?Throwable $fault = null;
 
-    public function __construct(public readonly int $offset) {}
+    public function __construct(public readonly int $offset, public readonly string|int|null $device = null) {}
+
+    public function device(): string|int|null { return $this->device; }
 
     public function offset(): int { return $this->offset; }
 
-    public function pollEdges(bool $rising = true, bool $falling = false): array
+    public function pollEdges(bool $rising, bool $falling): array
     {
         $this->polls[] = [$rising, $falling];
 

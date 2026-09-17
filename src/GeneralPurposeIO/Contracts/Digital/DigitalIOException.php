@@ -15,4 +15,9 @@ class DigitalIOException extends GPIOLevelException
     {
         return new static("DigitalPin offset is missing.");
     }
+
+    public static function noDriverConfigured(): static
+    {
+        return new static('No DigitalIO connection driver is configured. Set gpio.protocols.digital-in.default to an installed adapter.');
+    }
 }

@@ -3,11 +3,10 @@
 namespace GeneralPurposeIO\SPI;
 
 use Voyager\MagicAliases\MagicAlias;
-use GeneralPurposeIO\Contracts\SPI\SPICommunicationAdapter as CommunicationAdapter;
 
 /**
  * @method static void extend(string $name, callable $callback)
- * @method static CommunicationAdapter adapter(string $name)
+ * @method static SPIConnectionDriver driver(?string $name = null)
  */
 class SPI extends MagicAlias
 {

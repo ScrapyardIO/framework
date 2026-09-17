@@ -1,47 +1,60 @@
 {
     "name": "gpio/uart",
-    "description": "The GeneralPurposeIO UART package.",
+    "description": "GeneralPurposeIO UART: the gpio.uart connection manager, driver, factory and port transport.",
+    "type": "library",
+    "keywords": [
+        "scrapyard-io",
+        "gpio",
+        "uart",
+        "serial"
+    ],
     "license": "MIT",
+    "homepage": "https://scrapyard-io.projectsaturnstudios.com/ecosystem/scrapyard-io/framework/0.8.x/overview",
+    "support": {
+        "docs": "https://scrapyard-io.projectsaturnstudios.com/ecosystem/scrapyard-io/framework/0.8.x/overview",
+        "source": "https://github.com/scrapyard-io/framework",
+        "issues": "https://github.com/scrapyard-io/framework/issues"
+    },
     "authors": [
         {
             "name": "Angel Gonzalez",
             "email": "angel@projectsaturnstudios.com"
         }
     ],
-    "homepage": "https://scrapyard-io.projectsaturnstudios.com",
-    "support": {
-        "issues": "https://github.com/scrapyard-io/framework/issues",
-        "source": "https://github.com/scrapyard-io/framework"
-    },
     "require": {
         "php": "^8.4|^8.5|^8.6",
-        "gpio/common": "^0.8.0",
         "gpio/contracts": "^0.8.0",
+        "gpio/nuts-and-bolts": "^0.8.0",
+        "venusian-voyager/collections": "^0.8.0",
         "venusian-voyager/contracts": "^0.8.0",
         "venusian-voyager/magic-aliases": "^0.8.0",
         "venusian-voyager/nuts-and-bolts": "^0.8.0"
     },
     "suggest": {
-        "microscrap/uart": "^0.8.0 - POSIX UART",
-        "microscrap/ftdi": "^0.8.0 - FTDI USB Drivers"
+        "microscrap/scrapyard-linux": "^0.8.0 - native termios ports",
+        "microscrap/scrapyard-usb": "^0.8.0 - FTDI UART"
     },
-    "minimum-stability": "dev",
     "autoload": {
         "psr-4": {
             "GeneralPurposeIO\\UART\\": ""
         }
     },
-    "config": {
-        "sort-packages": true
-    },
     "extra": {
         "branch-alias": {
-            "dev-master": "0.8.x-dev"
+            "dev-main": "0.8.x-dev"
         },
         "venusian": {
             "providers": [
                 "GeneralPurposeIO\\UART\\UARTServiceProvider"
-            ]
+            ],
+            "aliases": {
+                "UART": "GeneralPurposeIO\\UART\\UART"
+            }
         }
-    }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
 }

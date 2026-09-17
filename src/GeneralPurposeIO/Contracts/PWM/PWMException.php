@@ -11,14 +11,9 @@ class PWMException extends GPIOLevelException
         return new static('PWM Chip device is missing.');
     }
 
-    public static function missingChannelOffset(): static
+    public static function chipNotFound(int|string $chip, string $root): static
     {
-        return new static('PWM Chip offset is missing.');
-    }
-
-    public static function chipNotFound(int|string $chip): static
-    {
-        return new static("PWM chip pwmchip{$chip} was not found under /sys/class/pwm.");
+        return new static("PWM chip pwmchip{$chip} was not found under {$root}.");
     }
 
     public static function couldNotExport(int|string $chip, int $channel): static
@@ -44,5 +39,10 @@ class PWMException extends GPIOLevelException
     public static function invalidPolarity(string $value): static
     {
         return new static("Invalid PWM polarity '{$value}'. Expected 'normal' or 'inversed'.");
+    }
+
+    public static function noDriverConfigured(): static
+    {
+        return new static('No PWM connection driver is configured. Set gpio.protocols.pwm.default to an installed adapter.');
     }
 }

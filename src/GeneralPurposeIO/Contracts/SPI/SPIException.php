@@ -25,4 +25,9 @@ class SPIException extends GPIOLevelException
     {
         return new static('digitalPins($chip) is required when bundling POSIX digital pins on an SPI bus.');
     }
+
+    public static function noDriverConfigured(): static
+    {
+        return new static('No SPI connection driver is configured. Set gpio.protocols.spi.default to an installed adapter.');
+    }
 }

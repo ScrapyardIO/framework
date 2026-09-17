@@ -3,10 +3,12 @@ type: Concept
 title: The gpio dock resource
 description: >-
   GPIOResourceDriver, the framework's gpio IOPool resource: watch edges,
-  receive bytes, defer work, one never-waiting tick, four mail species.
+  receive bytes, defer once, recur every N ticks, stream in chunks. One
+  never-waiting tick, four mail species.
 tags: [gpio, io-pools, dock, tick, mail]
 status: draft
 generated: { by: claude-opus-5/claude-code, at: "2026-09-15T04:00:00Z" }
+revised: { by: claude-fable-5-1/claude-code, at: "2026-09-16T00:00:00Z", note: "connection-layer sources; every and stream verbs; device in edge names" }
 sources:
   - id: resource
     resource: src/GeneralPurposeIO/Core/IOPools/GPIOResourceDriver.php
@@ -20,36 +22,33 @@ sources:
   - id: byte-source
     resource: src/GeneralPurposeIO/Contracts/Core/ByteSource.php
     title: ByteSource
+  - id: recurrence
+    resource: src/GeneralPurposeIO/Contracts/Core/Recurrence.php
+    title: Recurrence
   - id: mail
     resource: src/GeneralPurposeIO/Contracts/Core/Mail
     title: DigitalEdgeOccurrence, UARTBytesOccurrence, TransferCompletion, SourceFaultOccurrence
-  - id: digital-pin
-    resource: src/GeneralPurposeIO/Digital/DigitalInputPin.php
-    title: DigitalInputPin
-  - id: digital-drivers
-    resource: src/GeneralPurposeIO/Digital/Drivers
-    title: PosixDigitalIODriver, UsbDigitalIODriver
-  - id: uart-bus
-    resource: src/GeneralPurposeIO/UART/Bus/UARTBus.php
-    title: UARTBus
-  - id: uart-drivers
-    resource: src/GeneralPurposeIO/UART/Drivers
-    title: PosixUARTDriver, UsbUARTDriver
+  - id: input-transport
+    resource: src/GeneralPurposeIO/Digital/DigitalInputTransport.php
+    title: DigitalInputTransport (EdgeSource)
+  - id: uart-transport
+    resource: src/GeneralPurposeIO/UART/UARTTransport.php
+    title: UARTTransport (ByteSource)
+  - id: digital-driver
+    resource: src/GeneralPurposeIO/Digital/DigitalIOConnectionDriver.php
+    title: DigitalIOConnectionDriver::input() binds the device
   - id: provider
     resource: src/GeneralPurposeIO/Core/Providers/ScrapyardIOServiceProvider.php
-    title: ScrapyardIOServiceProvider::boot()
+    title: ScrapyardIOServiceProvider::registerDockResource()
   - id: gpio-exception
-    resource: src/GeneralPurposeIO/Contracts/Common/GPIOException.php
+    resource: src/GeneralPurposeIO/Contracts/NutsAndBolts/GPIOException.php
     title: GPIOException
-  - id: dock
-    resource: venusian/framework:src/Voyager/IOPools/IOPoolDock.php
-    title: IOPoolDock
-  - id: dock-provider
-    resource: venusian/framework:src/Voyager/IOPools/IOPoolsServiceProvider.php
-    title: IOPoolsServiceProvider
   - id: tests-driver
     resource: tests/Core/GPIOResourceDriverTest.php
-    title: GPIOResourceDriver tests
+    title: resource tests (dry)
+  - id: tests-sources
+    resource: tests/Connections/TransportsAreDockSourcesTest.php
+    title: transports are sources
   - id: tests-boot
     resource: tests/Core/ProviderBootTest.php
     title: dock registration test
@@ -57,26 +56,37 @@ sources:
 
 # One law
 
-Tick never waits. Dock hands out edges and bytes, does not race them.
-Every poll on `gpio`'s tick returns fast or returns empty — no sleep, no
-blocking read. Sub-tick timing (debounce, baud framing, exact edge
-spacing) is not this resource's job. That belongs to the peripheral, or
-to the IC reading the mail.[^resource]
+Tick never waits. Every poll zero-timeout, every unit of scheduled work one
+bounded step. Sub-tick timing (debounce, baud framing, WS2812 bit spacing)
+not this resource's job — peripheral or IC.[^resource]
+
+# Where the sources come from
+
+Dock names no platform. `DigitalInputTransport` is an `EdgeSource`,
+`UARTTransport` a `ByteSource`, at the base — posix and MPSSE transports
+inherit it.[^input-transport][^uart-transport] `DigitalIOConnectionDriver::input()`
+stamps the device on the pin it hands out (`boundTo`), so mail can name
+the connection.[^digital-driver]
 
 # Verbs
 
-| Verb | Signature | Does |
+| Verb | Returns | Does |
 |---|---|---|
-| `watch` | `watch(EdgeSource $source, bool $rising = true, bool $falling = false): static` | add a pin to the poll set, keyed by `spl_object_id` |
-| `unwatch` | `unwatch(EdgeSource $source): static` | drop a pin from the poll set |
-| `receive` | `receive(ByteSource $source, int $max_bytes = 4096): static` | add a port to the poll set with a per-tick byte cap |
-| `stopReceiving` | `stopReceiving(ByteSource $source): static` | drop a port from the poll set |
-| `defer` | `defer(string $name, Closure $work, ?Closure $envelope = null): Presumption` | queue `$work` for the next tick; one name in flight at a time, else throws `GPIOException::transferInFlight` |
-| `inFlight` | `inFlight(string $name): ?Presumption` | the live Presumption for a name, or null |
+| `watch(EdgeSource, rising=true, falling=false)` / `unwatch` | `static` | poll set, keyed `spl_object_id` |
+| `receive(ByteSource, max_bytes=4096)` / `stopReceiving` | `static` | poll set with per-tick byte cap |
+| `defer(name, Closure work, ?Closure envelope)` | `Presumption` | once, next tick; one name in flight or `transferInFlight` |
+| `every(name, Closure work, ticks=1)` | `Recurrence` | repeat until `stop()`; one per name or `recurrenceInFlight`; `ticks < 1` → `invalidCadence` |
+| `stream(name, Closure write, string bytes, int chunk)` | `Presumption` | one `chunk` per tick through `write`; one per name or `streamInFlight`; `chunk < 1` → `invalidChunk` |
+| `inFlight` / `recurring` / `streaming` | handle or null | the live handle for a name |
 
-All six are opt-in per IC — nothing watches or defers on its own.[^contract]
-`watch`/`unwatch` take an `EdgeSource`[^edge-source]; `receive`/`stopReceiving`
-take a `ByteSource`[^byte-source].
+All opt-in per IC. Nothing watches, recurs or streams on its own.[^contract]
+
+Why two new verbs, not one per protocol: Digital-in and UART have something
+to drain and are served by `watch` / `receive`. I2C, SPI, PWM and Digital-out
+have nothing to drain; they need blocking work scheduled — once (`defer`),
+on a cadence (`every`: gamepad poll, sensor sample, PWM fade, LED blink),
+or in pieces (`stream`: panel frame over MPSSE, blob down a UART). The
+writer closure is the seam, so the dock stays ignorant of SPI vs UART.
 
 # Mail
 
@@ -84,136 +94,55 @@ Four species, all `Voyager\Contracts\IOPools\QueuedIO`:
 
 | Class | Name | Payload |
 |---|---|---|
-| `DigitalEdgeOccurrence` | `gpio.edge.<offset>` | `offset`, `edge` (`SignalEdge`), `timestamp_ns` |
+| `DigitalEdgeOccurrence` | `gpio.edge.<device>.<offset>`, or `gpio.edge.<offset>` when unbound | `device`, `offset`, `edge` (`SignalEdge`), `timestamp_ns` |
 | `UARTBytesOccurrence` | `gpio.uart.<path>` | `path`, `bytes` |
-| `TransferCompletion` | `gpio.transfer.<transfer>` | `transfer`, `result`, `?error`; `ok()` is "did not throw" |
-| `SourceFaultOccurrence` | `gpio.fault.<source>` | `source` (e.g. `edge.17`, `uart./dev/ttyAMA0`), `error` |
+| `TransferCompletion` | `gpio.transfer.<name>` | `transfer`, `result`, `?error`; `ok()` = did not throw. From `defer`, each `every` run, and stream end (`result` = bytes sent) |
+| `SourceFaultOccurrence` | `gpio.fault.<source>` | `source` = `edge.<device>.<offset>`, `uart.<path>`, `every.<name>`; `error` |
 
-`<offset>` is the posix libgpiod line offset for a posix `DigitalInputPin`, or the raw MPSSE pin index for a USB one — both come from the same `DigitalInputPin::offset()`. A posix line and an MPSSE pin sharing the same number produce the same mail name, `gpio.edge.<n>`, in a sketch that mixes both carriers.
+Same-named mail repeats within a tick; the bag keeps every entry in order.
+Surface's `LiveApplication::events()` re-keys by `name` (`keyBy`), keeping
+only the last per name — drain the bag directly to see a burst.[^mail]
 
-Same-named mail repeats within one tick — the dock's bag keeps every
-entry, in order. `LiveApplication::events()` (Surface) re-keys the
-drained bag by `name` via `keyBy`, so that path keeps only the last
-entry per name. To see every edge from a burst, drain the bag directly
-instead of going through `events()`.[^mail]
-
-A watched pin or received port that throws during poll becomes a
-`SourceFaultOccurrence` instead — `gpio.fault.edge.<offset>` or
-`gpio.fault.uart.<path>`, carrying the caught `$error`. The source
-stays registered after a fault; nothing in the resource unwatches it.
-Dropping a faulting source is the IC's call, made from wherever it
-reads `gpio.fault.*` mail.[^resource]
+A faulting pin, port or recurrence stays registered. Dropping it is the
+IC's call, from wherever it reads `gpio.fault.*`.[^resource]
 
 # Tick order
 
-One `tick()`:
+1. Watched pins, registration order — `pollEdges($rising, $falling)`.
+2. Received ports, registration order — `pollBytes($max_bytes)`.
+3. Deferred, FIFO, capped by `gpio.io_pools.defer_per_tick` (`null` = all).
+4. Recurrences due this tick — `elapsed` counts from registration; runs when `elapsed % ticks === 0`. A run pushes `TransferCompletion` and calls `onEach`; a throw pushes `gpio.fault.every.<name>` and calls `onFail(Throwable)`. `stop()` honoured before the run and after it, including from inside the hook.
+5. Streams — one chunk each; `Presumption::onProgress(sent, total)` after every chunk; last chunk completes in the same tick. Empty bytes complete on the first tick with `0`, no write. A throwing writer fails the stream with `result` = bytes sent so far.
 
-1. Every watched `EdgeSource`, in registration order — `pollEdges($rising, $falling)`, push one `DigitalEdgeOccurrence` per returned edge, or one `SourceFaultOccurrence` on a throw.
-2. Every received `ByteSource`, in registration order — `pollBytes($max_bytes)`, push one `UARTBytesOccurrence` when non-empty, or one `SourceFaultOccurrence` on a throw.
-3. Deferred work, FIFO, capped by `gpio.io_pools.defer_per_tick` (`null` = drain the whole queue that tick; an int takes the first N, the rest wait).
-
-Only work queued **before the tick started** runs in that tick. A
-`Presumption::onSuccess`/`onFail` hook that calls `defer()` again lands
-its new entry at the end of `$this->deferred`, after the tick's
-`array_splice` already took its slice — so a re-defer always runs on
-the *next* tick, never the same one.[^resource][^tests-driver]
-
-Hooks run inline, inside `tick()`, and are not contained — a throwing
-hook throws out of `tick()`. The deferred closure itself must not
-`defer()` its own name: `in_flight[$name]` is only cleared *after* the
-closure returns, so calling `defer($name, ...)` from inside that same
-closure throws `transferInFlight`. Reschedule from the `onSuccess`/
-`onFail` hook instead, where `in_flight` has already been cleared.[^resource][^tests-driver]
-
-A throwing envelope, or one that returns something that is not
-`QueuedIO`, falls back to pushing the raw `TransferCompletion` — the
-Presumption still settles on the real completion either way.[^resource]
-
-`defer_per_tick` (constructor's `$defer_per_tick`) must be `null` or
-`>= 1`; anything else throws `GPIOException::invalidDeferBudget` at
-construction, before the resource is usable.[^resource][^gpio-exception]
+Snapshot rule: only what was registered **before** the tick started runs in
+that tick. A hook that defers, recurs or streams lands on the next tick.
+Hooks run inline and are not contained.[^resource][^tests-driver]
 
 # Registration
 
-`ScrapyardIOServiceProvider::boot()` registers the resource as `gpio`
-on the dock, when `config('gpio.io_pools.enabled')` is true and
-`app()->bound('io-pool')`. The configured `gpio.io_pools.defer_per_tick`
-passes straight through: `null` stays `null`, anything else casts to
-`int`.[^provider]
+`ScrapyardIOServiceProvider::boot()` → `registerDockResource()`: resource
+`gpio` on the dock when `config('gpio.io_pools.enabled')` and `io-pool` is
+bound. `gpio.io_pools.defer_per_tick` passes through; `null` stays, else
+`(int)`; `< 1` throws `invalidDeferBudget` at construction.[^provider][^tests-boot]
+
+Proven live in surface-dev: dock resources `http, gpio, os`; a cadence-2
+recurrence ran twice in four pumps; a 10-byte stream in 4-byte chunks
+settled with `10`.
+
+# IC usage (dept-of-scrapyard-robotics, not this repo)
 
 ```php
-$dock->resource('gpio', new GPIOResourceDriver($dock, $cap));
-```
-
-Proven by booting a real `Application` with `IOPoolsServiceProvider`
-registered ahead of the aggregate, then resolving `io-pool` and calling
-its `gpio()` accessor.[^tests-boot]
-
-In a real app's provider list this runs after `http`/`async` (both
-registered from `IOPoolsServiceProvider::boot()`'s `bootResources()`)
-and before Surface's lazily-built `os` resource (built and registered
-from `SurfaceServiceProvider::boot()`, on first resolve of
-`OSLevelResourceDriver`). Nothing in `IOPoolDock` depends on that
-order — `resource()` just stores by name in a `Collection` — so this
-is what a normal provider list produces, not something the dock
-enforces. Document it, don't rely on it.[^dock][^dock-provider]
-
-# Sources
-
-`DigitalInputPin` is an `EdgeSource`; `pollEdges()` delegates to its
-`DigitalIODriver`.[^digital-pin]
-
-- `PosixDigitalIODriver::pollEdges()` calls
-  `gpiod_line_request_wait_edge_events($pin, 0)` — a zero-timeout wait,
-  truly non-blocking — then drains libgpiod's edge-event buffer for
-  whatever already queued.
-- `UsbDigitalIODriver::pollEdges()` (MPSSE) has no event buffer to
-  drain: on a cold pin (no cached value yet) it primes the cache with
-  one `read()` and returns no events; from then on each poll takes one
-  fresh `read()` and diffs it against the previous cached value. Either
-  way that's one MPSSE sample per poll, not zero — and that one sample
-  is one USB transaction, bounded by the FTDI device's latency timer,
-  not a zero-wait poll like the posix path.[^digital-drivers]
-
-`UARTBus` is a `ByteSource`; `pollBytes()` delegates to its
-`UARTDriver`.[^uart-bus]
-
-- `PosixUARTDriver::pollBytes()` calls `posix_ppoll($fd, 0)` — zero
-  timeout, truly non-blocking — then reads only if ppoll says
-  something is ready.
-- `UsbUARTDriver::pollBytes()` (FTDI) has no such primitive: it
-  time-boxes a 1-byte-at-a-time drain against
-  `$poll_budget_ns` (1 ms), plus at most one USB bulk transfer per
-  poll, bounded by the 1 ms latency timer `FtdiUARTFactory` sets on
-  the device. Worst case is roughly 2 ms per poll — not truly
-  non-blocking — because libftdi's `ftdi_read_data` would otherwise
-  loop until `$size` bytes arrive, and `FTDIContext` exposes no
-  buffered-byte count to check first.[^uart-drivers]
-
-# IC usage
-
-A defer wraps blocking work so the tick never carries it directly (from
-`dept-of-scrapyard-robotics`, not this repo):
-
-```php
-public function measureLater(): Presumption
-{
-    return $this->gpio->defer('aht20.measure', fn () => $this->measure());
-}
+$gpio->defer('aht20.measure', fn () => $this->measure());               // once
+$gpio->every('seesaw.poll', fn () => $this->poll(), ticks: 1);          // cadence
+$gpio->stream('ssd1306.frame', fn (string $c) => $this->data($c), $frame, 1024); // pieces
 ```
 
 [^resource]: GPIOResourceDriver
 [^contract]: GPIOResourceDriver contract
 [^mail]: DigitalEdgeOccurrence, UARTBytesOccurrence, TransferCompletion, SourceFaultOccurrence
-[^digital-pin]: DigitalInputPin
-[^digital-drivers]: PosixDigitalIODriver, UsbDigitalIODriver
-[^uart-bus]: UARTBus
-[^uart-drivers]: PosixUARTDriver, UsbUARTDriver
-[^provider]: ScrapyardIOServiceProvider::boot()
-[^gpio-exception]: GPIOException
-[^dock]: IOPoolDock
-[^dock-provider]: IOPoolsServiceProvider
-[^tests-driver]: GPIOResourceDriver tests
+[^input-transport]: DigitalInputTransport (EdgeSource)
+[^uart-transport]: UARTTransport (ByteSource)
+[^digital-driver]: DigitalIOConnectionDriver::input() binds the device
+[^provider]: ScrapyardIOServiceProvider::registerDockResource()
+[^tests-driver]: resource tests (dry)
 [^tests-boot]: dock registration test
-[^edge-source]: EdgeSource
-[^byte-source]: ByteSource

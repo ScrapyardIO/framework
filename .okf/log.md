@@ -1,5 +1,11 @@
 # scrapyard-io/framework Update Log
 
+## 2026-09-16
+* **Revision**: [dock-resource.md](/dock-resource.md) — resource ported onto the connection layer: `DigitalInputTransport` is the `EdgeSource`, `UARTTransport` the `ByteSource`; `DigitalIOConnectionDriver::input()` binds the device so edge mail is `gpio.edge.<device>.<offset>` (the posix/MPSSE offset collision closed). Two verbs added, `every(name, work, ticks)` → `Recurrence` and `stream(name, write, bytes, chunk)` → `Presumption` with progress; tick order is sources, deferred, recurrences, streams; snapshot rule covers all three. `registerDockResource()` re-enabled in the aggregate provider's `boot()`.
+* **Addition**: `GPIOException::{recurrenceInFlight, invalidCadence, streamInFlight, invalidChunk}`; `Contracts\Core\Recurrence`.
+* **Proof**: surface-dev boot lists dock resources `http, gpio, os`; cadence-2 recurrence ran twice in four pumps; 10-byte stream in 4-byte chunks settled with 10. Dry suite: `tests/Core`, `tests/Contracts`, `tests/Connections`, `tests/Providers` — 144 passed.
+* **Removal**: `tests/Digital/DigitalInputPinTest.php`, `tests/UART/UARTBusByteSourceTest.php` (classes gone); replaced by `tests/Connections/TransportsAreDockSourcesTest.php`.
+
 ## 2026-09-15
 * **Correction**: [packaging.md](/packaging.md) — `gpio/contracts` actually imports `Voyager\Contracts\IOPools\{IOResourceDriver,Occurrence,Completion}` and the concrete `Voyager\IOPools\Presumption`, so it requires `venusian-voyager/contracts` and `venusian-voyager/io-pools`, not `php` alone; added the rule that every `gpio/*` package still needs a booted Venusian application at runtime for `config()`/`app()`. `AGENTS.md`'s dependency-direction line corrected to match.
 * **Addition**: [known-gaps.md](/known-gaps.md) — `gpio/contracts`' concrete `Presumption` dependency (no upstream interface yet); the Pi proof only covers `defer()` over I2C, not posix `watch`/`receive` or MPSSE/FTDI polling; no hardware-tagged Pest group exists.

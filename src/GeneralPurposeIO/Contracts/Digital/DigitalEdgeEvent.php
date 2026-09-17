@@ -2,9 +2,7 @@
 
 namespace GeneralPurposeIO\Contracts\Digital;
 
-use GeneralPurposeIO\Contracts\Digital\SignalEdge;
-
-readonly class DigitalEdgeEvent
+final class DigitalEdgeEvent
 {
     public function __construct(
         public SignalEdge $edge,

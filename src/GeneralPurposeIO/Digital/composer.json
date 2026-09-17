@@ -1,9 +1,8 @@
 {
     "name": "gpio/digital",
-    "description": "The GeneralPurposeIO Digital package.",
+    "description": "GeneralPurposeIO digital IO: the gpio.digital connection manager, driver, factory and pin transports.",
     "type": "library",
     "keywords": [
-        "framework",
         "scrapyard-io",
         "gpio",
         "digital-io"
@@ -23,34 +22,36 @@
     ],
     "require": {
         "php": "^8.4|^8.5|^8.6",
-        "gpio/common": "^0.8.0",
         "gpio/contracts": "^0.8.0",
+        "venusian-voyager/collections": "^0.8.0",
         "venusian-voyager/contracts": "^0.8.0",
         "venusian-voyager/magic-aliases": "^0.8.0",
         "venusian-voyager/nuts-and-bolts": "^0.8.0"
     },
     "suggest": {
-        "microscrap/gpio": "^0.8.0 - POSIX Digital IO bindings for the PosixDigitalIOAdapter",
-        "microscrap/mpsse": "^0.8.0 - MPSSE USB Digital IO for the MpsseDigitalIOAdapter",
-        "scrapyard-io/framework": "^0.8.0 - Umbrella package that replaces gpio/digital at the same version"
+        "microscrap/scrapyard-linux": "^0.8.0 - native libgpiod pins",
+        "microscrap/scrapyard-usb": "^0.8.0 - MPSSE pins over FTDI"
     },
     "autoload": {
         "psr-4": {
             "GeneralPurposeIO\\Digital\\": ""
         }
     },
-    "config": {
-        "sort-packages": true
-    },
     "extra": {
         "branch-alias": {
-            "dev-master": "0.8.x-dev"
+            "dev-main": "0.8.x-dev"
         },
         "venusian": {
             "providers": [
-                "GeneralPurposeIO\\Digital\\DigitalServiceProvider"
-            ]
+                "GeneralPurposeIO\\Digital\\DigitalIOServiceProvider"
+            ],
+            "aliases": {
+                "DigitalIO": "GeneralPurposeIO\\Digital\\DigitalIO"
+            }
         }
+    },
+    "config": {
+        "sort-packages": true
     },
     "minimum-stability": "dev",
     "prefer-stable": true

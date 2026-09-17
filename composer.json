@@ -1,7 +1,12 @@
 {
   "name": "scrapyard-io/framework",
   "description": "The ScrapyardIO GPIO Framework.",
-  "keywords": ["framework", "scrapyard-io", "gpio", "venusian"],
+  "keywords": [
+    "framework",
+    "scrapyard-io",
+    "gpio",
+    "venusian"
+  ],
   "license": "MIT",
   "version": "0.8.0",
   "homepage": "https://scrapyard-io.projectsaturnstudios.com/ecosystem/scrapyard-io/framework/0.8.x/overview",
@@ -10,20 +15,24 @@
     "source": "https://github.com/scrapyard-io/framework",
     "docs": "https://scrapyard-io.projectsaturnstudios.com/ecosystem/scrapyard-io/framework/0.8.x/overview"
   },
-  "authors": [{ "name": "Angel Gonzalez", "email": "angel@projectsaturnstudios.com" }],
+  "authors": [
+    {
+      "name": "Angel Gonzalez",
+      "email": "angel@projectsaturnstudios.com"
+    }
+  ],
   "require": {
     "php": "^8.4|^8.5|^8.6",
     "venusian/framework": "^0.8.0"
   },
   "replace": {
-    "gpio/analog": "self.version",
-    "gpio/circuits": "self.version",
-    "gpio/common": "self.version",
     "gpio/contracts": "self.version",
     "gpio/digital": "self.version",
     "gpio/i2c": "self.version",
-    "gpio/spi": "self.version",
+    "gpio/integrated-circuits": "self.version",
+    "gpio/nuts-and-bolts": "self.version",
     "gpio/pwm": "self.version",
+    "gpio/spi": "self.version",
     "gpio/uart": "self.version"
   },
   "require-dev": {
@@ -45,33 +54,42 @@
     "microscrap/mpsse": "^0.8.0 - MPSSE USB drivers"
   },
   "autoload": {
-    "psr-4": { "GeneralPurposeIO\\": "src/GeneralPurposeIO/" },
-    "files": ["src/GeneralPurposeIO/Common/Helpers/bytes.php"]
+    "psr-4": {
+      "GeneralPurposeIO\\": "src/GeneralPurposeIO/"
+    },
+    "files": [
+      "src/GeneralPurposeIO/NutsAndBolts/Helpers/bytes.php"
+    ]
   },
   "autoload-dev": {
-    "psr-4": { "ScrapyardIO\\Tests\\": "tests/" }
+    "psr-4": {
+      "ScrapyardIO\\Tests\\": "tests/"
+    }
   },
   "extra": {
-    "branch-alias": { "dev-master": "0.8.x-dev", "dev-main": "0.8.x-dev", "dev-0.8.x": "0.8.x-dev" },
+    "branch-alias": {
+      "dev-main": "0.8.x-dev"
+    },
     "venusian": {
-      "providers": ["GeneralPurposeIO\\Core\\Providers\\ScrapyardIOServiceProvider"],
+      "providers": [
+        "GeneralPurposeIO\\Core\\Providers\\ScrapyardIOServiceProvider"
+      ],
       "aliases": {
-        "Circuit": "GeneralPurposeIO\\Core\\MagicAliases\\Circuit",
-        "GPIO": "GeneralPurposeIO\\Core\\MagicAliases\\GPIO"
+        "GPIO": "GeneralPurposeIO\\Core\\MagicAliases\\GPIO",
+        "DigitalIO": "GeneralPurposeIO\\Digital\\DigitalIO",
+        "I2C": "GeneralPurposeIO\\I2C\\I2C",
+        "PWM": "GeneralPurposeIO\\PWM\\PWM",
+        "SPI": "GeneralPurposeIO\\SPI\\SPI",
+        "UART": "GeneralPurposeIO\\UART\\UART"
       }
     }
   },
-  "config": { "sort-packages": true, "allow-plugins": { "pestphp/pest-plugin": true } },
+  "config": {
+    "sort-packages": true,
+    "allow-plugins": {
+      "pestphp/pest-plugin": true
+    }
+  },
   "minimum-stability": "dev",
-  "prefer-stable": true,
-  "repositories": [
-    { "type": "path", "url": "/Volumes/ProjectSaturnStudios/Development/PHP/ProjectSaturnStudios/dev/venusian/framework", "options": { "symlink": true } },
-    { "type": "path", "url": "/Volumes/ProjectSaturnStudios/Development/PHP/ProjectSaturnStudios/dev/microscrap/posix", "options": { "symlink": true } },
-    { "type": "path", "url": "/Volumes/ProjectSaturnStudios/Development/PHP/ProjectSaturnStudios/dev/microscrap/gpio", "options": { "symlink": true } },
-    { "type": "path", "url": "/Volumes/ProjectSaturnStudios/Development/PHP/ProjectSaturnStudios/dev/microscrap/i2c", "options": { "symlink": true } },
-    { "type": "path", "url": "/Volumes/ProjectSaturnStudios/Development/PHP/ProjectSaturnStudios/dev/microscrap/spi", "options": { "symlink": true } },
-    { "type": "path", "url": "/Volumes/ProjectSaturnStudios/Development/PHP/ProjectSaturnStudios/dev/microscrap/uart", "options": { "symlink": true } },
-    { "type": "path", "url": "/Volumes/ProjectSaturnStudios/Development/PHP/ProjectSaturnStudios/dev/microscrap/ftdi", "options": { "symlink": true } },
-    { "type": "path", "url": "/Volumes/ProjectSaturnStudios/Development/PHP/ProjectSaturnStudios/dev/microscrap/mpsse", "options": { "symlink": true } }
-  ]
+  "prefer-stable": true
 }

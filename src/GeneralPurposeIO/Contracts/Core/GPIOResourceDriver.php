@@ -21,4 +21,14 @@ interface GPIOResourceDriver extends IOResourceDriver
     public function defer(string $name, Closure $work, ?Closure $envelope = null): Presumption;
 
     public function inFlight(string $name): ?Presumption;
+
+    /** Run $work every $ticks ticks until the Recurrence is stopped; each run pushes a TransferCompletion. One per name. */
+    public function every(string $name, Closure $work, int $ticks = 1): Recurrence;
+
+    public function recurring(string $name): ?Recurrence;
+
+    /** Hand $bytes to $write one $chunk per tick; progress on the Presumption, a TransferCompletion of bytes sent at the end. One per name. */
+    public function stream(string $name, Closure $write, string $bytes, int $chunk): Presumption;
+
+    public function streaming(string $name): ?Presumption;
 }

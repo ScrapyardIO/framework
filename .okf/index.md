@@ -13,7 +13,7 @@ Read this index first, then only the concepts the task needs. Every concept is `
 * [overview.md](/overview.md) - what ships at 0.8.0, tree, counts, stack position
 * [gpio-protocols.md](/gpio-protocols.md) - protocol managers, adapters, buses, About inventory
 * [circuits.md](/circuits.md) - catalog, PendingCircuit fluent, profiles, taxonomy
-* [dock-resource.md](/dock-resource.md) - the `gpio` resource: watch / receive / defer, mail species, laws
+* [dock-resource.md](/dock-resource.md) - the `gpio` resource: watch / receive / defer / every / stream, mail species, laws
 * [packaging.md](/packaging.md) - nine `gpio/*` splits, Core unsplit, dependency direction
 * [known-gaps.md](/known-gaps.md) - Analog scaffold, PWM disabled, CI without exts, deliberate moves
 

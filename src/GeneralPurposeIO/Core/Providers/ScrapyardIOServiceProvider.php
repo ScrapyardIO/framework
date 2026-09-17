@@ -2,13 +2,15 @@
 
 namespace GeneralPurposeIO\Core\Providers;
 
+
 use Composer\InstalledVersions;
 use GeneralPurposeIO\Analog\AnalogServiceProvider;
 use GeneralPurposeIO\Circuits\CircuitsServiceProvider;
 use GeneralPurposeIO\Common\GPIOProtocolManager;
 use GeneralPurposeIO\Contracts\Core\GPIOProtocolFactory as FactoryContract;
+use GeneralPurposeIO\Contracts\Core\GPIOResourceDriver as ResourceContract;
 use GeneralPurposeIO\Core\IOPools\GPIOResourceDriver;
-use GeneralPurposeIO\Digital\DigitalServiceProvider;
+use GeneralPurposeIO\Digital\DigitalIOServiceProvider;
 use GeneralPurposeIO\I2C\I2CServiceProvider;
 use GeneralPurposeIO\PWM\PWMServiceProvider;
 use GeneralPurposeIO\SPI\SPIServiceProvider;
@@ -21,22 +23,22 @@ use Voyager\System\Console\AboutCommand;
 class ScrapyardIOServiceProvider extends AggregateServiceProvider
 {
     protected array $providers = [
-        CircuitsServiceProvider::class,
         UARTServiceProvider::class,
-        DigitalServiceProvider::class,
+        DigitalIOServiceProvider::class,
         SPIServiceProvider::class,
         I2CServiceProvider::class,
         PWMServiceProvider::class,
-        AnalogServiceProvider::class,
+        //CircuitsServiceProvider::class,
+        //AnalogServiceProvider::class,
     ];
 
     public function register(): void
     {
         $this->mergeConfigFrom(dirname(__DIR__, 4).'/config/gpio.php', 'gpio');
 
-        $this->app->singleton('gpio', fn (Vessel $app) => new GPIOProtocolManager($app));
-        $this->app->alias('gpio', GPIOProtocolManager::class);
-        $this->app->alias('gpio', FactoryContract::class);
+        //$this->app->singleton('gpio', fn (Vessel $app) => new GPIOProtocolManager($app));
+        //$this->app->alias('gpio', GPIOProtocolManager::class);
+        //$this->app->alias('gpio', FactoryContract::class);
 
         parent::register();
     }
@@ -45,7 +47,7 @@ class ScrapyardIOServiceProvider extends AggregateServiceProvider
     {
         $this->publishes([dirname(__DIR__, 4).'/config/gpio.php' => $this->app->configPath('gpio.php')], 'gpio-config');
 
-        $this->registerAboutSection();
+        //$this->registerAboutSection();
         $this->registerDockResource();
     }
 
@@ -58,7 +60,11 @@ class ScrapyardIOServiceProvider extends AggregateServiceProvider
 
         $dock = $this->app->make('io-pool');
         $cap = config('gpio.io_pools.defer_per_tick');
-        $dock->resource('gpio', new GPIOResourceDriver($dock, is_null($cap) ? null : (int) $cap));
+        $resource = new GPIOResourceDriver($dock, is_null($cap) ? null : (int) $cap);
+
+        $dock->resource('gpio', $resource);
+        $this->app->instance('gpio', $resource);
+        $this->app->alias('gpio', ResourceContract::class);
     }
 
     /**
