@@ -1,10 +1,10 @@
 ---
 type: Concept
 title: Packaging
-description: Nine gpio/* splits, Core unsplit, manifest rules as they stand in the nine component composer.json files, dependency direction.
+description: Eight gpio/* splits, Core unsplit, manifest rules as they stand in the eight component composer.json files, dependency direction.
 tags: [packaging, composer, splits, dependency-direction]
 status: draft
-generated: { by: claude-opus-5/claude-code, at: "2026-09-15T04:00:00Z" }
+generated: { by: claude-opus-5/claude-code, at: "2026-09-18T21:40:00Z" }
 sources:
   - id: root
     resource: composer.json
@@ -12,9 +12,12 @@ sources:
   - id: contracts
     resource: src/GeneralPurposeIO/Contracts/composer.json
     title: gpio/contracts composer.json
-  - id: common
-    resource: src/GeneralPurposeIO/Common/composer.json
-    title: gpio/common composer.json
+  - id: nuts
+    resource: src/GeneralPurposeIO/NutsAndBolts/composer.json
+    title: gpio/nuts-and-bolts composer.json
+  - id: ics
+    resource: src/GeneralPurposeIO/IntegratedCircuits/composer.json
+    title: gpio/integrated-circuits composer.json
   - id: digital
     resource: src/GeneralPurposeIO/Digital/composer.json
     title: gpio/digital composer.json
@@ -30,74 +33,65 @@ sources:
   - id: pwm
     resource: src/GeneralPurposeIO/PWM/composer.json
     title: gpio/pwm composer.json
-  - id: analog
-    resource: src/GeneralPurposeIO/Analog/composer.json
-    title: gpio/analog composer.json
-  - id: circuits
-    resource: src/GeneralPurposeIO/Circuits/composer.json
-    title: gpio/circuits composer.json
 ---
 
-# Nine splits, one unsplit Core
+# Eight splits, one unsplit Core
 
-`src/GeneralPurposeIO/{Analog,Circuits,Common,Contracts,Digital,I2C,PWM,SPI,UART}` — each own `composer.json`, `.gitattributes`, `LICENSE`, each in root `replace` map as `gpio/<name>`. `Core`: none of that. No split, ships only inside `scrapyard-io/framework` umbrella. Holds aggregate `Core\Providers\ScrapyardIOServiceProvider`, `Core\MagicAliases\{GPIO,Circuit}`, and the `gpio` dock resource.
+`src/GeneralPurposeIO/{Contracts,Digital,I2C,IntegratedCircuits,NutsAndBolts,PWM,SPI,UART}` — each own `composer.json`, `.gitattributes`, `LICENSE`, each in root `replace` as `gpio/<name>`. `Core`: none of that. No split, ships only inside the `scrapyard-io/framework` umbrella. Holds `Core\Providers\ScrapyardIOServiceProvider`, `Core\MagicAliases\{GPIO,Circuit}`, and the `gpio` dock resource.
 
 # Rule: requires follow imports
 
-Each manifest's `require` matches what component's PHP actually imports, not a plan on paper. Every component, `gpio/contracts` included, requires `venusian-voyager/contracts` — each reaches `Voyager\Contracts\...` symbols somewhere (`Vessel`, `NutsAndBolts\Contracts\...`). `gpio/contracts` (48 files) also imports `Voyager\Contracts\IOPools\{IOResourceDriver,Occurrence,Completion}` and the concrete `Voyager\IOPools\Presumption` (the return type of `GPIOResourceDriver::defer()`), so its `require` also carries `venusian-voyager/io-pools`.
+Each manifest's `require` matches what that component's PHP actually imports, not a plan on paper. `gpio/contracts` (45 files) imports `Voyager\Contracts\IOPools\{IOResourceDriver,Occurrence,Completion}` and the concrete `Voyager\IOPools\Presumption` (the return type of `GPIOResourceDriver::defer()`), so it requires `venusian-voyager/io-pools` on top of `venusian-voyager/contracts`.
 
-# Rule: microscrap is suggest only
+# Rule: hardware is suggest only, and it is the adapters now
 
-No component `require`s a `microscrap/*` package — always `suggest`. Keeps posix-only install from dragging `ext-ftdi`; keeps ext-free install (CI, most dev boxes) installable at all. `gpio/contracts` suggests `microscrap/gpio` for `GPIOLineRequest` DTO type used in `DigitalIODriver`.
+No component `require`s a hardware package — always `suggest`, so a posix-only box never drags `ext-ftdi` and an ext-free box (CI, most dev machines) still installs. What a protocol component suggests is the **adapter**, `microscrap/scrapyard-linux` and/or `microscrap/scrapyard-usb`, not the low-level `microscrap/{gpio,i2c,spi,uart,posix,ftdi,mpsse}` bindings those adapters sit on. The adapters carry the bindings.
 
-# Rule: gpio/circuits suggests venusian/framework, never requires it
+# Rule: each protocol component declares its own provider and alias
 
-`Circuits` imports `Voyager\System\Application` and `Voyager\System\Console\AboutCommand` — both live in unsplit `venusian/framework` System, not any split Voyager sub-package. Requiring `venusian/framework` from a split component would invert dependency direction (nothing under `Core` may need System). Both uses safe absent the package: `instanceof Application` on a class that doesn't exist is `false`, not fatal; About registration guarded by `class_exists(AboutCommand::class)` before ever calling `AboutCommand::add`. So: `"suggest": {"venusian/framework": "^0.8.0 - Workshop about rows and config publishing"}`.
+`extra.venusian` on the component's own manifest, not just the umbrella's:
 
-# Rule: each protocol component declares its own provider
+| Package | Provider | Alias |
+|---|---|---|
+| `gpio/digital` | `GeneralPurposeIO\Digital\DigitalIOServiceProvider` | `DigitalIO` |
+| `gpio/i2c` | `GeneralPurposeIO\I2C\I2CServiceProvider` | `I2C` |
+| `gpio/spi` | `GeneralPurposeIO\SPI\SPIServiceProvider` | `SPI` |
+| `gpio/uart` | `GeneralPurposeIO\UART\UARTServiceProvider` | `UART` |
+| `gpio/pwm` | `GeneralPurposeIO\PWM\PWMServiceProvider` | `PWM` |
+| `gpio/integrated-circuits` | `GeneralPurposeIO\IntegratedCircuits\IntegratedCircuitsServiceProvider` | — (the `Circuit` alias is in unsplit Core, like `GPIO`) |
+| `gpio/contracts`, `gpio/nuts-and-bolts` | none — no provider, no bindings of their own | — |
 
-`extra.venusian.providers` on the component's own manifest, not just the umbrella's:
-
-| Package | Provider |
-|---|---|
-| `gpio/digital` | `GeneralPurposeIO\Digital\DigitalServiceProvider` |
-| `gpio/i2c` | `GeneralPurposeIO\I2C\I2CServiceProvider` |
-| `gpio/spi` | `GeneralPurposeIO\SPI\SPIServiceProvider` |
-| `gpio/uart` | `GeneralPurposeIO\UART\UARTServiceProvider` |
-| `gpio/pwm` | `GeneralPurposeIO\PWM\PWMServiceProvider` |
-| `gpio/analog` | `GeneralPurposeIO\Analog\AnalogServiceProvider` |
-| `gpio/circuits` | `GeneralPurposeIO\Circuits\CircuitsServiceProvider` |
-| `gpio/common`, `gpio/contracts` | none — no provider, no bindings of their own |
-
-Aggregate `Core\Providers\ScrapyardIOServiceProvider` (root manifest only) lists all seven protocol/circuit providers plus the `gpio` manager singleton and dock registration.
+Aggregate `Core\Providers\ScrapyardIOServiceProvider` (root manifest only) lists the five protocol providers plus the integrated-circuits one, and registers the `gpio` dock resource in `boot()`.
 
 # Requires as they now stand, per package
 
 | Package | `require` (besides `php`) | `suggest` |
 |---|---|---|
-| `gpio/contracts` | `venusian-voyager/contracts`, `venusian-voyager/io-pools` | `microscrap/gpio` |
-| `gpio/common` | `gpio/contracts`, `venusian-voyager/contracts` | — |
-| `gpio/digital` | `gpio/common`, `gpio/contracts`, `venusian-voyager/contracts`, `venusian-voyager/magic-aliases`, `venusian-voyager/nuts-and-bolts` | `microscrap/gpio`, `microscrap/mpsse`, `scrapyard-io/framework` |
-| `gpio/i2c` | `gpio/common`, `gpio/contracts`, `gpio/digital`, `venusian-voyager/console`, `venusian-voyager/contracts`, `venusian-voyager/magic-aliases`, `venusian-voyager/nuts-and-bolts` | `microscrap/i2c`, `microscrap/gpio`, `microscrap/mpsse` |
-| `gpio/spi` | `gpio/common`, `gpio/contracts`, `gpio/digital`, `venusian-voyager/contracts`, `venusian-voyager/magic-aliases`, `venusian-voyager/nuts-and-bolts` | `microscrap/spi`, `microscrap/gpio`, `microscrap/mpsse` |
-| `gpio/uart` | `gpio/common`, `gpio/contracts`, `venusian-voyager/contracts`, `venusian-voyager/magic-aliases`, `venusian-voyager/nuts-and-bolts` | `microscrap/uart`, `microscrap/ftdi` |
-| `gpio/pwm` | `gpio/common`, `gpio/contracts`, `venusian-voyager/contracts`, `venusian-voyager/magic-aliases`, `venusian-voyager/nuts-and-bolts` | — |
-| `gpio/analog` | `gpio/common`, `gpio/contracts`, `gpio/digital`, `gpio/i2c`, `venusian-voyager/contracts`, `venusian-voyager/magic-aliases`, `venusian-voyager/nuts-and-bolts` | — |
-| `gpio/circuits` | `gpio/contracts`, `venusian-voyager/console`, `venusian-voyager/contracts`, `venusian-voyager/nuts-and-bolts` | `venusian/framework` |
+| `gpio/contracts` | `venusian-voyager/contracts`, `venusian-voyager/io-pools` | — |
+| `gpio/nuts-and-bolts` | `gpio/contracts` | — |
+| `gpio/integrated-circuits` | `gpio/contracts`, `venusian-voyager/contracts`, `venusian-voyager/nuts-and-bolts` | — |
+| `gpio/digital` | `gpio/contracts`, `venusian-voyager/collections`, `venusian-voyager/contracts`, `venusian-voyager/magic-aliases`, `venusian-voyager/nuts-and-bolts` | `microscrap/scrapyard-linux`, `microscrap/scrapyard-usb` |
+| `gpio/i2c` | the digital set, plus `gpio/nuts-and-bolts` | `microscrap/scrapyard-linux`, `microscrap/scrapyard-usb` |
+| `gpio/spi` | the digital set | `microscrap/scrapyard-linux`, `microscrap/scrapyard-usb` |
+| `gpio/uart` | the digital set, plus `gpio/nuts-and-bolts` | `microscrap/scrapyard-linux`, `microscrap/scrapyard-usb` |
+| `gpio/pwm` | the digital set | `microscrap/scrapyard-linux` |
 
-`i2c` and `spi` both require `gpio/digital` — shared connections since 0.6, digital-io underlies both buses. `analog` requires both `gpio/digital` and `gpio/i2c`, same reason (ADC channels ride both).
+No protocol requires another protocol. 0.7's `i2c`/`spi` → `digital` edge is gone: shared pin work moved into the adapters, which require every `gpio/*` protocol themselves and so sit above all of them.
 
-Root umbrella `composer.json`: `require.venusian/framework: ^0.8.0`, `replace` = nine `gpio/*` at `self.version`, `require-dev` pulls all seven `microscrap/*` at `^0.8.0` + `pestphp/pest ^4`, `suggest` mirrors `require-dev`'s microscrap set with per-package notes.
+`i2c` and `uart` reach `gpio/nuts-and-bolts` for the `bytes2array` / `array2bytes` helpers.
+
+Root umbrella `composer.json`: `require.venusian/framework: ^0.8.0`, `replace` = the eight `gpio/*` at `self.version`, `require-dev` pulls seven `microscrap/*` bindings at `^0.8.0` + `pestphp/pest ^4`, `suggest` mirrors that binding set. See [known-gaps.md](known-gaps.md) — that `require-dev` is why the suite does not install standalone.
 
 # Dependency direction (recap, see AGENTS.md)
 
-Contracts imports `Voyager\Contracts`, the concrete `Voyager\IOPools\Presumption`, and microscrap DTOs. Components import Contracts, Common, NutsAndBolts, MagicAliases, microscrap. Nothing below Core imports Core. Circuits is the one component touching System — via `suggest`, guarded, never `require`.
+Contracts imports `Voyager\Contracts`, the concrete `Voyager\IOPools\Presumption`, and microscrap DTOs. Components import Contracts, NutsAndBolts, Collections, MagicAliases, microscrap. Nothing below Core imports Core. No **split** touches `Voyager\System` any more: the one import left, `Voyager\System\Console\AboutCommand` in `Core\Providers\ScrapyardIOServiceProvider`, is in unsplit Core, which ships only with the umbrella and so may require the framework. In 0.7 it was `gpio/circuits` reaching System through a guarded `suggest`; that component is gone.
 
 # Rule: runtime still needs a Venusian application
 
-Splitting `gpio/*` apart from `venusian/framework` only frees the *installable* dependency at the package level. At runtime every protocol provider and `GPIOProtocolManager::protocol()` call the `config()` / `app()` helpers, which live in unsplit `venusian/framework` System — so any of the nine `gpio/*` packages still needs a booted Venusian application to actually run, even though the umbrella (not each split) is the one that `require`s `venusian/framework`.
+Splitting `gpio/*` apart from `venusian/framework` only frees the *installable* dependency. At runtime every protocol provider calls the `config()` / `app()` helpers, which live in unsplit `venusian/framework` System — so any `gpio/*` package still needs a booted Venusian application to run, even though the umbrella, not each split, is what `require`s the framework.
 
 # Related
 
 * [known-gaps.md](known-gaps.md)
 * [overview.md](overview.md)
+* [integrated-circuits.md](integrated-circuits.md)

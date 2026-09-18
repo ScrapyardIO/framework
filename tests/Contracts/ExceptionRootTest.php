@@ -1,7 +1,7 @@
 <?php
 
-use GeneralPurposeIO\Contracts\Circuits\CircuitException;
-use GeneralPurposeIO\Contracts\Common\GPIOException;
+use GeneralPurposeIO\Contracts\IntegratedCircuits\CircuitException;
+use GeneralPurposeIO\Contracts\NutsAndBolts\GPIOException;
 use GeneralPurposeIO\Contracts\Core\GPIOLevelException;
 use GeneralPurposeIO\Contracts\Digital\DigitalIOException;
 use GeneralPurposeIO\Contracts\I2C\I2CException;

@@ -1,27 +1,9 @@
 <?php
 
 use GeneralPurposeIO\Core\IOPools\GPIOResourceDriver;
-use GeneralPurposeIO\Core\Providers\ScrapyardIOServiceProvider;
 use GeneralPurposeIO\I2C\I2CConnectionManager;
-use Voyager\Config\Repository;
-use Voyager\IOPools\IOPoolsServiceProvider;
-use Voyager\System\Application;
 
-/*
-| The one place a real Application is booted: the aggregate provider needs
-| register() and configPath(), which only the Application has.
-*/
-function bootedApplication(array $gpio = []): Application
-{
-    $app = new Application(dirname(__DIR__, 2));
-    $app['config'] = new Repository(['gpio' => $gpio]);
-
-    $app->register(IOPoolsServiceProvider::class);
-    $app->register(ScrapyardIOServiceProvider::class);
-    $app->boot();
-
-    return $app;
-}
+/* bootedApplication() lives in tests/Pest.php so a filtered run still has it. */
 
 it('merges the gpio config and binds every protocol manager', function (): void {
     $app = bootedApplication();

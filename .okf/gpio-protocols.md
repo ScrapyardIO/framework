@@ -16,16 +16,16 @@ sources:
 
 # Role
 
-Protocol transports (digital-io, i2c, spi, uart, pwm, analog) live beside Circuits. `ScrapyardIOServiceProvider` aggregates protocol providers (`DigitalServiceProvider`, `I2CServiceProvider`, `SPIServiceProvider`, `UARTServiceProvider`, `PWMServiceProvider`, `AnalogServiceProvider`) **and** `CircuitsServiceProvider`.
+Five protocol transports: digital-io, i2c, spi, uart, pwm. `ScrapyardIOServiceProvider` aggregates their five providers (`DigitalIOServiceProvider`, `I2CServiceProvider`, `SPIServiceProvider`, `UARTServiceProvider`, `PWMServiceProvider`) and registers the `gpio` dock resource in `boot()`. Analog and Circuits used to be in that list; both are gone.
 
 # About
 
-`ScrapyardIOServiceProvider` contributes Workshop `about` section **GPIO** via microscrap `InstalledVersions` probes + `/sys/class/pwm` for native PWM.
+`ScrapyardIOServiceProvider::registerAboutSection()` would contribute Workshop `about` section **GPIO** via microscrap `InstalledVersions` probes plus `/sys/class/pwm` for native PWM. The call in `boot()` is commented out, so no About section ships; the probes also still name the low-level `microscrap/{gpio,i2c,spi,uart,ftdi,mpsse,posix}` packages rather than the `scrapyard-linux` / `scrapyard-usb` adapters the components now suggest.
 
-Catalog ICs are a separate About section owned by Circuits — see [Circuits](circuits.md)#about.
+There is no second About section. The catalog one belonged to Circuits — see [integrated-circuits.md](integrated-circuits.md).
 
 # Related
 
-* [Circuits](circuits.md)
+* [integrated-circuits.md](integrated-circuits.md)
 * [packaging.md](packaging.md)
 * [known-gaps.md](known-gaps.md)

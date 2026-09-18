@@ -6,7 +6,6 @@ use GeneralPurposeIO\Contracts\IntegratedCircuits\RefreshesOnCommand;
 use GeneralPurposeIO\Contracts\IntegratedCircuits\RefreshMode;
 use GeneralPurposeIO\Contracts\IntegratedCircuits\Switchable;
 use GeneralPurposeIO\Contracts\IntegratedCircuits\WindowAddressable;
-use Surface\Contracts\Framebuffers\FormatSpecification;
 
 /** @return list<array{string, string, bool}> name, type, has default */
 function displayPanelParams(string $interface, string $method): array
@@ -26,9 +25,22 @@ function ownMethods(string $interface): array
     ));
 }
 
-it('roots DisplayPanel in IntegratedCircuit and FormatSpecification', function (): void {
+it('roots DisplayPanel in IntegratedCircuit and nothing of Surface', function (): void {
     expect(is_subclass_of(DisplayPanel::class, IntegratedCircuit::class))->toBeTrue()
-        ->and(is_subclass_of(DisplayPanel::class, FormatSpecification::class))->toBeTrue();
+        ->and(class_parents(DisplayPanel::class) ?: [])->toBe([])
+        ->and(array_keys(class_implements(DisplayPanel::class)))->toBe([IntegratedCircuit::class]);
+});
+
+it('keeps every gpio contract free of Surface, so a fan board needs no graphics package', function (): void {
+    $reaching = [];
+
+    foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator(dirname(__DIR__, 2).'/src')) as $file) {
+        if ($file->isFile() && $file->getExtension() === 'php' && preg_match('/^\s*use\s+Surface\\\\/m', file_get_contents($file->getPathname()))) {
+            $reaching[] = $file->getFilename();
+        }
+    }
+
+    expect($reaching)->toBe([]);
 });
 
 it('gives DisplayPanel the transmit signature the shipped chips already have', function (): void {

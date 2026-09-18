@@ -15,7 +15,7 @@ First-class module beside Surface. Same house rules.
 ## Package rules (quick) — 0.8.x
 
 - Composer: `scrapyard-io/framework` **0.8.0**. PHP `^8.4|^8.5|^8.6`. Requires `venusian/framework ^0.8.0`. Namespace `GeneralPurposeIO\` → `src/GeneralPurposeIO/`.
-- **Split packages.** `gpio/contracts`, `gpio/digital`, `gpio/i2c`, `gpio/spi`, `gpio/uart`, `gpio/pwm`, `gpio/integrated-circuits`, `gpio/nuts-and-bolts` — each with its own `composer.json` under `src/GeneralPurposeIO/*`, each in the root `replace` map. `Core` is not split: it holds the aggregate provider, the `GPIO` alias and the dock resource, and ships only with the umbrella.
+- **Split packages.** `gpio/contracts`, `gpio/digital`, `gpio/i2c`, `gpio/spi`, `gpio/uart`, `gpio/pwm`, `gpio/integrated-circuits`, `gpio/nuts-and-bolts` — each with its own `composer.json` under `src/GeneralPurposeIO/*`, each in the root `replace` map. `Core` is not split: it holds the aggregate provider, the `GPIO` and `Circuit` aliases and the dock resource, and ships only with the umbrella.
 - **Protocol shape.** Each protocol = MagicAlias (`I2C`, `SPI`, `UART`, `DigitalIO`, `PWM`) → `gpio.<protocol>` `Manager` (default from `gpio.protocols.<key>.default`, built-in `none` driver) → abstract `*ConnectionDriver` (`connectTo()`, `register()`, `device()`) → abstract `*ConnectionFactory` → transport. Adapters `extend()` the managers from their own providers; the framework holds no hardware code.
 - **Dependency direction.** Contracts import `Voyager\Contracts` and the concrete `Voyager\IOPools\Presumption`. Components import Contracts, NutsAndBolts and Voyager split components. Nothing below Core imports Core.
 - **No microscrap here.** Framework code never calls `microscrap/*`; hardware lives in the adapter packages.

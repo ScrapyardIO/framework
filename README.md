@@ -255,8 +255,44 @@ Work registered during a tick runs on the next one.
 | `Contracts\IntegratedCircuits\ReadWriter` | `read($register, $length)` / `write($register, $data)` for a chip transport |
 | `Contracts\NutsAndBolts\Splices16Bits` | split 16-bit registers into bytes, and decode signed little-endian values |
 | `Contracts\IntegratedCircuits\CircuitException` | base for a chip's exceptions |
+| `Contracts\IntegratedCircuits\Attributes\IntegratedCircuit` | how the chip can be wired — `#[IntegratedCircuit('I2C', ['SPI', 'DigitalIO'])]` |
+| `Contracts\IntegratedCircuits\Attributes\Pinout` | what each channel needs wired, index-aligned with those options |
 
 The global helpers `array2bytes()`, `bytes2array()`, `byte2bits()` and `bits2byte()` convert between byte arrays, binary strings and bits.
+
+## Circuits
+
+A chip package catalogs what it ships from its provider's `boot()`; nothing is built until something asks.
+
+```php
+Circuit::addCircuit('st7789', ST7789::class);
+```
+
+The wiring lives in the app, in the config the chip package publishes:
+
+```bash
+php workshop vendor:publish --tag=st77xx-config    # config/circuits/st7789.php
+```
+
+```php
+'default_config' => 'spi',
+'configs' => ['spi' => [
+    'driver' => 'usb', 'device' => 'ft232h', 'chip_select' => 0,
+    'speed' => 10_000_000, 'width' => 320, 'height' => 240,
+    'mad_ctrl' => ['pixel_direction_vertical' => true],
+    'dc'  => ['driver' => 'usb', 'device' => 'ft232h', 'pin' => 1],
+    'rst' => ['driver' => 'usb', 'device' => 'ft232h', 'pin' => 2],
+]],
+```
+
+Then one call hands back a wired, booted chip — no adapter, bus or pin at the call site:
+
+```php
+$panel = Circuit::conjure('st7789');            // default_config
+$left  = Circuit::conjure('st7789', 'left');    // a named config
+```
+
+The config entry is the signature of the chip's own `spi()` factory: its keys are passed as named arguments. A key the factory does not take is dropped; a required one the config lacks is an error that names it. Surface reaches the same door with `EmbeddedDisplay::panel('st7789')`.
 
 ## Errors
 
@@ -278,10 +314,10 @@ The framework is also published as components, for drivers that should depend on
 | `gpio/spi` | `SPI` and its connection classes |
 | `gpio/uart` | `UART` and its connection classes |
 | `gpio/pwm` | `PWM` and its connection classes |
-| `gpio/integrated-circuits` | `Bootable` and `DataRegister` |
+| `gpio/integrated-circuits` | `Bootable`, `DataRegister`, the circuit catalog and `circuit:make-profile` |
 | `gpio/nuts-and-bolts` | the byte helpers |
 
-The aggregate service provider, the `GPIO` alias and the dock resource are part of `scrapyard-io/framework` only.
+The aggregate service provider, the `GPIO` and `Circuit` aliases and the dock resource are part of `scrapyard-io/framework` only.
 
 ## Testing
 

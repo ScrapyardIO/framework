@@ -2,15 +2,19 @@
 
 namespace GeneralPurposeIO\Contracts\IntegratedCircuits;
 
-use Surface\Contracts\Framebuffers\FormatSpecification;
-
 /**
- * A pixel panel Surface can draw for. formatSpec() says how transmit() wants
- * its bytes packed; transmit() writes them into panel RAM. Without
- * WindowAddressable the origin and size are the whole panel every time.
- * Children: WindowAddressable, RefreshesOnCommand, Switchable.
+ * A pixel panel Surface can draw for. transmit() writes packed bytes into
+ * panel RAM; without WindowAddressable the origin and size are the whole
+ * panel every time. Children: WindowAddressable, RefreshesOnCommand,
+ * Switchable.
+ *
+ * How the bytes are packed is Surface's vocabulary, not GPIO's, so this
+ * interface does not name it: a panel driver implements
+ * Surface\Contracts\Framebuffers\FormatSpecification alongside this, and
+ * Surface asks for both. Keeping it out is what lets a PWM fan or an
+ * accelerometer install gpio/contracts without a graphics package.
  */
-interface DisplayPanel extends IntegratedCircuit, FormatSpecification
+interface DisplayPanel extends IntegratedCircuit
 {
     public function width(): int;
 

@@ -4,18 +4,14 @@ namespace GeneralPurposeIO\Core\Providers;
 
 
 use Composer\InstalledVersions;
-use GeneralPurposeIO\Analog\AnalogServiceProvider;
-use GeneralPurposeIO\Circuits\CircuitsServiceProvider;
-use GeneralPurposeIO\Common\GPIOProtocolManager;
-use GeneralPurposeIO\Contracts\Core\GPIOProtocolFactory as FactoryContract;
 use GeneralPurposeIO\Contracts\Core\GPIOResourceDriver as ResourceContract;
 use GeneralPurposeIO\Core\IOPools\GPIOResourceDriver;
 use GeneralPurposeIO\Digital\DigitalIOServiceProvider;
 use GeneralPurposeIO\I2C\I2CServiceProvider;
+use GeneralPurposeIO\IntegratedCircuits\IntegratedCircuitsServiceProvider;
 use GeneralPurposeIO\PWM\PWMServiceProvider;
 use GeneralPurposeIO\SPI\SPIServiceProvider;
 use GeneralPurposeIO\UART\UARTServiceProvider;
-use Voyager\Contracts\Vessel\Vessel;
 use Voyager\NutsAndBolts\AggregateServiceProvider;
 use Voyager\System\Console\AboutCommand;
 
@@ -28,17 +24,12 @@ class ScrapyardIOServiceProvider extends AggregateServiceProvider
         SPIServiceProvider::class,
         I2CServiceProvider::class,
         PWMServiceProvider::class,
-        //CircuitsServiceProvider::class,
-        //AnalogServiceProvider::class,
+        IntegratedCircuitsServiceProvider::class,
     ];
 
     public function register(): void
     {
         $this->mergeConfigFrom(dirname(__DIR__, 4).'/config/gpio.php', 'gpio');
-
-        //$this->app->singleton('gpio', fn (Vessel $app) => new GPIOProtocolManager($app));
-        //$this->app->alias('gpio', GPIOProtocolManager::class);
-        //$this->app->alias('gpio', FactoryContract::class);
 
         parent::register();
     }
