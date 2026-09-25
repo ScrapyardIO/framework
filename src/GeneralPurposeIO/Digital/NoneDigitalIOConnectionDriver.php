@@ -22,4 +22,7 @@ class NoneDigitalIOConnectionDriver extends DigitalIOConnectionDriver
     {
         throw DigitalIOException::noDriverConfigured();
     }
+
+    /** newConnection() never succeeds, so there is never a handle to close. */
+    protected function closeConnection(mixed $handle): void {}
 }

@@ -2,19 +2,18 @@
 
 namespace GeneralPurposeIO\Digital;
 
-use Voyager\Contracts\Vessel\Vessel;
+use ReflectionException;
+use Voyager\Contracts\Vessel\TheServiceContainer;
 use Voyager\NutsAndBolts\ServiceProvider;
 
 class DigitalIOServiceProvider extends ServiceProvider
 {
+    /**
+     * @throws -ReflectionException
+     */
     public function register(): void
     {
-        $this->app->singleton('gpio.digital', fn (Vessel $app) => new DigitalOConnectionManager($app));
+        $this->app->registerSingleton('gpio.digital', fn (TheServiceContainer $app) => new DigitalOConnectionManager($app));
         $this->app->alias('gpio.digital', DigitalOConnectionManager::class);
-    }
-
-    public function boot(): void
-    {
-
     }
 }

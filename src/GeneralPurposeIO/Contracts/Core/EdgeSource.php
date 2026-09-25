@@ -13,5 +13,5 @@ interface EdgeSource
     public function offset(): int;
 
     /** @return list<DigitalEdgeEvent> zero or more edges since the last poll; never blocks */
-    public function pollEdges(bool $rising, bool $falling): array;
+    public function pollEdges(bool $rising_events, bool $falling_events): array;
 }

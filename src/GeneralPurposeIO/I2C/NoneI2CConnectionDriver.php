@@ -17,4 +17,7 @@ class NoneI2CConnectionDriver extends I2CConnectionDriver
     {
         throw I2CException::noDriverConfigured();
     }
+
+    /** newConnection() never succeeds, so there is never a handle to close. */
+    protected function closeConnection(mixed $handle): void {}
 }

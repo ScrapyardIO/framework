@@ -8,7 +8,7 @@
     "venusian"
   ],
   "license": "MIT",
-  "version": "0.8.1",
+  "version": "0.9.0",
   "homepage": "https://scrapyard-io.projectsaturnstudios.com/ecosystem/scrapyard-io/framework/0.8.x/overview",
   "support": {
     "issues": "https://github.com/scrapyard-io/framework/issues",
@@ -23,7 +23,10 @@
   ],
   "require": {
     "php": "^8.4|^8.5|^8.6",
-    "venusian/framework": "^0.8.0"
+    "venusian-voyager/io-pools": "^0.9.0",
+    "venusian-voyager/contracts": "^0.9.0",
+    "venusian-voyager/collections": "^0.9.0",
+    "venusian-voyager/nuts-and-bolts": "^0.9.0"
   },
   "replace": {
     "gpio/contracts": "self.version",
@@ -35,23 +38,25 @@
     "gpio/spi": "self.version",
     "gpio/uart": "self.version"
   },
-  "require-dev": {
-    "microscrap/ftdi": "^0.8.0",
-    "microscrap/gpio": "^0.8.0",
-    "microscrap/i2c": "^0.8.0",
-    "microscrap/mpsse": "^0.8.0",
-    "microscrap/posix": "^0.8.0",
-    "microscrap/spi": "^0.8.0",
-    "microscrap/uart": "^0.8.0",
-    "pestphp/pest": "^4"
-  },
+    "require-dev": {
+        "microscrap/ftdi": "^0.9.0",
+        "microscrap/gpio": "^0.9.0",
+        "microscrap/i2c": "^0.9.0",
+        "microscrap/mpsse": "^0.9.0",
+        "microscrap/posix": "^0.9.0",
+        "microscrap/spi": "^0.9.0",
+        "microscrap/uart": "^0.9.0",
+        "pestphp/pest": "^4",
+        "venusian-voyager/config": "^0.9.0",
+        "venusian-voyager/vessel": "^0.9.0"
+    },
   "suggest": {
-    "microscrap/gpio": "^0.8.0 - POSIX digital IO (libgpiod v2 over ext-posi)",
-    "microscrap/i2c": "^0.8.0 - POSIX I2C",
-    "microscrap/spi": "^0.8.0 - POSIX SPI",
-    "microscrap/uart": "^0.8.0 - POSIX UART",
-    "microscrap/ftdi": "^0.8.0 - FTDI USB drivers",
-    "microscrap/mpsse": "^0.8.0 - MPSSE USB drivers"
+    "microscrap/gpio": "^0.9.0 - POSIX digital IO (libgpiod v2 over ext-posi)",
+    "microscrap/i2c": "^0.9.0 - POSIX I2C",
+    "microscrap/spi": "^0.9.0 - POSIX SPI",
+    "microscrap/uart": "^0.9.0 - POSIX UART",
+    "microscrap/ftdi": "^0.9.0 - FTDI USB drivers",
+    "microscrap/mpsse": "^0.9.0 - MPSSE USB drivers"
   },
   "autoload": {
     "psr-4": {
@@ -68,20 +73,12 @@
   },
   "extra": {
     "branch-alias": {
-      "dev-main": "0.8.x-dev"
+      "dev-main": "0.9.x-dev"
     },
     "venusian": {
       "providers": [
         "GeneralPurposeIO\\Core\\Providers\\ScrapyardIOServiceProvider"
-      ],
-      "aliases": {
-        "GPIO": "GeneralPurposeIO\\Core\\MagicAliases\\GPIO",
-        "DigitalIO": "GeneralPurposeIO\\Digital\\DigitalIO",
-        "I2C": "GeneralPurposeIO\\I2C\\I2C",
-        "PWM": "GeneralPurposeIO\\PWM\\PWM",
-        "SPI": "GeneralPurposeIO\\SPI\\SPI",
-        "UART": "GeneralPurposeIO\\UART\\UART"
-      }
+      ]
     }
   },
   "config": {

@@ -8,7 +8,7 @@ class I2CException extends GPIOException
 {
     public static function invalidSlaveAddress(int $address): static
     {
-        return new static("Only valid address between 0x08 and 0x77 allowed. Requested: [{$address}].");
+        return new static("Only valid address between 0x03 and 0x77 allowed. Requested: [{$address}].");
     }
 
     public static function missingMasterDevice(): static
@@ -34,5 +34,40 @@ class I2CException extends GPIOException
     public static function noDriverConfigured(): static
     {
         return new static('No I2C connection driver is configured. Set gpio.protocols.i2c.default to an installed adapter.');
+    }
+
+    public static function transportClosed(int $address): static
+    {
+        return new static(sprintf('I2C slave 0x%02X is closed.', $address));
+    }
+
+    public static function noEventLoop(): static
+    {
+        return new static('via() needs an event loop. Boot IOPools, or call the blocking method.');
+    }
+
+    public static function noWorkTargets(): static
+    {
+        return new static('via() needs the IOPools work targets bound in the container (work-targets).');
+    }
+
+    public static function notAttached(int $address): static
+    {
+        return new static(sprintf('I2C slave 0x%02X was not handed out by a connection driver, so it cannot be offloaded.', $address));
+    }
+
+    public static function messageTooLong(int $length): static
+    {
+        return new static("{$length} bytes is longer than the 8192-byte I2C message limit.");
+    }
+
+    public static function offloadTargetDiscardsResult(string $target): static
+    {
+        return new static("The [{$target}] work target hands back a queued job, not the call's result: via() cannot use it.");
+    }
+
+    public static function offloadTargetUnsupported(string $target): static
+    {
+        return new static("MPSSE I2C transfers run on the device's own USB pump; they cannot go to the [{$target}] work target.");
     }
 }

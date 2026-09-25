@@ -8,9 +8,9 @@
         "digital-io"
     ],
     "license": "MIT",
-    "homepage": "https://scrapyard-io.projectsaturnstudios.com/ecosystem/scrapyard-io/framework/0.8.x/overview",
+    "homepage": "https://scrapyard-io.projectsaturnstudios.com/ecosystem/scrapyard-io/framework/0.9.x/overview",
     "support": {
-        "docs": "https://scrapyard-io.projectsaturnstudios.com/ecosystem/scrapyard-io/framework/0.8.x/overview",
+        "docs": "https://scrapyard-io.projectsaturnstudios.com/ecosystem/scrapyard-io/framework/0.9.x/overview",
         "source": "https://github.com/scrapyard-io/framework",
         "issues": "https://github.com/scrapyard-io/framework/issues"
     },
@@ -22,15 +22,14 @@
     ],
     "require": {
         "php": "^8.4|^8.5|^8.6",
-        "gpio/contracts": "^0.8.0",
-        "venusian-voyager/collections": "^0.8.0",
-        "venusian-voyager/contracts": "^0.8.0",
-        "venusian-voyager/magic-aliases": "^0.8.0",
-        "venusian-voyager/nuts-and-bolts": "^0.8.0"
+        "gpio/contracts": "^0.9.0",
+        "venusian-voyager/collections": "^0.9.0",
+        "venusian-voyager/contracts": "^0.9.0",
+        "venusian-voyager/nuts-and-bolts": "^0.9.0"
     },
     "suggest": {
-        "microscrap/scrapyard-linux": "^0.8.0 - native libgpiod pins",
-        "microscrap/scrapyard-usb": "^0.8.0 - MPSSE pins over FTDI"
+        "microscrap/scrapyard-linux": "^0.9.0 - native libgpiod pins",
+        "microscrap/scrapyard-usb": "^0.9.0 - MPSSE pins over FTDI"
     },
     "autoload": {
         "psr-4": {
@@ -39,7 +38,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-main": "0.8.x-dev"
+            "dev-main": "0.9.x-dev"
         },
         "venusian": {
             "providers": [

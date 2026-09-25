@@ -1,28 +1,24 @@
 <?php
 
-use Voyager\Config\Repository;
-use Voyager\IOPools\IOPoolsServiceProvider;
-use Voyager\System\Application;
+use ScrapyardIO\Tests\Fixtures\SampledDigitalInputTransport;
+use ScrapyardIO\Tests\Fixtures\SocketDigitalInputTransport;
+use Voyager\Contracts\IOPools\Loop;
 
-/*
-| Almost everything here is proven against plain objects and the fakes in
-| tests/Support/Fakes. Protocol drivers are proven on the Pi 5 over `fnk`,
-| never here.
-|
-| The exception is the aggregate provider, which needs register() and
-| configPath(). bootedApplication() is the one real Application, and it
-| lives here rather than in a test file so a filtered run still has it.
-*/
+pest()->in('Digital', 'I2C');
 
-/** @param array<string, mixed> $gpio */
-function bootedApplication(array $gpio = []): Application
+/** A socket-backed pin on device "bench", resolving $loop (or no loop). */
+function socketPin(?Loop $loop, int $pin = 17): SocketDigitalInputTransport
 {
-    $app = new Application(dirname(__DIR__));
-    $app['config'] = new Repository(['gpio' => $gpio]);
+    $transport = (new SocketDigitalInputTransport($pin))->boundTo('bench');
 
-    $app->register(IOPoolsServiceProvider::class);
-    $app->register(GeneralPurposeIO\Core\Providers\ScrapyardIOServiceProvider::class);
-    $app->boot();
+    return is_null($loop) ? $transport : $transport->resolvesLoopWith(fn (): Loop => $loop);
+}
 
-    return $app;
+/** A timer-sampled pin on device "bench", resolving $loop (or no loop). */
+function sampledPin(?Loop $loop, array $levels, int $pin = 5, float $interval = 0.002): SampledDigitalInputTransport
+{
+    $transport = (new SampledDigitalInputTransport($pin, $interval))->boundTo('bench');
+    $transport->levels = $levels;
+
+    return is_null($loop) ? $transport : $transport->resolvesLoopWith(fn (): Loop => $loop);
 }

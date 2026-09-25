@@ -1,5 +1,10 @@
 # scrapyard-io/framework Update Log
 
+## 2026-09-24
+* **Update**: [gpio-protocols.md](/gpio-protocols.md) — I2C `via()`: pool `BusGig` on Linux, recorded-transaction USB pump on MPSSE, per-key queue, 8192-byte cap, busy-bus rule.
+* **Update**: [gpio-protocols.md](/gpio-protocols.md) — review fixes: blocking calls wait only for earlier jobs; MPSSE pump turns + segmented transactions; `close()` refuses `via()`; queue target refused.
+* **Update**: [gpio-protocols.md](/gpio-protocols.md) — rewritten for 0.9: two protocols (Digital, I2C), shared connection lifecycle, I2C `bulkWrite` framing, FT232H context ownership. Dropped the dock and About text; neither exists in 0.9.
+
 ## 2026-09-18
 * **Addition**: [integrated-circuits.md](/integrated-circuits.md) — the catalog is back, ported from 0.7 `Circuits` onto the renamed component and the new interfaces. `IntegratedCircuits\{CircuitRegistry,PendingCircuit,IntegratedCircuitsServiceProvider}`, `Support\{CircuitAttributeInspector,CircuitProfileWriter,CircuitProfileParamPrompter}`, `Console\CircuitMakeProfileCommand` with the `ScaffoldsCircuitProfiles` trait, `Core\MagicAliases\Circuit`, and `config/circuits.php` back with an `attachProfile` note. `CircuitTransport`, `CircuitConsoleCommand` and the `#[IntegratedCircuit]` / `#[Pinout]` attributes went into `Contracts\IntegratedCircuits` rather than the concrete component. `CircuitException` grew named constructors for all of it. Not ported: `CircuitCatalogAboutRows`, whose About section is commented out in the aggregate provider. `gpio/integrated-circuits` now requires `venusian-voyager/{console,contracts,nuts-and-bolts}` and declares its provider. 22 new tests; suite 184.
 * **Fix**: `bootedApplication()` moved from `tests/Core/ProviderBootTest.php` into `tests/Pest.php` — as a global helper inside a test file it vanished from any filtered run, so `vendor/bin/pest tests/IntegratedCircuits` fataled while the whole suite passed.

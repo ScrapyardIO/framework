@@ -8,9 +8,9 @@
         "bytes"
     ],
     "license": "MIT",
-    "homepage": "https://scrapyard-io.projectsaturnstudios.com/ecosystem/scrapyard-io/framework/0.8.x/overview",
+    "homepage": "https://scrapyard-io.projectsaturnstudios.com/ecosystem/scrapyard-io/framework/0.9.x/overview",
     "support": {
-        "docs": "https://scrapyard-io.projectsaturnstudios.com/ecosystem/scrapyard-io/framework/0.8.x/overview",
+        "docs": "https://scrapyard-io.projectsaturnstudios.com/ecosystem/scrapyard-io/framework/0.9.x/overview",
         "source": "https://github.com/scrapyard-io/framework",
         "issues": "https://github.com/scrapyard-io/framework/issues"
     },
@@ -22,7 +22,8 @@
     ],
     "require": {
         "php": "^8.4|^8.5|^8.6",
-        "gpio/contracts": "^0.8.0"
+        "gpio/contracts": "^0.9.0",
+        "venusian-voyager/contracts": "^0.9.0"
     },
     "autoload": {
         "psr-4": {
@@ -34,7 +35,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-main": "0.8.x-dev"
+            "dev-main": "0.9.x-dev"
         }
     },
     "config": {

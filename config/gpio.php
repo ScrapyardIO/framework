@@ -20,10 +20,5 @@ return [
         'pwm' => [
             'default' => 'none',
         ],
-
-    ],
-    'io_pools' => [
-        'enabled' => true,
-        'defer_per_tick' => null,
     ],
 ];

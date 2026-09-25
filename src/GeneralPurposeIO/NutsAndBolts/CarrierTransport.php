@@ -1,10 +1,8 @@
 <?php
 
-namespace GeneralPurposeIO\Support;
+namespace GeneralPurposeIO\NutsAndBolts;
 
-use GeneralPurposeIO\Contracts\NutsAndBolts\CarrierTransport as TransportContract;
-
-abstract class CarrierTransport implements TransportContract
+abstract class CarrierTransport
 {
 
 }
