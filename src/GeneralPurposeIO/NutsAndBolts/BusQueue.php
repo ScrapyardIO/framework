@@ -10,7 +10,8 @@ use Voyager\Contracts\IOPools\Promise;
 
 /**
  * Offloaded bus jobs that must not overlap: one runs at a time, first in first out.
- * Each entry carries its owner (a slave address), so closing one slave touches only its own entries.
+ * Each entry carries its owner (a slave address, a chip select), so closing one slave touches only its own entries.
+ * pause() keeps queued jobs from starting while something outside the queue has the bus (an SPI select()).
  */
 final class BusQueue
 {
@@ -25,6 +26,9 @@ final class BusQueue
 
     /** The caller-facing promise of the running job. */
     private ?Promise $running_promise = null;
+
+    /** How many holders have paused the queue. Queued jobs start only at zero. */
+    private int $paused = 0;
 
     public function __construct(
         private readonly Loop $loop,
@@ -88,9 +92,37 @@ final class BusQueue
         }
     }
 
+    /** Queued jobs wait until every pause() has had its resume(). A running job carries on. */
+    public function pause(): void
+    {
+        $this->paused++;
+    }
+
+    public function resume(): void
+    {
+        $this->paused = max(0, $this->paused - 1);
+        $this->next();
+    }
+
+    /** Waits (borrowing the loop, or suspending a fiber) until no job is running. From inside the running job, returns at once. */
+    public function awaitRunning(): void
+    {
+        if ($this->running && ! $this->insideRunningJob()) {
+            $this->loop->until(fn (): bool => ! $this->running);
+        }
+    }
+
+    /** Whether the caller is the running job's own fiber. */
+    public function insideRunningJob(): bool
+    {
+        $fiber = Fiber::getCurrent();
+
+        return ! is_null($fiber) && $fiber === $this->running_fiber;
+    }
+
     private function next(): void
     {
-        if ($this->running || $this->pending === []) {
+        if ($this->running || $this->paused > 0 || $this->pending === []) {
             return;
         }
 
@@ -121,12 +153,5 @@ final class BusQueue
     private function runningFor(int $owner): bool
     {
         return $this->running && $this->running_owner === $owner;
-    }
-
-    private function insideRunningJob(): bool
-    {
-        $fiber = Fiber::getCurrent();
-
-        return ! is_null($fiber) && $fiber === $this->running_fiber;
     }
 }

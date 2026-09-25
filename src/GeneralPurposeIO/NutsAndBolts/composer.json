@@ -23,7 +23,8 @@
     "require": {
         "php": "^8.4|^8.5|^8.6",
         "gpio/contracts": "^0.9.0",
-        "venusian-voyager/contracts": "^0.9.0"
+        "venusian-voyager/contracts": "^0.9.0",
+        "venusian-voyager/io-pools": "^0.9.0"
     },
     "autoload": {
         "psr-4": {

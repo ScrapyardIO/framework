@@ -4,7 +4,7 @@ use ScrapyardIO\Tests\Fixtures\SampledDigitalInputTransport;
 use ScrapyardIO\Tests\Fixtures\SocketDigitalInputTransport;
 use Voyager\Contracts\IOPools\Loop;
 
-pest()->in('Digital', 'I2C');
+pest()->in('Digital', 'I2C', 'SPI', 'NutsAndBolts');
 
 /** A socket-backed pin on device "bench", resolving $loop (or no loop). */
 function socketPin(?Loop $loop, int $pin = 17): SocketDigitalInputTransport

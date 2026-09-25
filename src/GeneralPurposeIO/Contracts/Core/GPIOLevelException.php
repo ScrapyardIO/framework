@@ -14,6 +14,21 @@ class GPIOLevelException extends RuntimeException
         return new static("Invalid property [{$name}] on [{$class}]");
     }
 
+    public static function noEventLoop(): static
+    {
+        return new static('via() needs an event loop. Boot IOPools, or call the blocking method.');
+    }
+
+    public static function noWorkTargets(): static
+    {
+        return new static('via() needs the IOPools work targets bound in the container (work-targets).');
+    }
+
+    public static function offloadTargetDiscardsResult(string $target): static
+    {
+        return new static("The [{$target}] work target hands back a queued job, not the call's result: via() cannot use it.");
+    }
+
     /**
      * A pool worker's exception crosses the pipe as a RemoteException naming its class. When that class is one
      * of ours, hand back a fresh one with the same message, so a promise rejects with what the blocking call throws.

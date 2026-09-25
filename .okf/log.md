@@ -1,6 +1,11 @@
 # scrapyard-io/framework Update Log
 
+## 2026-09-25
+* **Update**: [gpio-protocols.md](/gpio-protocols.md) — SPI `via()`: per-bus queue, `select()` takes the bus from it; Linux clock on every transfer + cross-process bus lock (`spi_open` included); MPSSE pump over a link, one turn per `select()`.
+* **Update**: [gpio-protocols.md](/gpio-protocols.md) — SPI `via()`: one queue per bus, `SPIBusGig` with bus settings and slave clock, `select()` takes the bus from the queue. Shared `OffloadsBusJobs` trait; `noEventLoop` / `noWorkTargets` / `offloadTargetDiscardsResult` live on `GPIOLevelException`.
+
 ## 2026-09-24
+* **Update**: [gpio-protocols.md](/gpio-protocols.md) — SPI ported: lifecycle, `writeRead`, `select`, per-slave `speed`; Linux chip select held across spidev messages; FT232H chip selects = DigitalIO pins, idling high.
 * **Update**: [gpio-protocols.md](/gpio-protocols.md) — I2C `via()`: pool `BusGig` on Linux, recorded-transaction USB pump on MPSSE, per-key queue, 8192-byte cap, busy-bus rule.
 * **Update**: [gpio-protocols.md](/gpio-protocols.md) — review fixes: blocking calls wait only for earlier jobs; MPSSE pump turns + segmented transactions; `close()` refuses `via()`; queue target refused.
 * **Update**: [gpio-protocols.md](/gpio-protocols.md) — rewritten for 0.9: two protocols (Digital, I2C), shared connection lifecycle, I2C `bulkWrite` framing, FT232H context ownership. Dropped the dock and About text; neither exists in 0.9.

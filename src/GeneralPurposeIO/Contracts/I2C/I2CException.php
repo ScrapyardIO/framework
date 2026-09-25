@@ -41,16 +41,6 @@ class I2CException extends GPIOException
         return new static(sprintf('I2C slave 0x%02X is closed.', $address));
     }
 
-    public static function noEventLoop(): static
-    {
-        return new static('via() needs an event loop. Boot IOPools, or call the blocking method.');
-    }
-
-    public static function noWorkTargets(): static
-    {
-        return new static('via() needs the IOPools work targets bound in the container (work-targets).');
-    }
-
     public static function notAttached(int $address): static
     {
         return new static(sprintf('I2C slave 0x%02X was not handed out by a connection driver, so it cannot be offloaded.', $address));
@@ -59,11 +49,6 @@ class I2CException extends GPIOException
     public static function messageTooLong(int $length): static
     {
         return new static("{$length} bytes is longer than the 8192-byte I2C message limit.");
-    }
-
-    public static function offloadTargetDiscardsResult(string $target): static
-    {
-        return new static("The [{$target}] work target hands back a queued job, not the call's result: via() cannot use it.");
     }
 
     public static function offloadTargetUnsupported(string $target): static

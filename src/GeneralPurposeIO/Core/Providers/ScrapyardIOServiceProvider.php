@@ -4,6 +4,7 @@ namespace GeneralPurposeIO\Core\Providers;
 
 use GeneralPurposeIO\Digital\DigitalIOServiceProvider;
 use GeneralPurposeIO\I2C\I2CServiceProvider;
+use GeneralPurposeIO\SPI\SPIServiceProvider;
 use Voyager\NutsAndBolts\AggregateServiceProvider;
 
 class ScrapyardIOServiceProvider extends AggregateServiceProvider
@@ -11,6 +12,7 @@ class ScrapyardIOServiceProvider extends AggregateServiceProvider
     protected array $providers = [
         DigitalIOServiceProvider::class,
         I2CServiceProvider::class,
+        SPIServiceProvider::class,
     ];
 
     public function register(): void
