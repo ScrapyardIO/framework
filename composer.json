@@ -39,13 +39,6 @@
         "gpio/uart": "self.version"
     },
     "require-dev": {
-        "microscrap/ftdi": "^0.9.0",
-        "microscrap/gpio": "^0.9.0",
-        "microscrap/i2c": "^0.9.0",
-        "microscrap/mpsse": "^0.9.0",
-        "microscrap/posix": "^0.9.0",
-        "microscrap/spi": "^0.9.0",
-        "microscrap/uart": "^0.9.0",
         "pestphp/pest": "^4",
         "venusian-voyager/config": "^0.9.0",
         "venusian-voyager/vessel": "^0.9.0"
