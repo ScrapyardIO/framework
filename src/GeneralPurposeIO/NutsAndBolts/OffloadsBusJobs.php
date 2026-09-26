@@ -78,7 +78,18 @@ trait OffloadsBusJobs
     protected function forgetQueues(string|int $device): void
     {
         foreach (array_keys($this->queues) as $key) {
-            if ($key === (string) $device || str_starts_with($key, "{$device}:")) {
+            if ($key === (string) $device) {
+                unset($this->queues[$key]);
+                continue;
+            }
+
+            if (! str_contains($key, ':')) {
+                continue;
+            }
+
+            [$chip] = explode(':', $key, 2);
+
+            if ((string) $chip === (string) $device) {
                 unset($this->queues[$key]);
             }
         }

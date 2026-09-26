@@ -1,8 +1,8 @@
 ---
 type: Concept
 title: GPIO protocols
-description: Protocol managers under gpio.protocols, the shared connection lifecycle, and what 0.9 ships (Digital, I2C, SPI).
-tags: [gpio, protocols, i2c, digital, spi]
+description: Protocol managers under gpio.protocols, the shared connection lifecycle, and what 0.9 ships (Digital, I2C, SPI, PWM, UART).
+tags: [gpio, protocols, i2c, digital, spi, pwm, uart]
 status: draft
 generated: { by: cursor-grok-4.6/cursor, at: "2026-09-25T05:15:00Z" }
 sources:
@@ -21,17 +21,23 @@ sources:
   - id: spi-driver
     resource: src/GeneralPurposeIO/SPI/SPIConnectionDriver.php
     title: SPIConnectionDriver
+  - id: pwm-driver
+    resource: src/GeneralPurposeIO/PWM/PWMConnectionDriver.php
+    title: PWMConnectionDriver
+  - id: uart-transport
+    resource: src/GeneralPurposeIO/UART/UARTTransport.php
+    title: UARTTransport
 ---
 
 # Role
 
-0.9 ships three protocols: Digital, I2C and SPI. `ScrapyardIOServiceProvider` aggregates `DigitalIOServiceProvider` (`gpio.digital`), `I2CServiceProvider` (`gpio.i2c`) and `SPIServiceProvider` (`gpio.spi`) and merges `config/gpio.php`.[^provider] UART, PWM: manifests only. No dock, no About section.
+0.9 ships five protocols: Digital, I2C, SPI, PWM and UART. `ScrapyardIOServiceProvider` aggregates `DigitalIOServiceProvider` (`gpio.digital`), `I2CServiceProvider` (`gpio.i2c`), `SPIServiceProvider` (`gpio.spi`), `PWMServiceProvider` (`gpio.pwm`) and `UARTServiceProvider` (`gpio.uart`) and merges `config/gpio.php`.[^provider] No protocol is manifest-only. No dock, no About section.
 
 Default driver `none` per protocol: every open throws "No … connection driver is configured".[^config] Adapters `extend()` the managers: `microscrap/scrapyard-linux` as `native`, `microscrap/scrapyard-usb` as `usb`.
 
 # Lifecycle
 
-Same for all three protocols.[^i2c-driver][^digital-driver]
+Same for all five protocols, except UART, where one port is one connection.[^i2c-driver][^digital-driver][^pwm-driver]
 
 - `connectTo($device)->register()` opens the bus/chip, stores the handle in `connections`. Twice → "already connected".
 - Driver hands out one transport per `"<device>:<pin|address|chip select>"`; closed one → fresh one on next request.
@@ -61,6 +67,21 @@ Same for all three protocols.[^i2c-driver][^digital-driver]
   - Linux: `SPIBusGig` with bus settings + slave clock. Every transfer carries clock and word size (spidev keeps them per device for all fds). `SpidevBusLock` = `flock` on `/run/lock/scrapyard-spi<bus>.lock`, every call, whole `select()`, and `spi_open` (`during()`): another process's open can drop chip select between bufsiz messages.
   - MPSSE: jobs in loop fibers on `MpssePump` (over `MpsseLink`). `select()` = one turn, one recording, one segment per call, tail sent on throw. Lost exchange → chip select up again, clock resent.
 
+# PWM specifics
+
+- Transport = one channel on one chip (`"<chip>:<channel>"`). `get/set` Period, DutyCycle (ns), Enable, Polarity (`true` = inversed); a set answers the read-back.[^pwm-driver]
+- Linux (`scrapyard-linux`, `native`): sysfs under `/sys/class/pwm`, no ext-posi. `device()` exports a missing channel and waits for udev to hand its attributes over (`readyTimeout()`, default 500 ms): on the loop when one is bound, a 10 ms sleep otherwise. `close()` disables and unexports.
+- `via(?string $target)` → promises for the eight calls + `run(BusJob)`. One queue per channel. `PWMChannelGig` builds the worker's driver from `workerArguments()` (Linux: sysfs root), so a worker writes the same tree.
+
+# UART specifics
+
+- One port per connection: `close()` closes the connection too; `connectTo()` again after.[^uart-transport]
+- One unread buffer per port (64 KB, oldest dropped, `dropped()` counts). `read($n, $timeout_ms)` → `[]` on timeout; `readUntil($delimiter, $timeout_ms)` → `null` on timeout; `write($data, $timeout_ms)` → every byte to the OS in 256-byte chunks or throws with how far it got; `dtr()`/`rts()`.
+- One drain a pass (FTDI reads sized to one 10 ms interval): a streaming device never holds a read or the loop. Writes go out whole, in arrival order. A hung-up tty (poll ready, 0 bytes twice) throws `readFailed`; a loop intake failure goes to the waiting call; timeout counts ride on `UARTException::$sent`/`$total`.
+- Loop bound → waits suspend a fiber / borrow the loop; `watch()` mails `UARTReceived` (`gpio.uart.<device>`, base64 bytes on the wire). No `via()`.
+- Linux: VMIN=0, `ppoll` for bytes and `POLLOUT` for room, fd to the loop through `posix_fdopen`, `O_CLOEXEC`, modem lines via TIOCMBIS/TIOCMBIC (a pty has none).
+- USB: sampled every 10 ms on a loop, latency 1 ms, async sends, lost device = empty read + negative modem status, DTR/RTS released at open, XON/XOFF characters set. `FtdiBridge`: one engine per FTDI interface (UART or MPSSE); UART on FT2232H/FT4232H = channel A.
+
 # Related
 
 * [integrated-circuits.md](integrated-circuits.md)
@@ -71,3 +92,5 @@ Same for all three protocols.[^i2c-driver][^digital-driver]
 [^i2c-driver]: I2CConnectionDriver
 [^digital-driver]: DigitalIOConnectionDriver
 [^spi-driver]: SPIConnectionDriver
+[^pwm-driver]: PWMConnectionDriver
+[^uart-transport]: UARTTransport

@@ -1,10 +1,12 @@
 <?php
 
+use ScrapyardIO\Tests\Fixtures\FakeUARTConnectionDriver;
+use ScrapyardIO\Tests\Fixtures\FakeUARTTransport;
 use ScrapyardIO\Tests\Fixtures\SampledDigitalInputTransport;
 use ScrapyardIO\Tests\Fixtures\SocketDigitalInputTransport;
 use Voyager\Contracts\IOPools\Loop;
 
-pest()->in('Digital', 'I2C', 'SPI', 'NutsAndBolts');
+pest()->in('Digital', 'I2C', 'SPI', 'NutsAndBolts', 'PWM', 'UART');
 
 /** A socket-backed pin on device "bench", resolving $loop (or no loop). */
 function socketPin(?Loop $loop, int $pin = 17): SocketDigitalInputTransport
@@ -21,4 +23,18 @@ function sampledPin(?Loop $loop, array $levels, int $pin = 5, float $interval = 
     $transport->levels = $levels;
 
     return is_null($loop) ? $transport : $transport->resolvesLoopWith(fn (): Loop => $loop);
+}
+
+/** Port "bench" on a fake driver, connected at $baud, bound to $loop when given. */
+function uartPort(?Loop $loop = null, int $baud = 115_200): FakeUARTTransport
+{
+    $driver = new FakeUARTConnectionDriver;
+
+    if (! is_null($loop)) {
+        $driver->resolvesLoopWith(fn (): Loop => $loop);
+    }
+
+    $driver->connectTo('bench')->baud($baud)->register();
+
+    return $driver->device('bench');
 }

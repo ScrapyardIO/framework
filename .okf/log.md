@@ -1,6 +1,8 @@
 # scrapyard-io/framework Update Log
 
 ## 2026-09-25
+* **Update**: [gpio-protocols.md](/gpio-protocols.md) — UART ships: one port per connection, timed reads, `readUntil`, chunked writes, modem lines, loop-aware waits and `watch()`; Linux VMIN=0 + `ppoll`, USB sampled with async sends; `FtdiBridge` keeps one engine per FTDI interface.
+* **Update**: [gpio-protocols.md](/gpio-protocols.md) — PWM ships: 0.8 calls on I2C's lifecycle, `via()` with one queue per channel, `PWMChannelGig` with the driver's worker arguments; Linux export ready-wait on the loop.
 * **Update**: [gpio-protocols.md](/gpio-protocols.md) — SPI `via()`: per-bus queue, `select()` takes the bus from it; Linux clock on every transfer + cross-process bus lock (`spi_open` included); MPSSE pump over a link, one turn per `select()`.
 * **Update**: [gpio-protocols.md](/gpio-protocols.md) — SPI `via()`: one queue per bus, `SPIBusGig` with bus settings and slave clock, `select()` takes the bus from the queue. Shared `OffloadsBusJobs` trait; `noEventLoop` / `noWorkTargets` / `offloadTargetDiscardsResult` live on `GPIOLevelException`.
 

@@ -11,7 +11,7 @@ Read this index first, then only the concepts the task needs. Every concept is `
 # Concepts
 
 * [overview.md](/overview.md) - what ships at 0.8.0, tree, counts, stack position
-* [gpio-protocols.md](/gpio-protocols.md) - protocol managers, shared connection lifecycle, what 0.9 ships (Digital, I2C, SPI)
+* [gpio-protocols.md](/gpio-protocols.md) - protocol managers, shared connection lifecycle, what 0.9 ships (Digital, I2C, SPI, PWM)
 * [integrated-circuits.md](/integrated-circuits.md) - chip kinds, transports, Bootable, DataRegister; the catalog, fluent builder, profiles, make-profile
 * [display-panels.md](/display-panels.md) - DisplayPanel base plus WindowAddressable / RefreshesOnCommand / Switchable, RefreshMode, the consumer rule
 * [dock-resource.md](/dock-resource.md) - the `gpio` resource: watch / receive / defer / every / stream, mail species, laws
