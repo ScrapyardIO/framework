@@ -2,12 +2,13 @@
 
 namespace GeneralPurposeIO\Core\Providers;
 
-use GeneralPurposeIO\Digital\DigitalIOServiceProvider;
 use GeneralPurposeIO\I2C\I2CServiceProvider;
 use GeneralPurposeIO\PWM\PWMServiceProvider;
 use GeneralPurposeIO\SPI\SPIServiceProvider;
 use GeneralPurposeIO\UART\UARTServiceProvider;
 use Voyager\NutsAndBolts\AggregateServiceProvider;
+use GeneralPurposeIO\Digital\DigitalIOServiceProvider;
+use GeneralPurposeIO\IntegratedCircuits\IntegratedCircuitsServiceProvider;
 
 class ScrapyardIOServiceProvider extends AggregateServiceProvider
 {
@@ -17,6 +18,7 @@ class ScrapyardIOServiceProvider extends AggregateServiceProvider
         SPIServiceProvider::class,
         PWMServiceProvider::class,
         UARTServiceProvider::class,
+        IntegratedCircuitsServiceProvider::class,
     ];
 
     public function register(): void
