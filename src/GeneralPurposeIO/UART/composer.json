@@ -1,0 +1,57 @@
+{
+    "name": "gpio/uart",
+    "description": "GeneralPurposeIO UART: the gpio.uart connection manager, driver, factory and port transport.",
+    "type": "library",
+    "keywords": [
+        "scrapyard-io",
+        "gpio",
+        "uart",
+        "serial"
+    ],
+    "license": "MIT",
+    "homepage": "https://scrapyard-io.projectsaturnstudios.com/ecosystem/scrapyard-io/framework/0.9.x/overview",
+    "support": {
+        "docs": "https://scrapyard-io.projectsaturnstudios.com/ecosystem/scrapyard-io/framework/0.9.x/overview",
+        "source": "https://github.com/scrapyard-io/framework",
+        "issues": "https://github.com/scrapyard-io/framework/issues"
+    },
+    "authors": [
+        {
+            "name": "Angel Gonzalez",
+            "email": "angel@projectsaturnstudios.com"
+        }
+    ],
+    "require": {
+        "php": "^8.4|^8.5|^8.6",
+        "gpio/contracts": "^0.10.0",
+        "gpio/nuts-and-bolts": "^0.10.0",
+        "venusian-voyager/collections": "^0.10.0",
+        "venusian-voyager/contracts": "^0.10.0",
+        "venusian-voyager/io-pools": "^0.10.0",
+        "venusian-voyager/nuts-and-bolts": "^0.10.0"
+    },
+    "suggest": {
+        "microscrap/scrapyard-linux": "^0.10.0 - native termios ports",
+        "microscrap/scrapyard-usb": "^0.10.0 - FTDI UART"
+    },
+    "autoload": {
+        "psr-4": {
+            "GeneralPurposeIO\\UART\\": ""
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-main": "0.9.x-dev"
+        },
+        "venusian": {
+            "providers": [
+                "GeneralPurposeIO\\UART\\UARTServiceProvider"
+            ]
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}

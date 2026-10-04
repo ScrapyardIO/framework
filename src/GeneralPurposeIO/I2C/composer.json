@@ -1,0 +1,55 @@
+{
+    "name": "gpio/i2c",
+    "description": "GeneralPurposeIO I2C: the gpio.i2c connection manager, driver, factory and slave transport.",
+    "type": "library",
+    "keywords": [
+        "scrapyard-io",
+        "gpio",
+        "i2c"
+    ],
+    "license": "MIT",
+    "homepage": "https://scrapyard-io.projectsaturnstudios.com/ecosystem/scrapyard-io/framework/0.8.x/overview",
+    "support": {
+        "docs": "https://scrapyard-io.projectsaturnstudios.com/ecosystem/scrapyard-io/framework/0.8.x/overview",
+        "source": "https://github.com/scrapyard-io/framework",
+        "issues": "https://github.com/scrapyard-io/framework/issues"
+    },
+    "authors": [
+        {
+            "name": "Angel Gonzalez",
+            "email": "angel@projectsaturnstudios.com"
+        }
+    ],
+    "require": {
+        "php": "^8.4|^8.5|^8.6",
+        "gpio/contracts": "^0.10.0",
+        "gpio/nuts-and-bolts": "^0.10.0",
+        "venusian-voyager/collections": "^0.10.0",
+        "venusian-voyager/contracts": "^0.10.0",
+        "venusian-voyager/nuts-and-bolts": "^0.10.0"
+    },
+    "suggest": {
+        "microscrap/scrapyard-linux": "^0.10.0 - native i2c-dev buses",
+        "microscrap/scrapyard-usb": "^0.10.0 - MPSSE I2C over FTDI"
+    },
+    "autoload": {
+        "psr-4": {
+            "GeneralPurposeIO\\I2C\\": ""
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-main": "0.9.x-dev"
+        },
+        "venusian": {
+            "providers": [
+                "GeneralPurposeIO\\I2C\\I2CServiceProvider"
+            ]
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}

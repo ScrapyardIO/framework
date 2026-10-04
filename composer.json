@@ -1,0 +1,84 @@
+{
+    "name": "scrapyard-io/framework",
+    "description": "The ScrapyardIO GPIO Framework.",
+    "keywords": [
+        "framework",
+        "scrapyard-io",
+        "gpio",
+        "venusian"
+    ],
+    "license": "MIT",
+    "version": "0.10.0",
+    "homepage": "https://scrapyard-io.projectsaturnstudios.com/ecosystem/scrapyard-io/framework/0.10.x/overview",
+    "support": {
+        "issues": "https://github.com/scrapyard-io/framework/issues",
+        "source": "https://github.com/scrapyard-io/framework",
+        "docs": "https://scrapyard-io.projectsaturnstudios.com/ecosystem/scrapyard-io/framework/0.10.x/overview"
+    },
+    "authors": [
+        {
+            "name": "Angel Gonzalez",
+            "email": "angel@projectsaturnstudios.com"
+        }
+    ],
+    "require": {
+        "php": "^8.4|^8.5|^8.6",
+        "venusian-voyager/io-pools": "^0.10.0",
+        "venusian-voyager/contracts": "^0.10.0",
+        "venusian-voyager/collections": "^0.10.0",
+        "venusian-voyager/nuts-and-bolts": "^0.10.0"
+    },
+    "replace": {
+        "gpio/contracts": "self.version",
+        "gpio/digital": "self.version",
+        "gpio/i2c": "self.version",
+        "gpio/integrated-circuits": "self.version",
+        "gpio/nuts-and-bolts": "self.version",
+        "gpio/pwm": "self.version",
+        "gpio/spi": "self.version",
+        "gpio/uart": "self.version"
+    },
+    "require-dev": {
+        "pestphp/pest": "^4",
+        "venusian-voyager/config": "^0.10.0",
+        "venusian-voyager/vessel": "^0.10.0"
+    },
+    "suggest": {
+        "microscrap/gpio": "^0.10.0 - POSIX digital IO (libgpiod v2 over ext-posi)",
+        "microscrap/i2c": "^0.10.0 - POSIX I2C",
+        "microscrap/spi": "^0.10.0 - POSIX SPI",
+        "microscrap/uart": "^0.10.0 - POSIX UART",
+        "microscrap/mpsse": "^0.10.0 - MPSSE USB drivers"
+    },
+    "autoload": {
+        "psr-4": {
+            "GeneralPurposeIO\\": "src/GeneralPurposeIO/"
+        },
+        "files": [
+           "src/GeneralPurposeIO/NutsAndBolts/Helpers/bytes.php"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "ScrapyardIO\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-main": "0.10.x-dev"
+        },
+        "venusian": {
+            "providers": [
+                "GeneralPurposeIO\\Core\\Providers\\ScrapyardIOServiceProvider"
+            ]
+        }
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
