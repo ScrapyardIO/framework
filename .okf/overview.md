@@ -5,7 +5,7 @@ description: What ships at 0.10.0 — nine dirs, eight splits, file counts, stac
 tags: [overview, tree, stack]
 status: draft
 generated: { by: claude-opus-5/claude-code, at: "2026-09-15T04:00:00Z" }
-revised: { by: claude-opus-5-5/claude-code, at: "2026-10-04T01:30:00Z", note: "0.10: voyager 0.10 components, counts rechecked" }
+revised: { by: claude-opus-5-5/claude-code, at: "2026-10-04T23:40:00Z", note: "Core gains the scrapyard:ext and scrapyard:modules dev commands; counts rechecked" }
 sources:
   - id: tree
     resource: src/GeneralPurposeIO
@@ -20,14 +20,14 @@ sources:
 
 # What ships
 
-0.10.0 GPIO framework for Venusian. Nine dirs under `src/GeneralPurposeIO`: Contracts, Core, Digital, I2C, IntegratedCircuits, NutsAndBolts, PWM, SPI, UART. Eight split as `gpio/*` packages; `Core` not split. 96 PHP files total (`find src -name '*.php' | wc -l`).
+0.10.0 GPIO framework for Venusian. Nine dirs under `src/GeneralPurposeIO`: Contracts, Core, Digital, I2C, IntegratedCircuits, NutsAndBolts, PWM, SPI, UART. Eight split as `gpio/*` packages; `Core` not split. 115 PHP files total (`find src -name '*.php' | wc -l`).
 
 Per-dir count:
 
 | Dir | Files |
 |---|---|
 | Contracts | 44 |
-| Core | 1 |
+| Core | 20 |
 | Digital | 8 |
 | I2C | 8 |
 | IntegratedCircuits | 5 |
@@ -36,9 +36,9 @@ Per-dir count:
 | SPI | 9 |
 | UART | 7 |
 
-Requires `venusian-voyager/{io-pools,contracts,collections,nuts-and-bolts} ^0.10.0` — components, not `venusian/framework`. PHP `^8.4|^8.5|^8.6`. Namespace root `GeneralPurposeIO\`.
+Requires `venusian-voyager/{io-pools,contracts,collections,nuts-and-bolts,console,process,workflows} ^0.10.0` — components, not `venusian/framework` — plus `laravel/prompts`, `symfony/{filesystem,process}` and `composer-runtime-api` for the dev commands. PHP `^8.4|^8.5|^8.6`. Namespace root `GeneralPurposeIO\`.
 
-Core is the aggregate `ScrapyardIOServiceProvider` and nothing else: it merges `config/gpio.php` (protocol defaults only) and aggregates the five protocol providers plus `IntegratedCircuitsServiceProvider`. No MagicAliases — managers are reached by container key (`gpio.i2c`, `gpio.spi`, `gpio.uart`, `gpio.digital`, `gpio.pwm`, `circuit`). No `gpio` dock resource: the transports ride the IOPools `Loop` directly (see [gpio-protocols.md](gpio-protocols.md)).
+Core is the aggregate `ScrapyardIOServiceProvider` and the two machine-setup dev commands it registers ([dev-commands.md](dev-commands.md)): it merges `config/gpio.php` (protocol defaults only) and aggregates the five protocol providers plus `IntegratedCircuitsServiceProvider`. No MagicAliases — managers are reached by container key (`gpio.i2c`, `gpio.spi`, `gpio.uart`, `gpio.digital`, `gpio.pwm`, `circuit`). No `gpio` dock resource: the transports ride the IOPools `Loop` directly (see [gpio-protocols.md](gpio-protocols.md)).
 
 # Stack position
 

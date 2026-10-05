@@ -5,8 +5,8 @@ namespace GeneralPurposeIO\Contracts\IntegratedCircuits;
 /**
  * A pixel panel Surface can draw for. transmit() writes packed bytes into
  * panel RAM; without WindowAddressable the origin and size are the whole
- * panel every time. Children: WindowAddressable, RefreshesOnCommand,
- * Switchable.
+ * panel every time. Children: WindowAddressable (and its child
+ * PipeablePanel), RefreshesOnCommand, Switchable.
  *
  * How the bytes are packed is Surface's vocabulary, not GPIO's, so this
  * interface does not name it: a panel driver implements

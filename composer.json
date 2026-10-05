@@ -8,7 +8,7 @@
         "venusian"
     ],
     "license": "MIT",
-    "version": "0.10.0",
+    "version": "0.10.1",
     "homepage": "https://scrapyard-io.projectsaturnstudios.com/ecosystem/scrapyard-io/framework/0.10.x/overview",
     "support": {
         "issues": "https://github.com/scrapyard-io/framework/issues",
@@ -23,10 +23,17 @@
     ],
     "require": {
         "php": "^8.4|^8.5|^8.6",
+        "composer-runtime-api": "^2.2",
+        "laravel/prompts": "^0.3.0",
+        "symfony/filesystem": "^8.0.0",
+        "symfony/process": "^8.0.0",
         "venusian-voyager/io-pools": "^0.10.0",
         "venusian-voyager/contracts": "^0.10.0",
         "venusian-voyager/collections": "^0.10.0",
-        "venusian-voyager/nuts-and-bolts": "^0.10.0"
+        "venusian-voyager/nuts-and-bolts": "^0.10.0",
+        "venusian-voyager/console": "^0.10.0",
+        "venusian-voyager/process": "^0.10.0",
+        "venusian-voyager/workflows": "^0.10.0"
     },
     "replace": {
         "gpio/contracts": "self.version",
@@ -39,6 +46,7 @@
         "gpio/uart": "self.version"
     },
     "require-dev": {
+        "mockery/mockery": "^1.6",
         "pestphp/pest": "^4",
         "venusian-voyager/config": "^0.10.0",
         "venusian-voyager/vessel": "^0.10.0"

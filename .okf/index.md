@@ -15,6 +15,7 @@ Read this index first, then only the concepts the task needs. Every concept is `
 * [integrated-circuits.md](/integrated-circuits.md) - chip kinds, transports, Bootable, DataRegister; the `circuit` catalog and conjure()
 * [display-panels.md](/display-panels.md) - DisplayPanel base plus WindowAddressable / RefreshesOnCommand / Switchable, RefreshMode, the consumer rule
 * [packaging.md](/packaging.md) - eight `gpio/*` splits, Core unsplit, dependency direction
+* [dev-commands.md](/dev-commands.md) - `scrapyard:ext` (ext-posi / ext-ftdi through PIE) and `scrapyard:modules` (microscrap packages the machine can run, through Composer)
 
 # Log
 

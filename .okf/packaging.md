@@ -5,7 +5,7 @@ description: Eight gpio/* splits, Core unsplit, manifest rules as they stand in 
 tags: [packaging, composer, splits, dependency-direction]
 status: draft
 generated: { by: claude-opus-5/claude-code, at: "2026-09-18T21:40:00Z" }
-revised: { by: claude-opus-5-5/claude-code, at: "2026-10-04T01:30:00Z", note: "0.10 manifests: voyager ^0.10.0; only digital and uart require io-pools (their watches extend WakeSource), the rest import contracts only. Before that, 0.9 manifests: voyager components, no aliases, no dock; digital requires nuts-and-bolts" }
+revised: { by: claude-opus-5-5/claude-code, at: "2026-10-04T23:40:00Z", note: "Core holds the dev commands; root requires console, process, workflows. Before that, 0.10 manifests: voyager ^0.10.0; only digital and uart require io-pools (their watches extend WakeSource), the rest import contracts only. Before that, 0.9 manifests: voyager components, no aliases, no dock; digital requires nuts-and-bolts" }
 sources:
   - id: router
     resource: https://github.com/arduino/arduino-router-bridge-py
@@ -41,7 +41,7 @@ sources:
 
 # Eight splits, one unsplit Core
 
-`src/GeneralPurposeIO/{Contracts,Digital,I2C,IntegratedCircuits,NutsAndBolts,PWM,SPI,UART}` — each own `composer.json`, `.gitattributes`, `LICENSE`, each in root `replace` as `gpio/<name>`. `Core`: none of that. No split, ships only inside the `scrapyard-io/framework` umbrella. Holds only `Core\Providers\ScrapyardIOServiceProvider`.
+`src/GeneralPurposeIO/{Contracts,Digital,I2C,IntegratedCircuits,NutsAndBolts,PWM,SPI,UART}` — each own `composer.json`, `.gitattributes`, `LICENSE`, each in root `replace` as `gpio/<name>`. `Core`: none of that. No split, ships only inside the `scrapyard-io/framework` umbrella. Holds `Core\Providers\ScrapyardIOServiceProvider` and the `scrapyard:ext` / `scrapyard:modules` dev commands with their flows ([dev-commands.md](/dev-commands.md)).
 
 # Rule: requires follow imports
 
@@ -73,7 +73,7 @@ A third adapter, `microscrap/scrapyard-rpc` (its directory already exists beside
 | `gpio/integrated-circuits` | `GeneralPurposeIO\IntegratedCircuits\IntegratedCircuitsServiceProvider` | `circuit` |
 | `gpio/contracts`, `gpio/nuts-and-bolts` | none | — |
 
-Aggregate `Core\Providers\ScrapyardIOServiceProvider` (root manifest only) merges `config/gpio.php`, publishes it as `gpio-config`, and lists the five protocol providers plus the integrated-circuits one.
+Aggregate `Core\Providers\ScrapyardIOServiceProvider` (root manifest only) merges `config/gpio.php`, publishes it as `gpio-config`, and lists the five protocol providers plus the integrated-circuits one, and binds + registers the two dev commands.
 
 # Requires as they stand, per package
 
@@ -90,7 +90,7 @@ Aggregate `Core\Providers\ScrapyardIOServiceProvider` (root manifest only) merge
 
 No protocol requires another protocol. The adapters require every `gpio/*` protocol they drive and so sit above all of them.
 
-Root umbrella `composer.json`: `require` = `venusian-voyager/{io-pools,contracts,collections,nuts-and-bolts} ^0.10.0`, `replace` = the eight `gpio/*` at `self.version`, `require-dev` = `pestphp/pest ^4` + `venusian-voyager/{config,vessel}`, `suggest` = the `microscrap/*` bindings. No hardware package in `require-dev`: the suite runs on fakes, so it installs from Packagist on any machine.
+Root umbrella `composer.json`: `require` = `venusian-voyager/{io-pools,contracts,collections,nuts-and-bolts,console,process,workflows} ^0.10.0`, `laravel/prompts ^0.3.0`, `symfony/{filesystem,process} ^8.0.0`, `composer-runtime-api ^2.2` (the last group for Core's dev commands; no split carries them), `replace` = the eight `gpio/*` at `self.version`, `require-dev` = `pestphp/pest ^4`, `mockery/mockery ^1.6` (`Prompt::fake()`), `venusian-voyager/{config,vessel}`, `suggest` = the `microscrap/*` bindings. No hardware package in `require-dev`: the suite runs on fakes, so it installs from Packagist on any machine.
 
 # Dependency direction
 

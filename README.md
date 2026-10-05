@@ -49,6 +49,30 @@ The service provider is discovered automatically. It binds one connection manage
 
 Each adapter registers its driver name on every manager it supports.
 
+### Setting up a machine
+
+Two dev commands install what the hardware side needs, using the PHP binary that runs `computer`:
+
+```bash
+php computer scrapyard:ext        # ext-posi and ext-ftdi, through PIE
+php computer scrapyard:modules    # the microscrap packages this machine can run, through Composer
+```
+
+`scrapyard:ext` lists both extensions and installs the ones you pick with [PIE](https://github.com/php/pie), offering to download PIE when it is missing. An extension already loaded at 0.10 shows as installed; one loaded at an older version is offered as a replacement. Neither builds on Windows.
+
+`scrapyard:modules` looks at the operating system and the loaded extensions and offers what they allow:
+
+| Module | Needs |
+|---|---|
+| `microscrap/gpio`, `i2c`, `spi`, `uart` | ext-posi 0.10 |
+| `microscrap/mpsse` | ext-ftdi 0.10 |
+| `microscrap/scrapyard-linux` | Linux and ext-posi 0.10 |
+| `microscrap/scrapyard-usb` | ext-ftdi 0.10 |
+
+The picked ones go into your app with a single `composer require`. Name one to skip the list, which also works without a terminal: `php computer scrapyard:ext ftdi`, `php computer scrapyard:modules scrapyard-usb`.
+
+### Default drivers
+
 To choose default drivers, publish the config:
 
 ```bash
@@ -257,7 +281,7 @@ A chip driver ships its own multi-step work as a `Contracts\NutsAndBolts\BusJob`
 | `IntegratedCircuits\Bootable` | a chip with `boot()` / `hasBooted()`: implement `_boot()`; boots in the constructor when `$boot_now` is true |
 | `IntegratedCircuits\DataRegister` | readonly register breakout: `toBits()`, `toByte()`, `fromByte()`, `none()` |
 | `Contracts\IntegratedCircuits\Sensor`, `Actuator`, `DisplayPanel` | what kind of chip it is |
-| `Contracts\IntegratedCircuits\Switchable`, `WindowAddressable`, `RefreshesOnCommand` | what a display panel can do |
+| `Contracts\IntegratedCircuits\Switchable`, `WindowAddressable`, `PipeablePanel`, `RefreshesOnCommand` | what a display panel can do; a `PipeablePanel` is fed straight from memory over a `Contracts\SPI\WritesFromMemory` bus |
 | `Contracts\IntegratedCircuits\ReadWriter` | `read($register, $length)` / `write($register, $data)` for a chip transport |
 | `Contracts\IntegratedCircuits\DataCommander` | `data($bytes)` / `command($register, $data)` for a chip with a data/command line |
 | `Contracts\NutsAndBolts\Splices16Bits` | split 16-bit registers into bytes, and decode signed little-endian values |

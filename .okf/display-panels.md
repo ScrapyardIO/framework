@@ -1,7 +1,7 @@
 ---
 type: Concept
 title: Display panels
-description: DisplayPanel and its three children — the contract a pixel panel exposes so Surface EmbeddedDisplays can draw for it. Base plus WindowAddressable, RefreshesOnCommand, Switchable.
+description: DisplayPanel and its children — the contract a pixel panel exposes so Surface EmbeddedDisplays can draw for it. Base plus WindowAddressable (and PipeablePanel under it), RefreshesOnCommand, Switchable; WritesFromMemory for the bus.
 tags: [contracts, integrated-circuits, display, panel, surface]
 status: draft
 generated: { by: claude-fable-5-1/claude-code, at: "2026-09-18T19:30:00Z" }
@@ -50,6 +50,7 @@ Children, each `extends DisplayPanel`:
 | Child | Adds | Who |
 |---|---|---|
 | `WindowAddressable` | nothing — a marker: `transmit()` honours origin and size | SSD1306, ST7735 / ST7789 / ST7796 |
+| `PipeablePanel` (extends `WindowAddressable`) | `openWindow(x, y, w, h)`: window + memory write started, data line high; `pixelBus(): ?WritesFromMemory` | ST7735 / ST7789 / ST7796 on spidev |
 | `RefreshesOnCommand` | `refresh(RefreshMode $mode = RefreshMode::FULL): void` | ePaper (SSD1608, JD79661, Spectra 6) — no package yet |
 | `Switchable` | `setDisplay(bool $on): void` | SSD1306, ST77xx |
 
@@ -70,7 +71,7 @@ Children, each `extends DisplayPanel`:
 
 # Consumer rule (Surface EmbeddedDisplays)
 
-`WindowAddressable` → send damage regions. Otherwise → whole frame.
+`WindowAddressable` → send damage regions. Otherwise → whole frame. `PipeablePanel` + `direct: true` → Surface's `DirectEDisplay`: per region `openWindow()` then `pixelBus()->writeFrom([[address, length], …])` straight out of ext-fb memory, no PHP bytes. `SPI\WritesFromMemory::writeFrom()`: spans in order under one chip select, addresses trusted; `SPIException::memoryNeedsNativeBitOrder()` where bits are reversed in software.
 `RefreshesOnCommand` → `refresh()` once per frame after the last transmit.
 `Switchable` → `setDisplay(false)` on close, and show/hide map to it.
 

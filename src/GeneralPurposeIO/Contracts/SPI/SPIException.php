@@ -85,4 +85,9 @@ class SPIException extends GPIOLevelException
     {
         return new static("The SPI bus lock {$path} could not be opened or taken.");
     }
+
+    public static function memoryNeedsNativeBitOrder(string $path): static
+    {
+        return new static("SPI device [{$path}] reverses bits in software; bytes sent straight from memory cannot be reversed without a copy.");
+    }
 }

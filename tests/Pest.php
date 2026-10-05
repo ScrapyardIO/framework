@@ -12,7 +12,7 @@ use Voyager\IOPools\PromiseEngines\GuzzlePromiseEngine;
 use Voyager\IOPools\ResourceRegistry;
 use Voyager\IOPools\Waiter\StreamSelectWaiterBackend;
 
-pest()->in('Digital', 'I2C', 'SPI', 'NutsAndBolts', 'PWM', 'UART');
+pest()->in('Core', 'Digital', 'I2C', 'SPI', 'NutsAndBolts', 'PWM', 'UART');
 
 /** A loop on the select backend, polling at most every $pace_ms, handing its mail to $mail when given. */
 function testLoop(?MailHandler $mail = null, int $pace_ms = 16): EventLoop
