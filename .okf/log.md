@@ -1,5 +1,10 @@
 # scrapyard-io/framework Update Log
 
+## 2026-10-14
+
+* **Creation**: [releasing.md](/releasing.md) — `split.yml` on a `v*` tag: `tests.yml` gates, `.github/split.sh` splits all eight components to `general-purpose-io` with the same tag.
+* **Update**: the eight component manifests alias `dev-main` to `0.10.x-dev` (were `0.9.x-dev`).
+
 ## 2026-10-04
 * **Update**: [display-panels.md](/display-panels.md) — `PipeablePanel` (extends `WindowAddressable`: `openWindow()`, `pixelBus()`) and `SPI\WritesFromMemory` (`writeFrom()` of `[address, length]` spans); `SPIException::memoryNeedsNativeBitOrder()`. Pinned by `tests/SPI/WritesFromMemoryTest.php`.
 * **Creation**: [dev-commands.md](/dev-commands.md) — `scrapyard:ext` installs ext-posi / ext-ftdi through PIE, `scrapyard:modules` the microscrap packages the OS and loaded extensions allow, through Composer; both registered by the aggregate provider.

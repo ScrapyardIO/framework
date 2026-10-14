@@ -1,0 +1,34 @@
+name: split
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    uses: ./.github/workflows/tests.yml
+
+  split:
+    needs: tests
+    runs-on: ubuntu-latest
+
+    # Write access lets .github/split.sh create or fast-forward the X.Y.x line branch here.
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Install splitsh-lite
+        run: curl -fsSL https://github.com/splitsh/lite/releases/download/v1.0.1/lite_linux_amd64.tar.gz | sudo tar -xz -C /usr/local/bin ./splitsh-lite
+
+      - name: Split and tag the components
+        env:
+          SPLIT_REMOTE: https://x-access-token:${{ secrets.SPLIT_TOKEN }}@github.com/general-purpose-io
+        run: bash .github/split.sh "$GITHUB_REF_NAME"
