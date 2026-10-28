@@ -90,7 +90,7 @@ Aggregate `Core\Providers\ScrapyardIOServiceProvider` (root manifest only) merge
 
 No protocol requires another protocol. The adapters require every `gpio/*` protocol they drive and so sit above all of them.
 
-Root umbrella `composer.json`: `require` = `venusian-voyager/{io-pools,contracts,collections,nuts-and-bolts,console,process,workflows} ^0.10.0`, `laravel/prompts ^0.3.0`, `symfony/{filesystem,process} ^8.0.0`, `composer-runtime-api ^2.2` (the last group for Core's dev commands; no split carries them), `replace` = the eight `gpio/*` at `self.version`, `require-dev` = `pestphp/pest ^4`, `mockery/mockery ^1.6` (`Prompt::fake()`), `venusian-voyager/{config,vessel}`, `suggest` = the `microscrap/*` bindings. No hardware package in `require-dev`: the suite runs on fakes, so it installs from Packagist on any machine.
+Root umbrella `composer.json`: `require` = `venusian-voyager/{io-pools,contracts,collections,nuts-and-bolts,console,process,workflows} ^0.11.0`, `laravel/prompts ^0.3.0`, `symfony/{filesystem,process} ^8.0.0`, `composer-runtime-api ^2.2` (the last group for Core's dev commands; no split carries them), `replace` = the eight `gpio/*` at `self.version`, `require-dev` = `pestphp/pest ^4`, `mockery/mockery ^1.6` (`Prompt::fake()`), `venusian-voyager/{config,vessel}`, `suggest` = the `microscrap/*` bindings. No hardware package in `require-dev`: the suite runs on fakes, so it installs from Packagist on any machine.
 
 # Dependency direction
 

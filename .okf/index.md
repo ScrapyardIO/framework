@@ -10,8 +10,8 @@ Read this index first, then only the concepts the task needs. Every concept is `
 
 # Concepts
 
-* [overview.md](/overview.md) - what ships at 0.10.0, tree, counts, stack position, CI
-* [gpio-protocols.md](/gpio-protocols.md) - protocol managers, shared connection lifecycle, what 0.10 ships (Digital, I2C, SPI, PWM, UART)
+* [overview.md](/overview.md) - what ships at 0.11.0, tree, counts, stack position, CI
+* [gpio-protocols.md](/gpio-protocols.md) - protocol managers, shared connection lifecycle, what 0.11 ships (Digital, I2C, SPI, PWM, UART)
 * [integrated-circuits.md](/integrated-circuits.md) - chip kinds, transports, Bootable, DataRegister; the `circuit` catalog and conjure()
 * [display-panels.md](/display-panels.md) - DisplayPanel base plus WindowAddressable / RefreshesOnCommand / Switchable, RefreshMode, the consumer rule
 * [packaging.md](/packaging.md) - eight `gpio/*` splits, Core unsplit, dependency direction

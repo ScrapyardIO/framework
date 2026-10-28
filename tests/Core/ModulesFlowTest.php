@@ -48,11 +48,11 @@ it('names each module by its package short name', function () {
     expect(MicroscrapModule::named('scrapyard-usb'))->toBe(MicroscrapModule::SCRAPYARD_USB)
         ->and(MicroscrapModule::named('GPIO'))->toBe(MicroscrapModule::GPIO)
         ->and(MicroscrapModule::named('microscrap/gpio'))->toBeNull()
-        ->and(MicroscrapModule::MPSSE->requirement())->toBe('microscrap/mpsse:^0.10');
+        ->and(MicroscrapModule::MPSSE->requirement())->toBe('microscrap/mpsse:^0.11');
 });
 
 it('works out what the operating system and extensions allow', function (string $os, array $loaded, array $reasons) {
-    $version = fn (string $extension): ?string => in_array($extension, $loaded, true) ? '0.10.0' : null;
+    $version = fn (string $extension): ?string => in_array($extension, $loaded, true) ? '0.11.0' : null;
     $actual = [];
     foreach (MicroscrapModule::cases() as $module) {
         $actual[$module->module()] = $module->unavailableOn($os, $version);
@@ -84,7 +84,7 @@ it('offers only the posi modules and scrapyard-linux on a Linux board with ext-p
 
     $shared = modInterview($host, [Key::ENTER]);
 
-    expect($host->commands[1])->toBe(composerRequire(['microscrap/gpio:^0.10', 'microscrap/i2c:^0.10', 'microscrap/spi:^0.10', 'microscrap/uart:^0.10', 'microscrap/scrapyard-linux:^0.10']))
+    expect($host->commands[1])->toBe(composerRequire(['microscrap/gpio:^0.11', 'microscrap/i2c:^0.11', 'microscrap/spi:^0.11', 'microscrap/uart:^0.11', 'microscrap/scrapyard-linux:^0.11']))
         ->and(Prompt::strippedContent())->toContain('Not installable here: mpsse (needs ext-ftdi), scrapyard-usb (needs ext-ftdi).');
 });
 
@@ -93,7 +93,7 @@ it('offers mpsse and scrapyard-usb on a Mac with ext-ftdi, and says why scrapyar
 
     $shared = modInterview($host, [Key::ENTER]);
 
-    expect($host->commands[1])->toBe(composerRequire(['microscrap/mpsse:^0.10', 'microscrap/scrapyard-usb:^0.10']))
+    expect($host->commands[1])->toBe(composerRequire(['microscrap/mpsse:^0.11', 'microscrap/scrapyard-usb:^0.11']))
         ->and(Prompt::strippedContent())->toContain('scrapyard-linux (Linux only)')
         ->and($shared->module_results)->toBe(['mpsse' => 'installed', 'scrapyard-usb' => 'installed']);
 });
@@ -112,7 +112,7 @@ it('installs the one named module without showing the list', function () {
 
     $shared = modInterview($host, only: 'uart', interactive: false);
 
-    expect($host->commands[1])->toBe(composerRequire(['microscrap/uart:^0.10']))
+    expect($host->commands[1])->toBe(composerRequire(['microscrap/uart:^0.11']))
         ->and($shared->module_results)->toBe(['uart' => 'installed'])
         ->and(Prompt::strippedContent())->not->toContain('Modules to install');
 });
@@ -156,7 +156,7 @@ it('falls back to composer.phar in the application root', function () {
 
     $shared = modInterview($host, only: 'mpsse');
 
-    expect($host->commands[1])->toBe(composerRequire(['microscrap/mpsse:^0.10'], MOD_APP.'/composer.phar'))
+    expect($host->commands[1])->toBe(composerRequire(['microscrap/mpsse:^0.11'], MOD_APP.'/composer.phar'))
         ->and($shared->module_results)->toBe(['mpsse' => 'installed']);
 });
 
@@ -171,13 +171,13 @@ it('ends when no Composer this PHP can run is found', function (array $args) {
     'something else named composer' => [['rules' => [['--version', 0, 'not the dependency manager']]]],
 ]);
 
-it('refuses the modules of an extension loaded off the ^0.10 line, naming the version', function () {
+it('refuses the modules of an extension loaded off the ^0.11 line, naming the version', function () {
     $host = modHost(['os' => 'Darwin', 'loaded' => ['posi'], 'versions' => ['ftdi' => '0.9.0']]);
 
     $shared = modInterview($host, [Key::ENTER]);
 
-    expect(Prompt::strippedContent())->toContain('mpsse (needs ext-ftdi ^0.10, 0.9.0 is loaded)')
-        ->and($host->commands[1])->toBe(composerRequire(['microscrap/gpio:^0.10', 'microscrap/i2c:^0.10', 'microscrap/spi:^0.10', 'microscrap/uart:^0.10']));
+    expect(Prompt::strippedContent())->toContain('mpsse (needs ext-ftdi ^0.11, 0.9.0 is loaded)')
+        ->and($host->commands[1])->toBe(composerRequire(['microscrap/gpio:^0.11', 'microscrap/i2c:^0.11', 'microscrap/spi:^0.11', 'microscrap/uart:^0.11']));
 });
 
 it('reports a failed composer require against every module it carried', function () {

@@ -1,5 +1,10 @@
 # scrapyard-io/framework Update Log
 
+## 2026-10-28
+
+* **Version**: 0.11.0, with the Venusian 0.11 ecosystem. Root and the eight component manifests: `version` 0.11.0, `dev-main` → `0.11.x-dev`, `venusian-voyager/*` and `gpio/*` `^0.11.0`, PHP `~8.4.27||^8.5.12` (the framework's patched floor), microscrap suggestions `^0.11.0`.
+* **Update**: [dev commands](/dev-commands.md) move to the 0.11 line with php-io-extensions and microscrap: `ScrapyardExtension` installs `posi` / `ftdi` `^0.11` and `accepts()` takes 0.11.x only (0.10.x now counts as off the line); `MicroscrapModule::requirement()` is `^0.11`. [overview](/overview.md), [gpio protocols](/gpio-protocols.md), [packaging](/packaging.md), README; dev-commands notes that `venusian-voyager/console` 0.11.0 ships `ChecklistPrompt`, which the interviews do not use yet. 261 passed on Homebrew PHP 8.4 NTS and ZTS.
+
 ## 2026-10-14
 
 * **Creation**: [releasing.md](/releasing.md) — `split.yml` on a `v*` tag: `tests.yml` gates, `.github/split.sh` splits all eight components to `general-purpose-io` with the same tag.

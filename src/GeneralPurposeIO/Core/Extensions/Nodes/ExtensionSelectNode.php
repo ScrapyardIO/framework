@@ -38,7 +38,7 @@ class ExtensionSelectNode extends Node
             $extension = ScrapyardExtension::from($package);
 
             if (is_null($reason)) {
-                $outdated = isset($prepRes['outdated'][$package]) ? " ({$prepRes['outdated'][$package]} loaded, replaced by ^0.10)" : '';
+                $outdated = isset($prepRes['outdated'][$package]) ? " ({$prepRes['outdated'][$package]} loaded, replaced by ^0.11)" : '';
                 $options[$package] = "{$extension->extension()}{$outdated} — {$extension->description()}";
             } else {
                 $unavailable[] = "{$extension->extension()} ({$reason})";

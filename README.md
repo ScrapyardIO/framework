@@ -20,7 +20,7 @@ ext-posi / ext-ftdi            1:1 system and libftdi calls
 ## Requirements
 
 - PHP 8.4 or newer
-- A Venusian 0.10 application (`venusian-voyager/*` 0.10)
+- A Venusian 0.11 application (`venusian-voyager/*` 0.11)
 - At least one adapter:
 
 | Adapter | Driver name | Protocols | Hardware |
@@ -58,16 +58,16 @@ php computer scrapyard:ext        # ext-posi and ext-ftdi, through PIE
 php computer scrapyard:modules    # the microscrap packages this machine can run, through Composer
 ```
 
-`scrapyard:ext` lists both extensions and installs the ones you pick with [PIE](https://github.com/php/pie), offering to download PIE when it is missing. An extension already loaded at 0.10 shows as installed; one loaded at an older version is offered as a replacement. Neither builds on Windows.
+`scrapyard:ext` lists both extensions and installs the ones you pick with [PIE](https://github.com/php/pie), offering to download PIE when it is missing. An extension already loaded at 0.11 shows as installed; one loaded at an older version is offered as a replacement. Neither builds on Windows.
 
 `scrapyard:modules` looks at the operating system and the loaded extensions and offers what they allow:
 
 | Module | Needs |
 |---|---|
-| `microscrap/gpio`, `i2c`, `spi`, `uart` | ext-posi 0.10 |
-| `microscrap/mpsse` | ext-ftdi 0.10 |
-| `microscrap/scrapyard-linux` | Linux and ext-posi 0.10 |
-| `microscrap/scrapyard-usb` | ext-ftdi 0.10 |
+| `microscrap/gpio`, `i2c`, `spi`, `uart` | ext-posi 0.11 |
+| `microscrap/mpsse` | ext-ftdi 0.11 |
+| `microscrap/scrapyard-linux` | Linux and ext-posi 0.11 |
+| `microscrap/scrapyard-usb` | ext-ftdi 0.11 |
 
 The picked ones go into your app with a single `composer require`. Name one to skip the list, which also works without a terminal: `php computer scrapyard:ext ftdi`, `php computer scrapyard:modules scrapyard-usb`.
 

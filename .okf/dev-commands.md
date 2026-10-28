@@ -42,14 +42,14 @@ Exit 0: everything asked for `installed`, nothing to install, or nothing selecte
 
 # scrapyard:ext
 
-Same interview as venusian's `install:ext`[^install-ext] over `ScrapyardExtension`: `php-io-extensions/posi:^0.10`, `php-io-extensions/ftdi:^0.10`.[^ext]
+Same interview as venusian's `install:ext`[^install-ext] over `ScrapyardExtension`: `php-io-extensions/posi:^0.11`, `php-io-extensions/ftdi:^0.11`.[^ext]
 
 ```
 ExtensionStateNode → PhpConfigFinderNode → PieFinderNode → ExtensionSelectNode → ExtensionInstallNode
                                                └─ install-pie → PieInstallNode ─┘
 ```
 
-* State: Windows → `not on Windows` (both `php-ext` manifests exclude it). Loaded on the ^0.10 line (`ScrapyardExtension::accepts()`) → `installed`. Loaded off the line (0.9.x) → installable; the row reads `ftdi (0.9.0 loaded, replaced by ^0.10)`.
+* State: Windows → `not on Windows` (both `php-ext` manifests exclude it). Loaded on the ^0.11 line (`ScrapyardExtension::accepts()`) → `installed`. Loaded off the line (0.10.x or older) → installable; the row reads `ftdi (0.9.0 loaded, replaced by ^0.11)`.
 * PIE always `[PHP_BINARY, pie, …]`; php-config matched to that binary; PIE found on PATH or `~/.local/bin`, else offered as a download + `self-verify`. Rules as install:ext.
 * Check after each install: `[php, -r, "echo phpversion('<ext>');"]`. Outcomes: `installed` · `failed (PIE exit code N)` · `failed (<message>)` · `installed by PIE, but {php} does not load it` · `installed by PIE, but {php} loads <version>`.
 
@@ -59,19 +59,19 @@ ExtensionStateNode → PhpConfigFinderNode → PieFinderNode → ExtensionSelect
 
 | Module | Needs |
 |---|---|
-| `gpio`, `i2c`, `spi`, `uart` | ext-posi ^0.10 |
-| `mpsse` | ext-ftdi ^0.10 |
-| `scrapyard-linux` | Linux, ext-posi ^0.10 |
-| `scrapyard-usb` | ext-ftdi ^0.10 |
+| `gpio`, `i2c`, `spi`, `uart` | ext-posi ^0.11 |
+| `mpsse` | ext-ftdi ^0.11 |
+| `scrapyard-linux` | Linux, ext-posi ^0.11 |
+| `scrapyard-usb` | ext-ftdi ^0.11 |
 
-Reasons, first that applies: `Linux only` · `needs ext-<x>` · `needs ext-<x> ^0.10, <version> is loaded` · `installed` (`Composer\InstalledVersions`). Same ext lines the microscrap manifests require.
+Reasons, first that applies: `Linux only` · `needs ext-<x>` · `needs ext-<x> ^0.11, <version> is loaded` · `installed` (`Composer\InstalledVersions`). Same ext lines the microscrap manifests require.
 
 * Composer: `composer` on PATH, then `composer.phar` in the app root; counts only if `[PHP_BINARY, composer, --version]` prints `Composer`. Run by `PHP_BINARY` so Composer checks `ext-*` against the PHP running computer, not whichever `php` its shebang finds. None → ends with a note; never downloaded.
-* Install: one `[php, composer, require, <each>:^0.10, --working-dir=<app>]` on the terminal. One resolve: all land or none. Outcome per module: `installed` · `failed (Composer exit code N)` · `failed (<message>)`.
+* Install: one `[php, composer, require, <each>:^0.11, --working-dir=<app>]` on the terminal. One resolve: all land or none. Outcome per module: `installed` · `failed (Composer exit code N)` · `failed (<message>)`.
 
 # Prompt
 
-Plain `laravel/prompts` `multiselect` + a `note` naming the rows that cannot be installed and why; installable rows start selected. Not venusian's `ChecklistPrompt`: published `venusian-voyager/console` 0.10.0 does not ship it.
+Plain `laravel/prompts` `multiselect` + a `note` naming the rows that cannot be installed and why; installable rows start selected. Not venusian's `ChecklistPrompt`: `venusian-voyager/console` 0.10.0 did not ship it. 0.11.0 does (`Voyager\Console\Prompts\ChecklistPrompt`); these rows still use `multiselect`.
 
 # Host
 

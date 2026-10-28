@@ -1,7 +1,7 @@
 ---
 type: Concept
 title: GPIO protocols
-description: Protocol managers under gpio.protocols, the shared connection lifecycle, and what 0.10 ships (Digital, I2C, SPI, PWM, UART).
+description: Protocol managers under gpio.protocols, the shared connection lifecycle, and what 0.11 ships (Digital, I2C, SPI, PWM, UART).
 tags: [gpio, protocols, i2c, digital, spi, pwm, uart]
 status: draft
 generated: { by: cursor-grok-4.6/cursor, at: "2026-09-25T05:15:00Z" }
@@ -31,7 +31,7 @@ sources:
 
 # Role
 
-0.10 ships five protocols: Digital, I2C, SPI, PWM and UART. `ScrapyardIOServiceProvider` aggregates `DigitalIOServiceProvider` (`gpio.digital`), `I2CServiceProvider` (`gpio.i2c`), `SPIServiceProvider` (`gpio.spi`), `PWMServiceProvider` (`gpio.pwm`) and `UARTServiceProvider` (`gpio.uart`) and merges `config/gpio.php`.[^provider] No protocol is manifest-only. No dock, no About section.
+0.11 ships five protocols: Digital, I2C, SPI, PWM and UART. `ScrapyardIOServiceProvider` aggregates `DigitalIOServiceProvider` (`gpio.digital`), `I2CServiceProvider` (`gpio.i2c`), `SPIServiceProvider` (`gpio.spi`), `PWMServiceProvider` (`gpio.pwm`) and `UARTServiceProvider` (`gpio.uart`) and merges `config/gpio.php`.[^provider] No protocol is manifest-only. No dock, no About section.
 
 Default driver `none` per protocol: every open throws "No … connection driver is configured".[^config] Adapters `extend()` the managers: `microscrap/scrapyard-linux` as `native`, `microscrap/scrapyard-usb` as `usb`.
 

@@ -22,7 +22,7 @@ final class DescribedHost extends Host
     public array $removed = [];
 
     /**
-     * @param  list<string>  $loaded  Extensions loaded at 0.10.0.
+     * @param  list<string>  $loaded  Extensions loaded at 0.11.0.
      * @param  array<string, string>  $versions  Extensions loaded at the given version.
      * @param  list<string>  $installed
      * @param  list<string>  $files
@@ -68,7 +68,7 @@ final class DescribedHost extends Host
 
     public function extensionVersion(string $extension): ?string
     {
-        return $this->versions[$extension] ?? (in_array($extension, $this->loaded, true) ? '0.10.0' : null);
+        return $this->versions[$extension] ?? (in_array($extension, $this->loaded, true) ? '0.11.0' : null);
     }
 
     public function installed(string $package): bool

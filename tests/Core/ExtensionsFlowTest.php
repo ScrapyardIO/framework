@@ -19,7 +19,7 @@ const SY_PHP_CONFIG = '/opt/php/bin/php-config';
 /** A machine with PIE on PATH and a php-config beside the binary that builds for it. */
 function extHost(array $args = []): DescribedHost
 {
-    $rules = [...($args['rules'] ?? []), ["echo phpversion('", 0, '0.10.0'], ['--version', 0, '🥧 PHP Installer for Extensions (PIE) 1.5.1'], [SY_PHP_CONFIG.' --php-binary', 0, SY_PHP], ['--php-binary', 127, '']];
+    $rules = [...($args['rules'] ?? []), ["echo phpversion('", 0, '0.11.0'], ['--version', 0, '🥧 PHP Installer for Extensions (PIE) 1.5.1'], [SY_PHP_CONFIG.' --php-binary', 0, SY_PHP], ['--php-binary', 127, '']];
 
     return new DescribedHost(...[...['executables' => ['pie' => SY_PIE]], ...$args, 'rules' => $rules]);
 }
@@ -51,9 +51,9 @@ it('installs both extensions from the list, each through PIE run by this PHP, ea
     expect($host->commands)->toBe([
         [SY_PHP_CONFIG, '--php-binary'],
         [SY_PHP, SY_PIE, '--version'],
-        [SY_PHP, SY_PIE, 'install', 'php-io-extensions/posi:^0.10', '--with-php-config='.SY_PHP_CONFIG],
+        [SY_PHP, SY_PIE, 'install', 'php-io-extensions/posi:^0.11', '--with-php-config='.SY_PHP_CONFIG],
         [SY_PHP, '-r', "echo phpversion('posi');"],
-        [SY_PHP, SY_PIE, 'install', 'php-io-extensions/ftdi:^0.10', '--with-php-config='.SY_PHP_CONFIG],
+        [SY_PHP, SY_PIE, 'install', 'php-io-extensions/ftdi:^0.11', '--with-php-config='.SY_PHP_CONFIG],
         [SY_PHP, '-r', "echo phpversion('ftdi');"],
     ])
         ->and($shared->extension_results)->toBe(['posi' => 'installed', 'ftdi' => 'installed']);
@@ -75,7 +75,7 @@ it('installs the one named extension without showing the list', function () {
     $shared = extInterview($host, only: 'ftdi', interactive: false);
 
     expect($shared->extension_results)->toBe(['ftdi' => 'installed'])
-        ->and($host->commands)->not->toContain([SY_PHP, SY_PIE, 'install', 'php-io-extensions/posi:^0.10', '--with-php-config='.SY_PHP_CONFIG])
+        ->and($host->commands)->not->toContain([SY_PHP, SY_PIE, 'install', 'php-io-extensions/posi:^0.11', '--with-php-config='.SY_PHP_CONFIG])
         ->and(Prompt::strippedContent())->not->toContain('Extensions to install');
 });
 
@@ -124,7 +124,7 @@ it('offers to download PIE, has it verify itself, and installs with it', functio
 
     expect($host->downloads)->toBe([['https://github.com/php/pie/releases/latest/download/pie.phar', '/home/dev/.local/bin/pie']])
         ->and($host->commands)->toContain([SY_PHP, '/home/dev/.local/bin/pie', 'self-verify'])
-        ->and($host->commands)->toContain([SY_PHP, '/home/dev/.local/bin/pie', 'install', 'php-io-extensions/posi:^0.10', '--with-php-config='.SY_PHP_CONFIG])
+        ->and($host->commands)->toContain([SY_PHP, '/home/dev/.local/bin/pie', 'install', 'php-io-extensions/posi:^0.11', '--with-php-config='.SY_PHP_CONFIG])
         ->and($shared->extension_results)->toBe(['posi' => 'installed']);
 });
 
@@ -165,7 +165,7 @@ it('leaves the php-config to PIE when the machine has none', function () {
     $shared = extInterview($host, only: 'ftdi');
 
     expect($shared->php_config)->toBeNull()
-        ->and($host->commands)->toContain([SY_PHP, SY_PIE, 'install', 'php-io-extensions/ftdi:^0.10'])
+        ->and($host->commands)->toContain([SY_PHP, SY_PIE, 'install', 'php-io-extensions/ftdi:^0.11'])
         ->and($shared->extension_results)->toBe(['ftdi' => 'installed']);
 });
 
@@ -178,7 +178,7 @@ it('reports a failed build and still installs the next extension', function () {
         ->and($host->commands)->not->toContain([SY_PHP, '-r', "echo phpversion('posi');"]);
 });
 
-it('reports an extension PIE installed that this PHP still does not load, or loads off the ^0.10 line', function (string $loaded, string $outcome) {
+it('reports an extension PIE installed that this PHP still does not load, or loads off the ^0.11 line', function (string $loaded, string $outcome) {
     $host = extHost(['rules' => [["phpversion('ftdi')", 0, $loaded]]]);
 
     expect(extInterview($host, only: 'ftdi')->extension_results)->toBe(['ftdi' => $outcome]);
@@ -187,23 +187,23 @@ it('reports an extension PIE installed that this PHP still does not load, or loa
     'old version' => ['0.9.0', 'installed by PIE, but '.SY_PHP.' loads 0.9.0'],
 ]);
 
-it('offers an extension loaded off the ^0.10 line as a replacement', function () {
+it('offers an extension loaded off the ^0.11 line as a replacement', function () {
     $host = extHost(['os' => 'Darwin', 'loaded' => ['posi'], 'versions' => ['ftdi' => '0.9.0']]);
 
     $shared = extInterview($host, [Key::ENTER]);
 
-    expect(Prompt::strippedContent())->toContain('ftdi (0.9.0 loaded, replaced by ^0.10) — FTDI USB')
+    expect(Prompt::strippedContent())->toContain('ftdi (0.9.0 loaded, replaced by ^0.11) — FTDI USB')
         ->and($shared->extension_results)->toBe(['ftdi' => 'installed']);
 });
 
-it('installs a named extension loaded off the ^0.10 line', function () {
+it('installs a named extension loaded off the ^0.11 line', function () {
     $host = extHost(['versions' => ['posi' => '0.9.2']]);
 
     expect(extInterview($host, only: 'posi', interactive: false)->extension_results)->toBe(['posi' => 'installed']);
 });
 
-it('takes only the ^0.10 line', function (string $version, bool $accepted) {
+it('takes only the ^0.11 line', function (string $version, bool $accepted) {
     expect(ScrapyardExtension::accepts($version))->toBe($accepted);
 })->with([
-    ['0.10.0', true], ['0.10.7', true], ['0.9.0', false], ['0.11.0', false], ['1.0.0', false],
+    ['0.11.0', true], ['0.11.7', true], ['0.10.7', false], ['0.9.0', false], ['0.12.0', false], ['1.0.0', false],
 ]);

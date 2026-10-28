@@ -8,7 +8,7 @@ use Voyager\Workflows\Node;
 use Voyager\Workflows\SharedBag;
 
 /**
- * Works out what can be installed here. An extension loaded at a version off the ^0.10 line counts as installable,
+ * Works out what can be installed here. An extension loaded at a version off the ^0.11 line counts as installable,
  * and PIE replaces it. With one extension named, that one is the selection and the list is never shown.
  */
 class ExtensionStateNode extends Node

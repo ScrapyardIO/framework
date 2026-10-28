@@ -8,12 +8,12 @@
         "venusian"
     ],
     "license": "MIT",
-    "version": "0.10.5",
-    "homepage": "https://scrapyard-io.projectsaturnstudios.com/ecosystem/scrapyard-io/framework/0.10.x/overview",
+    "version": "0.11.0",
+    "homepage": "https://scrapyard-io.projectsaturnstudios.com/ecosystem/scrapyard-io/framework/0.11.x/overview",
     "support": {
         "issues": "https://github.com/scrapyard-io/framework/issues",
         "source": "https://github.com/scrapyard-io/framework",
-        "docs": "https://scrapyard-io.projectsaturnstudios.com/ecosystem/scrapyard-io/framework/0.10.x/overview"
+        "docs": "https://scrapyard-io.projectsaturnstudios.com/ecosystem/scrapyard-io/framework/0.11.x/overview"
     },
     "authors": [
         {
@@ -22,18 +22,18 @@
         }
     ],
     "require": {
-        "php": "^8.4|^8.5|^8.6",
+        "php": "~8.4.27||^8.5.12",
         "composer-runtime-api": "^2.2",
         "laravel/prompts": "^0.3.0",
         "symfony/filesystem": "^8.0.0",
         "symfony/process": "^8.0.0",
-        "venusian-voyager/io-pools": "^0.10.0",
-        "venusian-voyager/contracts": "^0.10.0",
-        "venusian-voyager/collections": "^0.10.0",
-        "venusian-voyager/nuts-and-bolts": "^0.10.0",
-        "venusian-voyager/console": "^0.10.0",
-        "venusian-voyager/process": "^0.10.0",
-        "venusian-voyager/workflows": "^0.10.0"
+        "venusian-voyager/io-pools": "^0.11.0",
+        "venusian-voyager/contracts": "^0.11.0",
+        "venusian-voyager/collections": "^0.11.0",
+        "venusian-voyager/nuts-and-bolts": "^0.11.0",
+        "venusian-voyager/console": "^0.11.0",
+        "venusian-voyager/process": "^0.11.0",
+        "venusian-voyager/workflows": "^0.11.0"
     },
     "replace": {
         "gpio/contracts": "self.version",
@@ -48,15 +48,15 @@
     "require-dev": {
         "mockery/mockery": "^1.6",
         "pestphp/pest": "^4",
-        "venusian-voyager/config": "^0.10.0",
-        "venusian-voyager/vessel": "^0.10.0"
+        "venusian-voyager/config": "^0.11.0",
+        "venusian-voyager/vessel": "^0.11.0"
     },
     "suggest": {
-        "microscrap/gpio": "^0.10.0 - POSIX digital IO (libgpiod v2 over ext-posi)",
-        "microscrap/i2c": "^0.10.0 - POSIX I2C",
-        "microscrap/spi": "^0.10.0 - POSIX SPI",
-        "microscrap/uart": "^0.10.0 - POSIX UART",
-        "microscrap/mpsse": "^0.10.0 - MPSSE USB drivers"
+        "microscrap/gpio": "^0.11.0 - POSIX digital IO (libgpiod v2 over ext-posi)",
+        "microscrap/i2c": "^0.11.0 - POSIX I2C",
+        "microscrap/spi": "^0.11.0 - POSIX SPI",
+        "microscrap/uart": "^0.11.0 - POSIX UART",
+        "microscrap/mpsse": "^0.11.0 - MPSSE USB drivers"
     },
     "autoload": {
         "psr-4": {
@@ -73,7 +73,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-main": "0.10.x-dev"
+            "dev-main": "0.11.x-dev"
         },
         "venusian": {
             "providers": [

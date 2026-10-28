@@ -38,7 +38,7 @@ enum MicroscrapModule: string
     /** The token `composer require` takes: the package and its version line. */
     public function requirement(): string
     {
-        return "{$this->value}:^0.10";
+        return "{$this->value}:^0.11";
     }
 
     /** The PHP extension the package's manifest requires. */
@@ -65,7 +65,7 @@ enum MicroscrapModule: string
 
     /**
      * Why this machine cannot have the package, or null when it can. scrapyard-linux drives Linux-only interfaces
-     * (gpiod, i2c-dev, spidev, sysfs PWM); every package needs the extension its manifest requires, on the ^0.10
+     * (gpiod, i2c-dev, spidev, sysfs PWM); every package needs the extension its manifest requires, on the ^0.11
      * line, which Composer checks against the PHP that runs it.
      *
      * @param  string  $os_family  A PHP_OS_FAMILY value.
@@ -78,7 +78,7 @@ enum MicroscrapModule: string
         return match (true) {
             $this === self::SCRAPYARD_LINUX && $os_family !== 'Linux' => 'Linux only',
             is_null($loaded) => "needs ext-{$this->extension()}",
-            ! ScrapyardExtension::accepts($loaded) => "needs ext-{$this->extension()} ^0.10, {$loaded} is loaded",
+            ! ScrapyardExtension::accepts($loaded) => "needs ext-{$this->extension()} ^0.11, {$loaded} is loaded",
             default => null,
         };
     }

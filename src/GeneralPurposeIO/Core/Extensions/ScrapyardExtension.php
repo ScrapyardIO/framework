@@ -8,8 +8,8 @@ namespace GeneralPurposeIO\Core\Extensions;
  */
 enum ScrapyardExtension: string
 {
-    case POSI = 'php-io-extensions/posi:^0.10';
-    case FTDI = 'php-io-extensions/ftdi:^0.10';
+    case POSI = 'php-io-extensions/posi:^0.11';
+    case FTDI = 'php-io-extensions/ftdi:^0.11';
 
     /** The case PHP loads under this name, or null. */
     public static function named(string $extension): ?self
@@ -29,10 +29,10 @@ enum ScrapyardExtension: string
         return strtolower($this->name);
     }
 
-    /** Whether a loaded version is on the ^0.10 line this package and the microscrap packages require. */
+    /** Whether a loaded version is on the ^0.11 line this package and the microscrap packages require. */
     public static function accepts(string $version): bool
     {
-        return version_compare($version, '0.10.0', '>=') && version_compare($version, '0.11.0', '<');
+        return version_compare($version, '0.11.0', '>=') && version_compare($version, '0.12.0', '<');
     }
 
     public function description(): string

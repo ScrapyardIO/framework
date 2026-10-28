@@ -21,15 +21,15 @@
         }
     ],
     "require": {
-        "php": "^8.4|^8.5|^8.6",
-        "gpio/contracts": "^0.10.0",
-        "gpio/nuts-and-bolts": "^0.10.0",
-        "venusian-voyager/collections": "^0.10.0",
-        "venusian-voyager/contracts": "^0.10.0",
-        "venusian-voyager/nuts-and-bolts": "^0.10.0"
+        "php": "~8.4.27||^8.5.12",
+        "gpio/contracts": "^0.11.0",
+        "gpio/nuts-and-bolts": "^0.11.0",
+        "venusian-voyager/collections": "^0.11.0",
+        "venusian-voyager/contracts": "^0.11.0",
+        "venusian-voyager/nuts-and-bolts": "^0.11.0"
     },
     "suggest": {
-        "microscrap/scrapyard-linux": "^0.10.0 - native sysfs PWM"
+        "microscrap/scrapyard-linux": "^0.11.0 - native sysfs PWM"
     },
     "autoload": {
         "psr-4": {
@@ -38,7 +38,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-main": "0.10.x-dev"
+            "dev-main": "0.11.x-dev"
         },
         "venusian": {
             "providers": [
